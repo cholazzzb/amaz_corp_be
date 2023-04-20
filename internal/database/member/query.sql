@@ -1,8 +1,8 @@
--- name: CreateUser :execresult
-INSERT INTO users(username, password, salt)
-VALUES (?, ?, ?);
--- name: GetUser :one
+-- name: CreateMember :execresult
+INSERT INTO members(name)
+VALUES (?);
+-- name: GetMember :one
 SELECT *
-FROM users
-WHERE username = ?
+FROM members
+WHERE name = ?
 LIMIT 1;

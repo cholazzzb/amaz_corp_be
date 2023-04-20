@@ -1,9 +1,16 @@
 version: 2
 sql:
   - engine: "mysql"
-    schema: "database/user/schema.sql"
-    queries: "database/user/query.sql"
+    schema: "internal/database/user/schema.sql"
+    queries: "internal/database/user/query.sql"
     gen:
       go:
         package: "user"
-        out: "user/mysql"
+        out: "internal/user/mysql"
+  - engine: "mysql"
+    schema: "internal/database/member/schema.sql"
+    queries: "internal/database/member/query.sql"
+    gen: 
+      go: 
+        package: "member"
+        out: "internal/member/mysql"
