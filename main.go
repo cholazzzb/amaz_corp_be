@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/cholazzzb/amaz_corp_be/config"
-	"github.com/cholazzzb/amaz_corp_be/database"
-	"github.com/cholazzzb/amaz_corp_be/user"
+	"github.com/cholazzzb/amaz_corp_be/internal/config"
+	"github.com/cholazzzb/amaz_corp_be/internal/database"
+	"github.com/cholazzzb/amaz_corp_be/internal/user"
 	"github.com/gofiber/fiber/v2"
 
 	_ "github.com/go-sql-driver/mysql"

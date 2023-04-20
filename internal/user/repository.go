@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/cholazzzb/amaz_corp_be/database"
-	mysql "github.com/cholazzzb/amaz_corp_be/user/mysql"
+	"github.com/cholazzzb/amaz_corp_be/internal/database"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/user/mysql"
 )
 
 type UserRepository struct {

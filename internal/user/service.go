@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/cholazzzb/amaz_corp_be/config"
-	mysql "github.com/cholazzzb/amaz_corp_be/user/mysql"
+	"github.com/cholazzzb/amaz_corp_be/internal/config"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/user/mysql"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )

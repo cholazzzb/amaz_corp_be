@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/cholazzzb/amaz_corp_be/validator"
+	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 )
 

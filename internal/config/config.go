@@ -18,7 +18,7 @@ type Env struct {
 var ENV Env
 
 func GetEnv() Env {
-	env, err := godotenv.Read(".env")
+	env, err := godotenv.Read(".env.dev")
 	if err != nil {
 		log.Fatalln("failed to load env files")
 	}
