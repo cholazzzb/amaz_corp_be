@@ -1,16 +1,22 @@
 package user
 
 import (
-	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
+	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
 type UserHandler struct {
-	svc *UserService
+	svc    *UserService
+	logger zerolog.Logger
 }
 
 func NewUserHandler(svc *UserService) *UserHandler {
-	return &UserHandler{svc}
+	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
+
+	return &UserHandler{svc: svc, logger: sublogger}
 }
 
 type RegisterRequest struct {

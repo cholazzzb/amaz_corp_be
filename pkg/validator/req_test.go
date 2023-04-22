@@ -3,7 +3,7 @@ package validator_test
 import (
 	"testing"
 
-	"github.com/cholazzzb/amaz_corp_be/validator"
+	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 	"github.com/stretchr/testify/assert"
 )
 

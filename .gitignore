@@ -1,4 +1,8 @@
+# other
+secret
+
 # Environment
+.env.dev
 .env
 
 # Binaries for programs and plugins

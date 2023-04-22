@@ -9,6 +9,7 @@ import (
 )
 
 type Env struct {
+	ENVIRONMENT                    string
 	DB_CON_STRING                  string
 	APPLICATION_NAME               string
 	LOGIN_EXPIRATION_DURATION_HOUR time.Duration
@@ -23,6 +24,7 @@ func GetEnv() Env {
 		log.Fatalln("failed to load env files")
 	}
 
+	ENV.ENVIRONMENT = env["ENVIRONMENT"]
 	ENV.DB_CON_STRING = env["DB_CON_STRING"]
 	ENV.APPLICATION_NAME = env["APPLICATION_NAME"]
 	LOGIN_EXPIRATION_DURATION_HOUR, err := strconv.ParseInt(env["LOGIN_EXPIRATION_DURATION_HOUR"], 10, 64)
@@ -31,5 +33,8 @@ func GetEnv() Env {
 	}
 	ENV.LOGIN_EXPIRATION_DURATION_HOUR = time.Duration(LOGIN_EXPIRATION_DURATION_HOUR) * time.Hour
 	ENV.JWT_SIGNATURE_KEY = env["JWT_SIGNATURE_KEY"]
+
+	CreateUserConfig(ENV)
+
 	return ENV
 }

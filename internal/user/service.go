@@ -3,21 +3,16 @@ package user
 import (
 	"context"
 	"errors"
-	"log"
 	"os/exec"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/user/mysql"
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	APPLICATION_NAME          = config.ENV.APPLICATION_NAME
-	LOGIN_EXPIRATION_DURATION = config.ENV.LOGIN_EXPIRATION_DURATION_HOUR
-	JWT_SIGNING_METHOD        = jwt.SigningMethodHS256
-	JWT_SIGNATURE_KEY         = []byte(config.ENV.JWT_SIGNATURE_KEY)
 )
 
 type UserClaims struct {
@@ -26,7 +21,8 @@ type UserClaims struct {
 }
 
 type UserService struct {
-	repo *UserRepository
+	repo   *UserRepository
+	logger zerolog.Logger
 }
 
 type Token string
@@ -34,15 +30,18 @@ type Token string
 func NewUserService(
 	repo *UserRepository,
 ) *UserService {
+	sublogger := log.With().Str("layer", "service").Str("package", "user").Logger()
+
 	return &UserService{
-		repo: repo,
+		repo:   repo,
+		logger: sublogger,
 	}
 }
 
 func (svc *UserService) RegisterUser(ctx context.Context, username, password string) error {
 	salt, err := exec.Command("uuidgen").Output()
 	if err != nil {
-		log.Println(err)
+		svc.logger.Error().Err(err)
 		return errors.New("failed to generate uuid")
 	}
 	saltedPassword := append(
@@ -55,7 +54,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
-		log.Println(err)
+		svc.logger.Error().Err(err)
 		return errors.New("failed to hash password")
 	}
 	newUserParams := mysql.CreateUserParams{
@@ -74,7 +73,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, error) {
 	result, err := svc.repo.GetUser(ctx, username)
 	if err != nil {
-		log.Println("svc/user/authenticateUser: username not found")
+		svc.logger.Error().Err(err).Msg("username not found")
 		return false, errors.New("username not found")
 	}
 
@@ -102,14 +101,14 @@ func (svc *UserService) Login(ctx context.Context, username, password string) (T
 
 	claims := UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    APPLICATION_NAME,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(LOGIN_EXPIRATION_DURATION)),
+			Issuer:    config.UserConfig.APPLICATION_NAME,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.UserConfig.LOGIN_EXPIRATION_DURATION)),
 		},
 		Username: username,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(JWT_SIGNATURE_KEY)
+	signedToken, err := token.SignedString(config.UserConfig.JWT_SIGNATURE_KEY)
 	if err != nil {
 		return "", errors.New("failed to sign token")
 	}
