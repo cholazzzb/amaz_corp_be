@@ -36,7 +36,15 @@ func (svc *MemberService) GetMemberByName(ctx context.Context, name string) (mem
 }
 
 func (svc *MemberService) CreateMember(ctx context.Context, memberReq member.Member, username string) (member.Member, error) {
-	// userData := user.GetUser()
-	// newMember := svc.repo.CreateMember(ctx, memberReq, 1)
-	return member.Member{}, nil
+	userData, err := svc.repo.User.GetUser(ctx, username)
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return member.Member{}, fmt.Errorf("cannot found user with username %s", username)
+	}
+	newMember, err := svc.repo.Member.CreateMember(ctx, memberReq, userData.ID)
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return member.Member{}, fmt.Errorf("failed to create member %v", memberReq)
+	}
+	return newMember, nil
 }

@@ -37,6 +37,7 @@ func NewMySQLMemberRepository(mysqlRepo *database.MysqlRepository) *MySQLMemberR
 func (r *MySQLMemberRepository) GetMemberByName(ctx context.Context, memberName string) (member.Member, error) {
 	result, err := r.mysql.GetMemberByName(ctx, memberName)
 	if err != nil {
+		r.logger.Error().Err(err)
 		return member.Member{}, err
 	}
 	return member.Member{
@@ -46,10 +47,10 @@ func (r *MySQLMemberRepository) GetMemberByName(ctx context.Context, memberName 
 
 }
 
-func (r *MySQLMemberRepository) CreateMember(ctx context.Context, member member.Member, userID int64) error {
+func (r *MySQLMemberRepository) CreateMember(ctx context.Context, newMember member.Member, userID int64) (member.Member, error) {
 	params := mysql.CreateMemberParams{
-		Name:   member.Name,
-		Status: member.Status,
+		Name:   newMember.Name,
+		Status: newMember.Status,
 		UserID: sql.NullInt64{
 			Int64: userID,
 			Valid: true,
@@ -58,7 +59,7 @@ func (r *MySQLMemberRepository) CreateMember(ctx context.Context, member member.
 	_, err := r.mysql.CreateMember(ctx, params)
 	if err != nil {
 		r.logger.Error().Err(err)
-		return err
+		return member.Member{}, err
 	}
-	return nil
+	return newMember, nil
 }

@@ -18,4 +18,5 @@ func NewMemberRoute(fr fiber.Router, h *handler.Handler) *MemberRoute {
 
 func (r *MemberRoute) InitRoute() {
 	r.fr.Get("/:name", r.h.Member.GetMemberByName)
+	r.fr.Post("", r.h.Member.CreateMemberByUsername)
 }

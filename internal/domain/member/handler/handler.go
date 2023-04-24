@@ -35,13 +35,13 @@ func (h *MemberHandler) GetMemberByName(ctx *fiber.Ctx) error {
 
 	member, err := h.svc.Member.GetMemberByName(ctx.Context(), req.Name)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(
+			err.Error(),
+		)
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "success",
+		"message": "ok",
 		"member":  member,
 	})
 }
@@ -65,12 +65,12 @@ func (h *MemberHandler) CreateMemberByUsername(ctx *fiber.Ctx) error {
 	username := ctx.Locals("Username").(string)
 	member, err := h.svc.Member.CreateMember(ctx.Context(), member.Member{
 		Name:   req.Name,
-		Status: "",
+		Status: "new member",
 	}, username)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(
+			err.Error(),
+		)
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
