@@ -1,4 +1,4 @@
-package user
+package userRepository
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/database"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/user/mysql"
+	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/user/mysql"
 )
 
 type UserRepository struct {

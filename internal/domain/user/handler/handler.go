@@ -5,15 +5,16 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
 type UserHandler struct {
-	svc    *UserService
+	svc    *service.Service
 	logger zerolog.Logger
 }
 
-func NewUserHandler(svc *UserService) *UserHandler {
+func NewUserHandler(svc *service.Service) *UserHandler {
 	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
 
 	return &UserHandler{svc: svc, logger: sublogger}
@@ -36,7 +37,7 @@ func (h *UserHandler) Register(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
 	}
 
-	err := h.svc.RegisterUser(ctx.Context(), req.Username, req.Password)
+	err := h.svc.User.RegisterUser(ctx.Context(), req.Username, req.Password)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -61,7 +62,7 @@ func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 		})
 	}
 
-	token, err := h.svc.Login(ctx.Context(), req.Username, req.Password)
+	token, err := h.svc.User.Login(ctx.Context(), req.Username, req.Password)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),

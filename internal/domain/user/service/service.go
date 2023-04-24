@@ -11,8 +11,9 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/cholazzzb/amaz_corp_be/internal/app/repository"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/user/mysql"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/user/mysql"
 )
 
 type UserClaims struct {
@@ -21,14 +22,14 @@ type UserClaims struct {
 }
 
 type UserService struct {
-	repo   *UserRepository
+	repo   *repository.Repository
 	logger zerolog.Logger
 }
 
 type Token string
 
 func NewUserService(
-	repo *UserRepository,
+	repo *repository.Repository,
 ) *UserService {
 	sublogger := log.With().Str("layer", "service").Str("package", "user").Logger()
 
@@ -63,7 +64,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 		Salt:     string(salt[:]),
 	}
 
-	if err := svc.repo.CreateUser(ctx, newUserParams); err != nil {
+	if err := svc.repo.User.CreateUser(ctx, newUserParams); err != nil {
 		return errors.New("failed to create user")
 	}
 
@@ -71,7 +72,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 }
 
 func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, error) {
-	result, err := svc.repo.GetUser(ctx, username)
+	result, err := svc.repo.User.GetUser(ctx, username)
 	if err != nil {
 		svc.logger.Error().Err(err).Msg("username not found")
 		return false, errors.New("username not found")
