@@ -18,7 +18,7 @@ VALUES (?, ?, ?)
 type CreateMemberParams struct {
 	Name   string
 	Status string
-	UserID sql.NullInt64
+	UserID int64
 }
 
 func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (sql.Result, error) {
@@ -26,7 +26,7 @@ func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (sql
 }
 
 const getMemberByName = `-- name: GetMemberByName :one
-SELECT user_id, name, status
+SELECT id, user_id, name, status
 FROM members
 WHERE name = ?
 LIMIT 1
@@ -35,6 +35,11 @@ LIMIT 1
 func (q *Queries) GetMemberByName(ctx context.Context, name string) (Member, error) {
 	row := q.db.QueryRowContext(ctx, getMemberByName, name)
 	var i Member
-	err := row.Scan(&i.UserID, &i.Name, &i.Status)
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Status,
+	)
 	return i, err
 }

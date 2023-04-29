@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS friends (
+  member1_id BIGINT NOT NULL,
+  member2_id BIGINT NOT NULl,
+  CONSTRAINT fk_member1_id FOREIGN KEY(member1_id) REFERENCES members(id),
+  CONSTRAINT fk_member2_id FOREIGN KEY(member2_id) REFERENCES members(id)
+);

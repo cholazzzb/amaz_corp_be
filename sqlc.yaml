@@ -1,16 +1,23 @@
 version: 2
 sql:
   - engine: "mysql"
-    schema: "internal/database/user/schema.sql"
-    queries: "internal/database/user/query.sql"
+    schema: "internal/datastore/database/user/schema.sql"
+    queries: "internal/datastore/database/user/query.sql"
     gen:
       go:
         package: "user"
-        out: "internal/user/mysql"
+        out: "internal/domain/user/mysql"
   - engine: "mysql"
-    schema: "internal/database/member/schema.sql"
-    queries: "internal/database/member/query.sql"
+    schema: "internal/datastore/database/member/schema.sql"
+    queries: "internal/datastore/database/member/query.sql"
     gen: 
       go: 
         package: "member"
-        out: "internal/member/mysql"
+        out: "internal/domain/member/mysql"
+  - engine: "mysql"
+    schema: "internal/datastore/database/friend/schema.sql"
+    queries: "internal/datastore/database/friend/query.sql"
+    gen:
+      go:
+        package: "friend"
+        out: "internal/domain/friend/mysql"

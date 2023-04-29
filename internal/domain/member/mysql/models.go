@@ -4,12 +4,11 @@
 
 package member
 
-import (
-	"database/sql"
-)
+import ()
 
 type Member struct {
-	UserID sql.NullInt64
+	ID     int64
+	UserID int64
 	Name   string
 	Status string
 }

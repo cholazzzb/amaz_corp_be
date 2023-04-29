@@ -2,7 +2,6 @@ package member
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -51,10 +50,7 @@ func (r *MySQLMemberRepository) CreateMember(ctx context.Context, newMember memb
 	params := mysql.CreateMemberParams{
 		Name:   newMember.Name,
 		Status: newMember.Status,
-		UserID: sql.NullInt64{
-			Int64: userID,
-			Valid: true,
-		},
+		UserID: userID,
 	}
 	_, err := r.mysql.CreateMember(ctx, params)
 	if err != nil {
