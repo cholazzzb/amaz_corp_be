@@ -1,4 +1,4 @@
-package userRepository
+package user
 
 import (
 	"context"
@@ -10,12 +10,12 @@ import (
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/user/mysql"
 )
 
-type UserRepository struct {
-	mysql  *mysql.Queries
+type MySQLUserRepository struct {
+	Mysql  *mysql.Queries
 	logger zerolog.Logger
 }
 
-func NewUserRepository(mysqlRepo *database.MysqlRepository) *UserRepository {
+func NewMySQLUserRepository(mysqlRepo *database.MysqlRepository) *MySQLUserRepository {
 	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
 	// create tables only if it not exists before (see schema.sql)
 	ctx := context.Background()
@@ -24,11 +24,11 @@ func NewUserRepository(mysqlRepo *database.MysqlRepository) *UserRepository {
 	}
 
 	queries := mysql.New(mysqlRepo.Db)
-	return &UserRepository{mysql: queries, logger: sublogger}
+	return &MySQLUserRepository{Mysql: queries, logger: sublogger}
 }
 
-func (r *UserRepository) GetUser(ctx context.Context, params string) (mysql.User, error) {
-	result, err := r.mysql.GetUser(ctx, params)
+func (r *MySQLUserRepository) GetUser(ctx context.Context, params string) (mysql.User, error) {
+	result, err := r.Mysql.GetUser(ctx, params)
 	if err != nil {
 		r.logger.Err(err)
 		return mysql.User{}, err
@@ -36,8 +36,8 @@ func (r *UserRepository) GetUser(ctx context.Context, params string) (mysql.User
 	return result, nil
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, params mysql.CreateUserParams) error {
-	_, err := r.mysql.CreateUser(ctx, params)
+func (r *MySQLUserRepository) CreateUser(ctx context.Context, params mysql.CreateUserParams) error {
+	_, err := r.Mysql.CreateUser(ctx, params)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return err

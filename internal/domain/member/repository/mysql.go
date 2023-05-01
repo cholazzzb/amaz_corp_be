@@ -11,13 +11,8 @@ import (
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/member/mysql"
 )
 
-type Repository interface {
-	GetMemberByName(ctx context.Context, memberName string) (member.Member, error)
-	CreateMember(ctx context.Context, member member.Member) error
-}
-
 type MySQLMemberRepository struct {
-	mysql  *mysql.Queries
+	Mysql  *mysql.Queries
 	logger zerolog.Logger
 }
 
@@ -30,11 +25,11 @@ func NewMySQLMemberRepository(mysqlRepo *database.MysqlRepository) *MySQLMemberR
 	}
 
 	queries := mysql.New(mysqlRepo.Db)
-	return &MySQLMemberRepository{mysql: queries, logger: sublogger}
+	return &MySQLMemberRepository{Mysql: queries, logger: sublogger}
 }
 
 func (r *MySQLMemberRepository) GetMemberByName(ctx context.Context, memberName string) (member.Member, error) {
-	result, err := r.mysql.GetMemberByName(ctx, memberName)
+	result, err := r.Mysql.GetMemberByName(ctx, memberName)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return member.Member{}, err
@@ -46,13 +41,17 @@ func (r *MySQLMemberRepository) GetMemberByName(ctx context.Context, memberName 
 
 }
 
-func (r *MySQLMemberRepository) CreateMember(ctx context.Context, newMember member.Member, userID int64) (member.Member, error) {
-	params := mysql.CreateMemberParams{
+func (r *MySQLMemberRepository) CreateMemberParams(newMember member.Member, userID int64) mysql.CreateMemberParams {
+	return mysql.CreateMemberParams{
 		Name:   newMember.Name,
 		Status: newMember.Status,
 		UserID: userID,
 	}
-	_, err := r.mysql.CreateMember(ctx, params)
+}
+
+func (r *MySQLMemberRepository) CreateMember(ctx context.Context, newMember member.Member, userID int64) (member.Member, error) {
+	params := r.CreateMemberParams(newMember, userID)
+	_, err := r.Mysql.CreateMember(ctx, params)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return member.Member{}, err

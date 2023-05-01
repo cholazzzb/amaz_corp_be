@@ -7,13 +7,23 @@ import (
 )
 
 type Repository struct {
-	User   *userRepository.UserRepository
-	Member *memberRepository.MySQLMemberRepository
+	User   userRepository.UserRepository
+	Member memberRepository.MemberRepository
 }
 
 func CreateRepository(mysqlRepo *database.MysqlRepository) *Repository {
-	userRepository := userRepository.NewUserRepository(mysqlRepo)
+	userRepository := userRepository.NewMySQLUserRepository(mysqlRepo)
 	memberRepository := memberRepository.NewMySQLMemberRepository(mysqlRepo)
+
+	return &Repository{
+		User:   userRepository,
+		Member: memberRepository,
+	}
+}
+
+func CreateMockRepository() *Repository {
+	userRepository := userRepository.NewMockUserRepository()
+	memberRepository := memberRepository.NewMockMemberRepository()
 
 	return &Repository{
 		User:   userRepository,
