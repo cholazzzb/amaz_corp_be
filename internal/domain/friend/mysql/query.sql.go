@@ -25,28 +25,35 @@ func (q *Queries) CreateFriend(ctx context.Context, arg CreateFriendParams) (sql
 }
 
 const getFriendsByMemberId = `-- name: GetFriendsByMemberId :many
-SELECT member1_id, member2_id
-FROM friends
-WHERE member1_id = ?
-    OR member2_id = ?
+SELECT m.id, m.name, m.status
+FROM members m
+JOIN friends f ON (m.id = f.member1_id OR m.id = f.member2_id)
+WHERE (f.member1_id = ? OR f.member2_id = ?) AND m.id != ?
 LIMIT 10
 `
 
 type GetFriendsByMemberIdParams struct {
 	Member1ID int64
 	Member2ID int64
+	ID        int64
 }
 
-func (q *Queries) GetFriendsByMemberId(ctx context.Context, arg GetFriendsByMemberIdParams) ([]Friend, error) {
-	rows, err := q.db.QueryContext(ctx, getFriendsByMemberId, arg.Member1ID, arg.Member2ID)
+type GetFriendsByMemberIdRow struct {
+	ID     int64
+	Name   string
+	Status string
+}
+
+func (q *Queries) GetFriendsByMemberId(ctx context.Context, arg GetFriendsByMemberIdParams) ([]GetFriendsByMemberIdRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFriendsByMemberId, arg.Member1ID, arg.Member2ID, arg.ID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Friend
+	var items []GetFriendsByMemberIdRow
 	for rows.Next() {
-		var i Friend
-		if err := rows.Scan(&i.Member1ID, &i.Member2ID); err != nil {
+		var i GetFriendsByMemberIdRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Status); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

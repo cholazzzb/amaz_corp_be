@@ -68,9 +68,9 @@ func (h *MemberHandler) CreateMemberByUsername(ctx *fiber.Ctx) error {
 		Status: "new member",
 	}, username)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(
-			err.Error(),
-		)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{

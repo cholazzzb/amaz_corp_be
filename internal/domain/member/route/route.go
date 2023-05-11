@@ -1,8 +1,9 @@
 package member
 
 import (
-	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
 	"github.com/gofiber/fiber/v2"
+
+	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
 )
 
 type MemberRoute struct {
