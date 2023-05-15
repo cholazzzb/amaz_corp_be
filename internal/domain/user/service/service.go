@@ -140,3 +140,12 @@ func (svc *UserService) CreateMember(ctx context.Context, memberReq user.Member,
 	}
 	return newMember, nil
 }
+
+func (svc *UserService) GetFriendsByMemberId(ctx context.Context, userId int64) ([]user.Member, error) {
+	fs, err := svc.repo.GetFriendsByUserId(ctx, userId)
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return nil, fmt.Errorf("cannot find friends with name %s", fs)
+	}
+	return fs, nil
+}

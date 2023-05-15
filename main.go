@@ -9,10 +9,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
-	"github.com/cholazzzb/amaz_corp_be/internal/app/repository"
-	"github.com/cholazzzb/amaz_corp_be/internal/app/route"
-	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	userHandler "github.com/cholazzzb/amaz_corp_be/internal/domain/user/handler"
@@ -47,17 +43,11 @@ func main() {
 	authMiddleware := auth.CreateAuthMiddleware()
 
 	mysqlRepo := database.NewMysqlRepository(dbMysql)
-	repository := repository.CreateRepository(mysqlRepo)
 	ur := userRepo.NewMySQLUserRepository(mysqlRepo)
 	us := userService.NewUserService(ur)
 	uh := userHandler.NewUserHandler(us)
 	uRoute := userRoute.NewUserRoute(v1, uh)
 	uRoute.InitRoute(authMiddleware)
-
-	service := service.CreateService(repository)
-	handler := handler.CreateHandler(service)
-	route := route.CreateRoute(v1, handler, authMiddleware)
-	route.InitRoute()
 
 	log.Error().Err(app.Listen(":8080"))
 }

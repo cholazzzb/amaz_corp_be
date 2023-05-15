@@ -1,6 +1,8 @@
 package user
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -136,5 +138,35 @@ func (h *UserHandler) CreateMemberByUsername(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "ok",
 		"member":  member,
+	})
+}
+
+type GetFriendsByMemberIdRequest struct {
+	MemberID int64 `json:"memberId" validate:"required"`
+}
+
+func (h *UserHandler) GetFriendsByMemberId(ctx *fiber.Ctx) error {
+	mID, err := strconv.ParseInt(ctx.Params("memberId"), 10, 64)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "memberId is missing from the request",
+		})
+	}
+
+	req := GetFriendsByMemberIdRequest{mID}
+	if errs := validator.Validate(req); errs != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	fs, err := h.svc.GetFriendsByMemberId(ctx.Context(), mID)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
+		"friends": fs,
 	})
 }

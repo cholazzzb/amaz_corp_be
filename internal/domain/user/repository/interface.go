@@ -10,6 +10,7 @@ import (
 type UserRepo interface {
 	UserRepository
 	MemberRepository
+	FriendRepository
 }
 
 type UserRepository interface {
@@ -33,4 +34,16 @@ type MemberRepository interface {
 		newMember user.Member,
 		userID int64,
 	) (user.Member, error)
+}
+
+type FriendRepository interface {
+	GetFriendsByUserId(
+		ctx context.Context,
+		userId int64,
+	) ([]user.Member, error)
+	CreateFriend(
+		ctx context.Context,
+		member1Id,
+		member2Id int64,
+	) error
 }

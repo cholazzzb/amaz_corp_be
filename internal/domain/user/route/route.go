@@ -25,4 +25,7 @@ func (r *UserRoute) InitRoute(am middleware.Middleware) {
 	memberApi := r.fr.Group("/members", am)
 	memberApi.Get("/:name", r.h.GetMemberByName)
 	memberApi.Post("", r.h.CreateMemberByUsername)
+
+	friendApi := r.fr.Group("/friends", am)
+	friendApi.Get("/:memberId", r.h.GetFriendsByMemberId)
 }

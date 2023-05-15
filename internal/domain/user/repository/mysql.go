@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -60,7 +61,6 @@ func (r *MySQLUserRepository) GetMemberByName(
 		Name:   result.Name,
 		Status: result.Status,
 	}, nil
-
 }
 
 func (r *MySQLUserRepository) CreateMemberParams(
@@ -86,4 +86,35 @@ func (r *MySQLUserRepository) CreateMember(
 		return user.Member{}, err
 	}
 	return newMember, nil
+}
+
+func (r *MySQLUserRepository) GetFriendsByUserId(
+	ctx context.Context,
+	userId int64,
+) ([]user.Member, error) {
+	fs, err := r.Mysql.GetFriendsByMemberId(ctx, mysql.GetFriendsByMemberIdParams{
+		Member1ID: userId,
+		Member2ID: userId,
+		ID:        userId,
+	})
+	if err != nil {
+		r.logger.Error().Err(err)
+		return nil, err
+	}
+	result := make([]user.Member, len(fs))
+	for i, friend := range fs {
+		result[i] = user.Member{
+			Name:   friend.Name,
+			Status: friend.Status,
+		}
+	}
+	return result, nil
+}
+
+func (r *MySQLUserRepository) CreateFriend(
+	ctx context.Context,
+	member1Id,
+	member2Id int64,
+) error {
+	return errors.New("")
 }
