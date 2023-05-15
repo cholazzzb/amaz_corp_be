@@ -4,3 +4,10 @@ CREATE TABLE IF NOT EXISTS users (
   password text NOT NULL,
   salt text NOT NULL
 );
+CREATE TABLE IF NOT EXISTS members (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  name varchar(255) NOT NULL,
+  status text NOT NULL,
+  CONSTRAINT fk_members_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

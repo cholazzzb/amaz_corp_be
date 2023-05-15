@@ -3,7 +3,7 @@ package friend
 import (
 	"context"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/member"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
 type UserId int64
@@ -20,7 +20,7 @@ func NewMockFriendRepository() *MockFriendRepository {
 	}
 }
 
-func (mfr *MockFriendRepository) GetFriendsByUserId(ctx context.Context, userId int64) ([]member.Member, error) {
+func (mfr *MockFriendRepository) GetFriendsByUserId(ctx context.Context, userId int64) ([]user.Member, error) {
 	return nil, nil
 }
 

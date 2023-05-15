@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/repository"
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/member"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -26,7 +26,7 @@ func NewFriendService(
 	}
 }
 
-func (svc *FriendService) GetFriendsByMemberId(ctx context.Context, userId int64) ([]member.Member, error) {
+func (svc *FriendService) GetFriendsByMemberId(ctx context.Context, userId int64) ([]user.Member, error) {
 	fs, err := svc.repo.Friend.GetFriendsByUserId(ctx, userId)
 	if err != nil {
 		svc.logger.Error().Err(err)

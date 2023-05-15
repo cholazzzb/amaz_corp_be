@@ -6,6 +6,13 @@ package user
 
 import ()
 
+type Member struct {
+	ID     int64
+	UserID int64
+	Name   string
+	Status string
+}
+
 type User struct {
 	ID       int64
 	Username string

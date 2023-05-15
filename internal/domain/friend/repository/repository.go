@@ -9,7 +9,7 @@ import (
 
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/friend/mysql"
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/member"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
 type MySQLFriendRepository struct {
@@ -19,18 +19,12 @@ type MySQLFriendRepository struct {
 
 func NewMySQLFriendRepository(mysqlRepo *database.MysqlRepository) *MySQLFriendRepository {
 	sublogger := log.With().Str("layer", "repository").Str("package", "member").Logger()
-	// create tables only if it not exists before (see schema.sql)
-	ctx := context.Background()
-	// TODO: Change Migration to other options
-	if _, err := mysqlRepo.Db.ExecContext(ctx, database.DdlMember); err != nil {
-		sublogger.Panic().Err(err).Msg("failed to create table members")
-	}
 
 	queries := mysql.New(mysqlRepo.Db)
 	return &MySQLFriendRepository{Mysql: queries, logger: sublogger}
 }
 
-func (r *MySQLFriendRepository) GetFriendsByUserId(ctx context.Context, userId int64) ([]member.Member, error) {
+func (r *MySQLFriendRepository) GetFriendsByUserId(ctx context.Context, userId int64) ([]user.Member, error) {
 	fs, err := r.Mysql.GetFriendsByMemberId(ctx, mysql.GetFriendsByMemberIdParams{
 		Member1ID: userId,
 		Member2ID: userId,
@@ -40,9 +34,9 @@ func (r *MySQLFriendRepository) GetFriendsByUserId(ctx context.Context, userId i
 		r.logger.Error().Err(err)
 		return nil, err
 	}
-	result := make([]member.Member, len(fs))
+	result := make([]user.Member, len(fs))
 	for i, friend := range fs {
-		result[i] = member.Member{
+		result[i] = user.Member{
 			Name:   friend.Name,
 			Status: friend.Status,
 		}

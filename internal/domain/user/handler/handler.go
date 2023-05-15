@@ -5,16 +5,18 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
+
+	svc "github.com/cholazzzb/amaz_corp_be/internal/domain/user/service"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
 type UserHandler struct {
-	svc    *service.Service
+	svc    *svc.UserService
 	logger zerolog.Logger
 }
 
-func NewUserHandler(svc *service.Service) *UserHandler {
+func NewUserHandler(svc *svc.UserService) *UserHandler {
 	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
 
 	return &UserHandler{svc: svc, logger: sublogger}
@@ -37,7 +39,7 @@ func (h *UserHandler) Register(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
 	}
 
-	err := h.svc.User.RegisterUser(ctx.Context(), req.Username, req.Password)
+	err := h.svc.RegisterUser(ctx.Context(), req.Username, req.Password)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -62,7 +64,7 @@ func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 		})
 	}
 
-	token, err := h.svc.User.Login(ctx.Context(), req.Username, req.Password)
+	token, err := h.svc.Login(ctx.Context(), req.Username, req.Password)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -71,5 +73,68 @@ func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"token": token,
+	})
+}
+
+type GetMemberByNameRequest struct {
+	Name string `json:"name" validate:"required"`
+}
+
+func (h *UserHandler) GetMemberByName(ctx *fiber.Ctx) error {
+	name := ctx.Params("name")
+	if len(name) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "name must be filled",
+		})
+	}
+
+	req := GetMemberByNameRequest{name}
+	if errs := validator.Validate(req); errs != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	member, err := h.svc.GetMemberByName(ctx.Context(), req.Name)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(
+			err.Error(),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
+		"member":  member,
+	})
+}
+
+type CreateMemberByUsernameRequest struct {
+	Name string `json:"name" validate:"required"`
+}
+
+func (h *UserHandler) CreateMemberByUsername(ctx *fiber.Ctx) error {
+	req := new(CreateMemberByUsernameRequest)
+	if err := ctx.BodyParser(req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	if errs := validator.Validate(req); errs != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	username := ctx.Locals("Username").(string)
+	member, err := h.svc.CreateMember(ctx.Context(), user.Member{
+		Name:   req.Name,
+		Status: "new member",
+	}, username)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
+		"member":  member,
 	})
 }

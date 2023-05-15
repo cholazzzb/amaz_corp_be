@@ -8,13 +8,6 @@ sql:
         package: "user"
         out: "internal/domain/user/mysql"
   - engine: "mysql"
-    schema: "internal/datastore/database/member/schema.sql"
-    queries: "internal/datastore/database/member/query.sql"
-    gen: 
-      go: 
-        package: "member"
-        out: "internal/domain/member/mysql"
-  - engine: "mysql"
     schema: "internal/datastore/database/friend/schema.sql"
     queries: "internal/datastore/database/friend/query.sql"
     gen:

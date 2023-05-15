@@ -10,6 +10,21 @@ import (
 	"database/sql"
 )
 
+const createMember = `-- name: CreateMember :execresult
+INSERT INTO members(name, status, user_id)
+VALUES (?, ?, ?)
+`
+
+type CreateMemberParams struct {
+	Name   string
+	Status string
+	UserID int64
+}
+
+func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createMember, arg.Name, arg.Status, arg.UserID)
+}
+
 const createUser = `-- name: CreateUser :execresult
 INSERT INTO users(username, password, salt)
 VALUES (?, ?, ?)
@@ -23,6 +38,25 @@ type CreateUserParams struct {
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, createUser, arg.Username, arg.Password, arg.Salt)
+}
+
+const getMemberByName = `-- name: GetMemberByName :one
+SELECT id, user_id, name, status
+FROM members
+WHERE name = ?
+LIMIT 1
+`
+
+func (q *Queries) GetMemberByName(ctx context.Context, name string) (Member, error) {
+	row := q.db.QueryRowContext(ctx, getMemberByName, name)
+	var i Member
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Status,
+	)
+	return i, err
 }
 
 const getUser = `-- name: GetUser :one

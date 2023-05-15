@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os/exec"
 	"time"
 
@@ -11,9 +12,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/app/repository"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/user/mysql"
+	repo "github.com/cholazzzb/amaz_corp_be/internal/domain/user/repository"
 )
 
 type UserClaims struct {
@@ -22,14 +24,14 @@ type UserClaims struct {
 }
 
 type UserService struct {
-	repo   *repository.Repository
+	repo   repo.UserRepo
 	logger zerolog.Logger
 }
 
 type Token string
 
 func NewUserService(
-	repo *repository.Repository,
+	repo repo.UserRepo,
 ) *UserService {
 	sublogger := log.With().Str("layer", "service").Str("package", "user").Logger()
 
@@ -64,7 +66,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 		Salt:     string(salt[:]),
 	}
 
-	if err := svc.repo.User.CreateUser(ctx, newUserParams); err != nil {
+	if err := svc.repo.CreateUser(ctx, newUserParams); err != nil {
 		return errors.New("failed to create user")
 	}
 
@@ -72,7 +74,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 }
 
 func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, error) {
-	result, err := svc.repo.User.GetUser(ctx, username)
+	result, err := svc.repo.GetUser(ctx, username)
 	if err != nil {
 		svc.logger.Error().Err(err).Msg("username not found")
 		return false, errors.New("username not found")
@@ -115,4 +117,26 @@ func (svc *UserService) Login(ctx context.Context, username, password string) (T
 	}
 
 	return Token(signedToken), nil
+}
+
+func (svc *UserService) GetMemberByName(ctx context.Context, name string) (user.Member, error) {
+	member, err := svc.repo.GetMemberByName(ctx, name)
+	if err != nil {
+		return member, fmt.Errorf("cannot find member with name %s", name)
+	}
+	return member, nil
+}
+
+func (svc *UserService) CreateMember(ctx context.Context, memberReq user.Member, username string) (user.Member, error) {
+	userData, err := svc.repo.GetUser(ctx, username)
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return user.Member{}, fmt.Errorf("cannot found user with username %s", username)
+	}
+	newMember, err := svc.repo.CreateMember(ctx, memberReq, userData.ID)
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return user.Member{}, fmt.Errorf("failed to create member %v", memberReq)
+	}
+	return newMember, nil
 }
