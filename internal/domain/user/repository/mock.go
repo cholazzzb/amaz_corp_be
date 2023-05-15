@@ -4,8 +4,21 @@ import (
 	"context"
 	"fmt"
 
+	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/user/mysql"
 )
+
+type MockUserRepo struct {
+	User   *MockUserRepository
+	Member *MockMemberRepository
+}
+
+func NewMockUserRepo() *MockUserRepo {
+	return &MockUserRepo{
+		User:   newMockUserRepository(),
+		Member: newMockMemberRepository(),
+	}
+}
 
 type Username string
 
@@ -14,23 +27,23 @@ type MockUserRepository struct {
 	Users     map[Username]mysql.User
 }
 
-func NewMockUserRepository() *MockUserRepository {
+func newMockUserRepository() *MockUserRepository {
 	return &MockUserRepository{
 		BiggestId: 0,
 		Users:     map[Username]mysql.User{},
 	}
 }
 
-func (mur *MockUserRepository) GetUser(ctx context.Context, params string) (mysql.User, error) {
-	user, ok := mur.Users[Username(params)]
+func (mur *MockUserRepo) GetUser(ctx context.Context, params string) (mysql.User, error) {
+	user, ok := mur.User.Users[Username(params)]
 	if !ok {
 		return mysql.User{}, fmt.Errorf("user not found")
 	}
 	return user, nil
 }
 
-func (mur *MockUserRepository) CreateUser(ctx context.Context, params mysql.CreateUserParams) error {
-	id := mur.BiggestId + 1
+func (mur *MockUserRepo) CreateUser(ctx context.Context, params mysql.CreateUserParams) error {
+	id := mur.User.BiggestId + 1
 	newUser := mysql.User{
 		ID:       id,
 		Username: params.Username,
@@ -38,7 +51,45 @@ func (mur *MockUserRepository) CreateUser(ctx context.Context, params mysql.Crea
 		Salt:     params.Salt,
 	}
 
-	mur.BiggestId = id
-	mur.Users[Username(params.Username)] = newUser
+	mur.User.BiggestId = id
+	mur.User.Users[Username(params.Username)] = newUser
 	return nil
+}
+
+type Name string
+
+type MockMemberRepository struct {
+	BiggestId int64
+	Members   map[Name]mysql.Member
+}
+
+func newMockMemberRepository() *MockMemberRepository {
+	return &MockMemberRepository{
+		BiggestId: 0,
+		Members:   map[Name]mysql.Member{},
+	}
+}
+
+func (mmr *MockUserRepo) GetMemberByName(ctx context.Context, memberName string) (ent.Member, error) {
+	m, ok := mmr.Member.Members[Name(memberName)]
+	if !ok {
+		return ent.Member{}, fmt.Errorf("member not found")
+	}
+	return ent.Member{
+		Name:   m.Name,
+		Status: m.Status,
+	}, nil
+}
+
+func (mmr *MockUserRepo) CreateMember(ctx context.Context, newMember ent.Member, userID int64) (ent.Member, error) {
+	ID := mmr.Member.BiggestId + 1
+
+	mmr.Member.BiggestId = ID
+	mmr.Member.Members[Name(newMember.Name)] = mysql.Member{
+		ID:     ID,
+		Name:   newMember.Name,
+		Status: newMember.Status,
+		UserID: userID,
+	}
+	return newMember, nil
 }

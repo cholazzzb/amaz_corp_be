@@ -6,13 +6,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/app/repository"
-	user "github.com/cholazzzb/amaz_corp_be/internal/domain/user/service"
+	repo "github.com/cholazzzb/amaz_corp_be/internal/domain/user/repository"
+	svc "github.com/cholazzzb/amaz_corp_be/internal/domain/user/service"
 )
 
-func CreateMockService() *user.UserService {
-	repo := repository.CreateMockRepository()
-	return user.NewUserService(repo)
+func CreateMockService() *svc.UserService {
+	repo := repo.NewMockUserRepo()
+	return svc.NewUserService(repo)
 }
 
 func TestRegisterUser(t *testing.T) {
