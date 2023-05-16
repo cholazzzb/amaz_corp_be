@@ -6,4 +6,4 @@ sql:
     gen:
       go:
         package: "user"
-        out: "internal/app/user/mysql"
+        out: "internal/app/repository/user/mysql"

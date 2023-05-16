@@ -1,18 +1,18 @@
-package user
+package route
 
 import (
 	"github.com/gofiber/fiber/v2"
 
-	hdl "github.com/cholazzzb/amaz_corp_be/internal/app/user/handler"
+	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware"
 )
 
 type UserRoute struct {
 	fr fiber.Router
-	h  *hdl.UserHandler
+	h  *handler.UserHandler
 }
 
-func NewUserRoute(fr fiber.Router, h *hdl.UserHandler) *UserRoute {
+func NewUserRoute(fr fiber.Router, h *handler.UserHandler) *UserRoute {
 	return &UserRoute{
 		fr, h,
 	}

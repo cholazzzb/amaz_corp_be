@@ -1,4 +1,4 @@
-package user
+package service
 
 import (
 	"context"
@@ -12,10 +12,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/app/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/user/mysql"
-	repo "github.com/cholazzzb/amaz_corp_be/internal/app/user/repository"
+	repo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
 type UserClaims struct {

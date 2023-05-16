@@ -1,4 +1,4 @@
-package user
+package handler
 
 import (
 	"strconv"
@@ -7,18 +7,17 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/app/user"
-
-	svc "github.com/cholazzzb/amaz_corp_be/internal/app/user/service"
+	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
 type UserHandler struct {
-	svc    *svc.UserService
+	svc    *service.UserService
 	logger zerolog.Logger
 }
 
-func NewUserHandler(svc *svc.UserService) *UserHandler {
+func NewUserHandler(svc *service.UserService) *UserHandler {
 	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
 
 	return &UserHandler{svc: svc, logger: sublogger}

@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ent "github.com/cholazzzb/amaz_corp_be/internal/app/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/user/mysql"
-	user "github.com/cholazzzb/amaz_corp_be/internal/app/user/repository"
+	"github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
+	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
 func TestCreateUser(t *testing.T) {

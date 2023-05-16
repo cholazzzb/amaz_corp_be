@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	ent "github.com/cholazzzb/amaz_corp_be/internal/app/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/user/mysql"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
 type MockUserRepo struct {
@@ -81,12 +81,12 @@ func newMockMemberRepository() *MockMemberRepository {
 func (mmr *MockUserRepo) GetMemberByName(
 	ctx context.Context,
 	memberName string,
-) (ent.Member, error) {
+) (user.Member, error) {
 	m, ok := mmr.Member.Members[Name(memberName)]
 	if !ok {
-		return ent.Member{}, fmt.Errorf("member not found")
+		return user.Member{}, fmt.Errorf("member not found")
 	}
-	return ent.Member{
+	return user.Member{
 		Name:   m.Name,
 		Status: m.Status,
 	}, nil
@@ -94,9 +94,9 @@ func (mmr *MockUserRepo) GetMemberByName(
 
 func (mmr *MockUserRepo) CreateMember(
 	ctx context.Context,
-	newMember ent.Member,
+	newMember user.Member,
 	userID int64,
-) (ent.Member, error) {
+) (user.Member, error) {
 	ID := mmr.Member.BiggestId + 1
 
 	mmr.Member.BiggestId = ID
@@ -126,7 +126,7 @@ func newMockFriendRepository() *MockFriendRepository {
 func (mur *MockUserRepo) GetFriendsByUserId(
 	ctx context.Context,
 	userId int64,
-) ([]ent.Member, error) {
+) ([]user.Member, error) {
 	return nil, nil
 }
 

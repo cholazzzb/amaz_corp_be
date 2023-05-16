@@ -3,8 +3,9 @@ package user
 import (
 	"context"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/app/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/user/mysql"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
+
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
 )
 
 type UserRepo interface {

@@ -1,4 +1,4 @@
-package user_test
+package service_test
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ent "github.com/cholazzzb/amaz_corp_be/internal/app/user"
-	repo "github.com/cholazzzb/amaz_corp_be/internal/app/user/repository"
-	svc "github.com/cholazzzb/amaz_corp_be/internal/app/user/service"
+	repo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
+	svc "github.com/cholazzzb/amaz_corp_be/internal/app/service"
+	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
 func CreateMockService() *svc.UserService {
