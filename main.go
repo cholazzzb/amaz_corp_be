@@ -10,14 +10,13 @@ import (
 
 	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
 
+	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
+	"github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
+	"github.com/cholazzzb/amaz_corp_be/internal/app/route"
+	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware/auth"
-
-	userHandler "github.com/cholazzzb/amaz_corp_be/internal/app/user/handler"
-	userRepo "github.com/cholazzzb/amaz_corp_be/internal/app/user/repository"
-	userRoute "github.com/cholazzzb/amaz_corp_be/internal/app/user/route"
-	userService "github.com/cholazzzb/amaz_corp_be/internal/app/user/service"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -45,10 +44,10 @@ func main() {
 	authMiddleware := auth.CreateAuthMiddleware()
 
 	mysqlRepo := database.NewMysqlRepository(dbMysql)
-	ur := userRepo.NewMySQLUserRepository(mysqlRepo)
-	us := userService.NewUserService(ur)
-	uh := userHandler.NewUserHandler(us)
-	uRoute := userRoute.NewUserRoute(v1, uh)
+	ur := user.NewMySQLUserRepository(mysqlRepo)
+	us := service.NewUserService(ur)
+	uh := handler.NewUserHandler(us)
+	uRoute := route.NewUserRoute(v1, uh)
 	uRoute.InitRoute(authMiddleware)
 
 	log.Error().Err(app.Listen(":8080"))
