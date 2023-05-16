@@ -7,9 +7,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/cholazzzb/amaz_corp_be/internal/app/user"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/user/mysql"
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/user/mysql"
 )
 
 type MySQLUserRepository struct {

@@ -12,10 +12,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/cholazzzb/amaz_corp_be/internal/app/user"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/user/mysql"
+	repo "github.com/cholazzzb/amaz_corp_be/internal/app/user/repository"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/user/mysql"
-	repo "github.com/cholazzzb/amaz_corp_be/internal/domain/user/repository"
 )
 
 type UserClaims struct {

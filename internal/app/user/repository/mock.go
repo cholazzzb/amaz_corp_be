@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/domain/user/mysql"
+	ent "github.com/cholazzzb/amaz_corp_be/internal/app/user"
+	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/user/mysql"
 )
 
 type MockUserRepo struct {

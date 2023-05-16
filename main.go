@@ -5,17 +5,19 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
+
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
-	userHandler "github.com/cholazzzb/amaz_corp_be/internal/domain/user/handler"
-	userRepo "github.com/cholazzzb/amaz_corp_be/internal/domain/user/repository"
-	userRoute "github.com/cholazzzb/amaz_corp_be/internal/domain/user/route"
-	userService "github.com/cholazzzb/amaz_corp_be/internal/domain/user/service"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware/auth"
+
+	userHandler "github.com/cholazzzb/amaz_corp_be/internal/app/user/handler"
+	userRepo "github.com/cholazzzb/amaz_corp_be/internal/app/user/repository"
+	userRoute "github.com/cholazzzb/amaz_corp_be/internal/app/user/route"
+	userService "github.com/cholazzzb/amaz_corp_be/internal/app/user/service"
 
 	_ "github.com/go-sql-driver/mysql"
 )

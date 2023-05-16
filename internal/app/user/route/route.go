@@ -3,7 +3,7 @@ package user
 import (
 	"github.com/gofiber/fiber/v2"
 
-	hdl "github.com/cholazzzb/amaz_corp_be/internal/domain/user/handler"
+	hdl "github.com/cholazzzb/amaz_corp_be/internal/app/user/handler"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware"
 )
 

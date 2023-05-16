@@ -7,9 +7,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
+	"github.com/cholazzzb/amaz_corp_be/internal/app/user"
 
-	svc "github.com/cholazzzb/amaz_corp_be/internal/domain/user/service"
+	svc "github.com/cholazzzb/amaz_corp_be/internal/app/user/service"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 

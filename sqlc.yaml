@@ -6,11 +6,4 @@ sql:
     gen:
       go:
         package: "user"
-        out: "internal/domain/user/mysql"
-  - engine: "mysql"
-    schema: "internal/datastore/database/friend/schema.sql"
-    queries: "internal/datastore/database/friend/query.sql"
-    gen:
-      go:
-        package: "friend"
-        out: "internal/domain/friend/mysql"
+        out: "internal/app/user/mysql"

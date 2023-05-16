@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/user"
-	repo "github.com/cholazzzb/amaz_corp_be/internal/domain/user/repository"
-	svc "github.com/cholazzzb/amaz_corp_be/internal/domain/user/service"
+	ent "github.com/cholazzzb/amaz_corp_be/internal/app/user"
+	repo "github.com/cholazzzb/amaz_corp_be/internal/app/user/repository"
+	svc "github.com/cholazzzb/amaz_corp_be/internal/app/user/service"
 )
 
 func CreateMockService() *svc.UserService {
