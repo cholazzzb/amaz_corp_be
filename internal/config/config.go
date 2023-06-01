@@ -35,6 +35,7 @@ func GetEnv() Env {
 	ENV.JWT_SIGNATURE_KEY = env["JWT_SIGNATURE_KEY"]
 
 	CreateUserConfig(ENV)
+	CreateHeartbeatConfig(env)
 
 	return ENV
 }

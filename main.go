@@ -11,11 +11,13 @@ import (
 	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
+	hbRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/heartbeat"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/route"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/heartbeat"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware/auth"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -49,6 +51,15 @@ func main() {
 	uh := handler.NewUserHandler(us)
 	uRoute := route.NewUserRoute(v1, uh)
 	uRoute.InitRoute(authMiddleware)
+
+	hbr := hbRepo.NewInMemoryHeartbeatRepo()
+	go heartbeat.NewHeartBeatScheduler(hbr).Schedule(
+		config.Heartbeat.CHECK_INTERVAL,
+	)
+	hrs := service.NewHeartbeatService(hbr)
+	hrh := handler.NewHeartBeatHandler(hrs)
+	hrRoute := route.NewHeartbeatRoute(v1, hrh)
+	hrRoute.InitRoute(authMiddleware)
 
 	log.Error().Err(app.Listen(":8080"))
 }

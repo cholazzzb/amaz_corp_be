@@ -50,9 +50,11 @@ func CreateAuthMiddleware() middleware.Middleware {
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		username, claimOk := claims["Username"].(string)
+		userId, userIdClaimOk := claims["UserId"].(float64)
 
-		if ok && token.Valid && claimOk {
+		if ok && token.Valid && claimOk && userIdClaimOk {
 			ctx.Locals("Username", username)
+			ctx.Locals("UserId", userId)
 			return ctx.Next()
 		}
 		return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")

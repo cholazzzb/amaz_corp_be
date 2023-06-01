@@ -18,7 +18,7 @@ type UserHandler struct {
 }
 
 func NewUserHandler(svc *service.UserService) *UserHandler {
-	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
+	sublogger := log.With().Str("layer", "handler").Str("package", "user").Logger()
 
 	return &UserHandler{svc: svc, logger: sublogger}
 }

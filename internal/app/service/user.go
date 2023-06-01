@@ -21,6 +21,7 @@ import (
 type UserClaims struct {
 	jwt.RegisteredClaims
 	Username string
+	UserId   int64
 }
 
 type UserService struct {
@@ -73,11 +74,11 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 	return nil
 }
 
-func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, error) {
+func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, int64, error) {
 	result, err := svc.repo.GetUser(ctx, username)
 	if err != nil {
 		svc.logger.Error().Err(err).Msg("username not found")
-		return false, errors.New("username not found")
+		return false, -1, errors.New("username not found")
 	}
 
 	saltedPassword := append(
@@ -91,13 +92,13 @@ func (svc *UserService) authenticateUser(ctx context.Context, username, password
 	)
 
 	if err != nil {
-		return false, errors.New("wrong Password")
+		return false, -1, errors.New("wrong Password")
 	}
-	return true, nil
+	return true, result.ID, nil
 }
 
 func (svc *UserService) Login(ctx context.Context, username, password string) (Token, error) {
-	isAuthentic, err := svc.authenticateUser(ctx, username, password)
+	isAuthentic, userId, err := svc.authenticateUser(ctx, username, password)
 	if !isAuthentic || err != nil {
 		return "", errors.New("failed to authenticate user")
 	}
@@ -108,6 +109,7 @@ func (svc *UserService) Login(ctx context.Context, username, password string) (T
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.UserConfig.LOGIN_EXPIRATION_DURATION)),
 		},
 		Username: username,
+		UserId:   userId,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
