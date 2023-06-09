@@ -18,10 +18,22 @@ func newMigrator() *migrate.FileMigrationSource {
 	}
 }
 
+func newSeeder() *migrate.FileMigrationSource {
+	return &migrate.FileMigrationSource{
+		Dir: "./seeder",
+	}
+}
+
 func MigrateUp(dbMysql *sql.DB) {
 	n, err := migrate.Exec(dbMysql, "mysql", newMigrator(), migrate.Up)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to migrate mysql database")
 	}
 	fmt.Printf("Applied %d migrations!\n", n)
+
+	n, err = migrate.Exec(dbMysql, "mysql", newSeeder(), migrate.Up)
+	if err != nil {
+
+	}
+	fmt.Printf("Applied %d seed!\n", n)
 }
