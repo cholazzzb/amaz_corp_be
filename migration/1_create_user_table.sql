@@ -5,8 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
   password text NOT NULL,
   salt text NOT NULL
 );
--- +migrate Down
-DROP TABLE users;
 
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS members (
@@ -16,8 +14,6 @@ CREATE TABLE IF NOT EXISTS members (
   status text NOT NULL,
   CONSTRAINT fk_members_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
--- +migrate Down
-DROP TABLE members;
 
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS friends (
@@ -26,5 +22,3 @@ CREATE TABLE IF NOT EXISTS friends (
   CONSTRAINT fk_member1_id FOREIGN KEY(member1_id) REFERENCES members(id),
   CONSTRAINT fk_member2_id FOREIGN KEY(member2_id) REFERENCES members(id)
 );
--- +migrate Down
-DROP TABLE friends;
