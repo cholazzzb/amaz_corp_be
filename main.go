@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
-	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
 	hbRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/heartbeat"
@@ -19,6 +19,7 @@ import (
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/heartbeat"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware/auth"
+	"github.com/cholazzzb/amaz_corp_be/pkg/migrator"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -33,6 +34,14 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to connect mysql database")
 	}
+
+	migrator.MigrateUp(dbMysql)
+
+	opt, err := redis.ParseURL(config.ENV.REDIS_CON_STRING)
+	if err != nil {
+		log.Panic().Err(err).Msg("failed to connect redis database")
+	}
+	redis.NewClient(opt)
 
 	app := fiber.New()
 

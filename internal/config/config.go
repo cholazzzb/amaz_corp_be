@@ -11,6 +11,7 @@ import (
 type Env struct {
 	ENVIRONMENT                    string
 	DB_CON_STRING                  string
+	REDIS_CON_STRING               string
 	APPLICATION_NAME               string
 	LOGIN_EXPIRATION_DURATION_HOUR time.Duration
 	JWT_SIGNATURE_KEY              string
@@ -26,6 +27,7 @@ func GetEnv() Env {
 
 	ENV.ENVIRONMENT = env["ENVIRONMENT"]
 	ENV.DB_CON_STRING = env["DB_CON_STRING"]
+	ENV.REDIS_CON_STRING = env["REDIS_CON_STRING"]
 	ENV.APPLICATION_NAME = env["APPLICATION_NAME"]
 	LOGIN_EXPIRATION_DURATION_HOUR, err := strconv.ParseInt(env["LOGIN_EXPIRATION_DURATION_HOUR"], 10, 64)
 	if err != nil {
