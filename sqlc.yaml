@@ -1,9 +1,16 @@
 version: 2
 sql:
   - engine: "mysql"
-    schema: "internal/datastore/database/user/schema.sql"
+    schema: "migration"
     queries: "internal/datastore/database/user/query.sql"
     gen:
       go:
         package: "user"
         out: "internal/app/repository/user/mysql"
+  - engine: "mysql"
+    schema: "migration"
+    queries: "internal/datastore/database/location/query.sql"
+    gen:
+      go: 
+        package: "location"
+        out: "internal/app/repository/location/mysql"

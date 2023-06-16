@@ -30,7 +30,7 @@ func (r *InMemoryHeartbeatRepo) GetHeartbeatMap(
 
 func (r *InMemoryHeartbeatRepo) CheckUserIdExistence(
 	ctx context.Context,
-	userId string,
+	userId int64,
 ) (bool, error) {
 	hbmap, err := r.GetHeartbeatMap(ctx)
 
@@ -44,7 +44,7 @@ func (r *InMemoryHeartbeatRepo) CheckUserIdExistence(
 
 func (r *InMemoryHeartbeatRepo) UpdateToOnline(
 	ctx context.Context,
-	userId string,
+	userId int64,
 ) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -58,7 +58,7 @@ func (r *InMemoryHeartbeatRepo) UpdateToOnline(
 
 func (r *InMemoryHeartbeatRepo) UpdateToOffline(
 	ctx context.Context,
-	userId string,
+	userId int64,
 ) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

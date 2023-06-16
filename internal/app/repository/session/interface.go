@@ -30,6 +30,7 @@ type SessionRepository interface {
 	) error
 }
 
+// TODO: Change to Group
 type RoomRepository interface {
 	GetRoomById(
 		ctx context.Context,

@@ -34,7 +34,7 @@ func (h *HeartbeatHandler) Pulse(ctx *fiber.Ctx) error {
 		)
 	}
 
-	err := h.svc.Pulse(ctx.Context(), strconv.Itoa(int(userId)))
+	err := h.svc.Pulse(ctx.Context(), (int64(userId)))
 
 	if err != nil {
 		h.logger.Error().Err(err)
@@ -53,7 +53,15 @@ func (h *HeartbeatHandler) GetStatusByUserId(ctx *fiber.Ctx) error {
 		[]byte(strings.Trim(ctx.Params("userId"), " ")),
 	)
 
-	status, err := h.svc.CheckUserStatus(ctx.Context(), userId)
+	userIdInt, err := strconv.Atoi(userId)
+	if err != nil {
+		h.logger.Error().Err(err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(
+			err.Error(),
+		)
+	}
+
+	status, err := h.svc.CheckUserStatus(ctx.Context(), int64(userIdInt))
 
 	if err != nil {
 		h.logger.Error().Err(err)

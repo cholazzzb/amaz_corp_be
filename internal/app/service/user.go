@@ -22,6 +22,7 @@ type UserClaims struct {
 	jwt.RegisteredClaims
 	Username string
 	UserId   int64
+	MemberId int64
 }
 
 type UserService struct {
