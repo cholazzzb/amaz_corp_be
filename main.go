@@ -12,6 +12,7 @@ import (
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
 	hbRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/heartbeat"
+	locRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/location"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/route"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
@@ -69,6 +70,12 @@ func main() {
 	hrh := handler.NewHeartBeatHandler(hrs)
 	hrRoute := route.NewHeartbeatRoute(v1, hrh)
 	hrRoute.InitRoute(authMiddleware)
+
+	lr := locRepo.NewMySQLLocationRepository(mysqlRepo)
+	ls := service.NewLocationService(hrs, us, lr)
+	lh := handler.NewLocationHandler(ls)
+	lRoute := route.NewLocationRoute(v1, lh)
+	lRoute.InitRoute(authMiddleware)
 
 	log.Error().Err(app.Listen(":8080"))
 }

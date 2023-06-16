@@ -22,12 +22,34 @@ func NewLocationHandler(svc *service.LocationService) *LocationHandler {
 	return &LocationHandler{svc: svc, logger: sublogger}
 }
 
-func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
-	// TODO: update to memberId in JWT
-	// userId, success := ctx.Locals("UserId").(float64)
+type GetBuildingsByMemberIdRequest struct {
+	MemberId int64 `json:"memberId" validate:"required"`
+}
 
-	return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		"message": "Internal Server Error",
+func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
+	memberId, err := strconv.ParseInt(ctx.Query("memberId"), 10, 64)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "memberId is invalid from the request",
+		})
+	}
+
+	req := GetBuildingsByMemberIdRequest{memberId}
+	if errs := validator.Validate(req); errs != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	lbs, err := h.svc.GetBuildingsByMemberId(ctx.Context(), memberId)
+	if err != nil {
+
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":   "ok",
+		"buildings": lbs,
 	})
 }
 
