@@ -1,3 +1,8 @@
+-- name: GetAllBuildings :many
+SELECT *
+FROM buildings
+LIMIT 10;
+
 -- name: GetBuildingsByMemberId :many
 SELECT b.id, b.name
 FROM buildings b
@@ -23,3 +28,7 @@ Select r.id, r.name
 FROM  rooms r
 WHERE r.building_id = ?
 LIMIT 10;
+
+-- name: CreateMemberBuilding :execresult
+INSERT INTO members_buildings(member_id, building_id)
+VALUES (?, ?);

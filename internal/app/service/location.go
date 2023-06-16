@@ -60,6 +60,17 @@ func (svc *LocationService) GetListOnlineMembers(
 	return ms, nil
 }
 
+func (svc *LocationService) GetBuildings(
+	ctx context.Context,
+) ([]ent.Building, error) {
+	bs, err := svc.repo.GetAllBuildings(ctx)
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return nil, fmt.Errorf("cannot get all buildings")
+	}
+	return bs, nil
+}
+
 func (svc *LocationService) GetBuildingsByMemberId(
 	ctx context.Context,
 	memberId int64,
@@ -70,6 +81,19 @@ func (svc *LocationService) GetBuildingsByMemberId(
 		return nil, fmt.Errorf("cannot get buildings with memberId %d", memberId)
 	}
 	return bs, nil
+}
+
+func (svc *LocationService) JoinBuilding(
+	ctx context.Context,
+	memberId int64,
+	buildingId int64,
+) error {
+	err := svc.repo.CreateMemberBuilding(ctx, memberId, buildingId)
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return fmt.Errorf("cannot join member with id %d to building id %d", memberId, buildingId)
+	}
+	return nil
 }
 
 func (svc *LocationService) GetRoomsByBuildingId(

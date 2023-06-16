@@ -21,7 +21,10 @@ func NewLocationRoute(fr fiber.Router, h *handler.LocationHandler) *LocationRout
 func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 	buildingApi := r.fr.Group("/buildings", am)
 	buildingApi.Get("/", r.h.GetBuildingsByMemberId)
+	buildingApi.Get("/all", r.h.GetBuildings)
 	buildingApi.Get("/:buildingId/rooms", r.h.GetRoomsByBuildingId)
+
+	buildingApi.Post("/join", r.h.JoinRoomById)
 
 	r.fr.Get("/rooms/:roomId/online", am, r.h.GetListOnlineMembers)
 }

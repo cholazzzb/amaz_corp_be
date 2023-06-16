@@ -10,6 +10,49 @@ import (
 	"database/sql"
 )
 
+const createMemberBuilding = `-- name: CreateMemberBuilding :execresult
+INSERT INTO members_buildings(member_id, building_id)
+VALUES (?, ?)
+`
+
+type CreateMemberBuildingParams struct {
+	MemberID   int64
+	BuildingID int64
+}
+
+func (q *Queries) CreateMemberBuilding(ctx context.Context, arg CreateMemberBuildingParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createMemberBuilding, arg.MemberID, arg.BuildingID)
+}
+
+const getAllBuildings = `-- name: GetAllBuildings :many
+SELECT id, name
+FROM buildings
+LIMIT 10
+`
+
+func (q *Queries) GetAllBuildings(ctx context.Context) ([]Building, error) {
+	rows, err := q.db.QueryContext(ctx, getAllBuildings)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Building
+	for rows.Next() {
+		var i Building
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getBuildingsByMemberId = `-- name: GetBuildingsByMemberId :many
 SELECT b.id, b.name
 FROM buildings b

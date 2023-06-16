@@ -22,6 +22,20 @@ func NewLocationHandler(svc *service.LocationService) *LocationHandler {
 	return &LocationHandler{svc: svc, logger: sublogger}
 }
 
+func (h *LocationHandler) GetBuildings(ctx *fiber.Ctx) error {
+	bs, err := h.svc.GetBuildings(ctx.Context())
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":   "ok",
+		"buildings": bs,
+	})
+}
+
 type GetBuildingsByMemberIdRequest struct {
 	MemberId int64 `json:"memberId" validate:"required"`
 }
@@ -41,7 +55,6 @@ func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
 
 	lbs, err := h.svc.GetBuildingsByMemberId(ctx.Context(), memberId)
 	if err != nil {
-
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal Server Error",
 		})
@@ -50,6 +63,31 @@ func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":   "ok",
 		"buildings": lbs,
+	})
+}
+
+type JoinRoomRequest struct {
+	MemberId   int64
+	BuildingId int64
+}
+
+func (h *LocationHandler) JoinRoomById(ctx *fiber.Ctx) error {
+	req := new(JoinRoomRequest)
+	if err := ctx.BodyParser(req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	err := h.svc.JoinBuilding(ctx.Context(), req.MemberId, req.BuildingId)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(
+			err.Error(),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
 	})
 }
 

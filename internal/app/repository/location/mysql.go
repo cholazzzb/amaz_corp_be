@@ -31,13 +31,32 @@ func NewMySQLLocationRepository(
 	}
 }
 
+func (r *MySQLLocationRepository) GetAllBuildings(
+	ctx context.Context,
+) ([]ent.Building, error) {
+	res, err := r.Mysql.GetAllBuildings(ctx)
+	if err != nil {
+		r.logger.Error().Err(err)
+		return []ent.Building{}, err
+	}
+
+	bs := []ent.Building{}
+	for _, mbs := range res {
+		bs = append(bs, ent.Building{
+			Id:   mbs.ID,
+			Name: mbs.Name,
+		})
+	}
+	return bs, nil
+}
+
 func (r *MySQLLocationRepository) GetBuildingsByMemberId(
 	ctx context.Context,
 	memberId int64,
 ) ([]ent.Building, error) {
 	res, err := r.Mysql.GetBuildingsByMemberId(ctx, memberId)
 	if err != nil {
-		r.logger.Err(err)
+		r.logger.Error().Err(err)
 		return []ent.Building{}, nil
 	}
 
@@ -48,7 +67,24 @@ func (r *MySQLLocationRepository) GetBuildingsByMemberId(
 			Name: mbs.Name,
 		})
 	}
-	return []ent.Building{}, nil
+	return bs, nil
+}
+
+func (r *MySQLLocationRepository) CreateMemberBuilding(
+	ctx context.Context,
+	memberId int64,
+	buildingId int64,
+) error {
+	param := mysql.CreateMemberBuildingParams{
+		MemberID:   memberId,
+		BuildingID: buildingId,
+	}
+	_, err := r.Mysql.CreateMemberBuilding(ctx, param)
+	if err != nil {
+		r.logger.Error().Err(err)
+		return err
+	}
+	return nil
 }
 
 func (r *MySQLLocationRepository) GetMembersByRoomId(
@@ -59,7 +95,7 @@ func (r *MySQLLocationRepository) GetMembersByRoomId(
 		Int64: roomId, Valid: true,
 	})
 	if err != nil {
-		r.logger.Err(err)
+		r.logger.Error().Err(err)
 		return []ent.Member{}, nil
 	}
 
@@ -81,7 +117,7 @@ func (r *MySQLLocationRepository) GetRoomsByMemberId(
 ) ([]ent.Room, error) {
 	res, err := r.Mysql.GetRoomsByMemberId(ctx, memberId)
 	if err != nil {
-		r.logger.Err(err)
+		r.logger.Error().Err(err)
 		return []ent.Room{}, nil
 	}
 
@@ -101,7 +137,7 @@ func (r *MySQLLocationRepository) GetRoomsByBuildingId(
 ) ([]ent.Room, error) {
 	res, err := r.Mysql.GetRoomsByBuildingId(ctx, buildingId)
 	if err != nil {
-		r.logger.Err(err)
+		r.logger.Error().Err(err)
 		return []ent.Room{}, nil
 	}
 

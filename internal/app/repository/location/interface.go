@@ -12,10 +12,20 @@ type LocationRepo interface {
 }
 
 type BuildingRepository interface {
+	GetAllBuildings(
+		ctx context.Context,
+	) ([]ent.Building, error)
+
 	GetBuildingsByMemberId(
 		ctx context.Context,
 		memberId int64,
 	) ([]ent.Building, error)
+
+	CreateMemberBuilding(
+		ctx context.Context,
+		memberId int64,
+		buildingId int64,
+	) error
 }
 
 type RoomRepository interface {
