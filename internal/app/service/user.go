@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os/exec"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -43,7 +43,9 @@ func NewUserService(
 }
 
 func (svc *UserService) RegisterUser(ctx context.Context, username, password string) error {
-	salt, err := exec.Command("uuidgen").Output()
+	uuid, err := uuid.NewV7()
+	salt := uuid.String()
+
 	if err != nil {
 		svc.logger.Error().Err(err)
 		return errors.New("failed to generate uuid")

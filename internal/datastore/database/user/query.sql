@@ -19,6 +19,7 @@ LIMIT 1;
 -- name: CreateFriend :execresult
 INSERT INTO friends(member1_id, member2_id)
 VALUES (?, ?);
+
 -- name: GetFriendsByMemberId :many
 SELECT m.id, m.name, m.status
 FROM members m
