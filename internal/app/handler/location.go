@@ -87,13 +87,13 @@ func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
 	})
 }
 
-type JoinRoomRequest struct {
+type JoinBuildingRequest struct {
 	MemberId   int64 `json:"memberId" validate:"required"`
 	BuildingId int64 `json:"buildingId" validate:"required"`
 }
 
-func (h *LocationHandler) JoinRoomById(ctx *fiber.Ctx) error {
-	req := new(JoinRoomRequest)
+func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
+	req := new(JoinBuildingRequest)
 	if err := ctx.BodyParser(req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),

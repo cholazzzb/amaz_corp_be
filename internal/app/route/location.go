@@ -24,7 +24,7 @@ func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 	buildingApi.Get("/all", r.h.GetBuildings)
 	buildingApi.Get("/:buildingId/rooms", r.h.GetRoomsByBuildingId)
 
-	buildingApi.Post("/join", r.h.JoinRoomById)
+	buildingApi.Post("/join", r.h.JoinBuildingById)
 
 	buildingApi.Delete("/leave/", r.h.DeleteBuilding)
 
