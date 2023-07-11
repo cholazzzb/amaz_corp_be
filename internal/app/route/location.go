@@ -26,5 +26,7 @@ func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 
 	buildingApi.Post("/join", r.h.JoinRoomById)
 
+	buildingApi.Delete("/leave/", r.h.DeleteBuilding)
+
 	r.fr.Get("/rooms/:roomId/online", am, r.h.GetListOnlineMembers)
 }

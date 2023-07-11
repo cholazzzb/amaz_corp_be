@@ -24,6 +24,21 @@ func (q *Queries) CreateMemberBuilding(ctx context.Context, arg CreateMemberBuil
 	return q.db.ExecContext(ctx, createMemberBuilding, arg.MemberID, arg.BuildingID)
 }
 
+const deleteMemberBuilding = `-- name: DeleteMemberBuilding :exec
+DELETE FROM members_buildings
+WHERE member_id = ? AND building_id = ?
+`
+
+type DeleteMemberBuildingParams struct {
+	MemberID   int64
+	BuildingID int64
+}
+
+func (q *Queries) DeleteMemberBuilding(ctx context.Context, arg DeleteMemberBuildingParams) error {
+	_, err := q.db.ExecContext(ctx, deleteMemberBuilding, arg.MemberID, arg.BuildingID)
+	return err
+}
+
 const getAllBuildings = `-- name: GetAllBuildings :many
 SELECT id, name
 FROM buildings
@@ -56,7 +71,7 @@ func (q *Queries) GetAllBuildings(ctx context.Context) ([]Building, error) {
 const getBuildingsByMemberId = `-- name: GetBuildingsByMemberId :many
 SELECT b.id, b.name
 FROM buildings b
-JOIN members_buildings mb ON (b.id = mb.member_id)
+JOIN members_buildings mb ON (b.id = mb.building_id)
 WHERE mb.member_id = ?
 LIMIT 10
 `
@@ -82,6 +97,25 @@ func (q *Queries) GetBuildingsByMemberId(ctx context.Context, memberID int64) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const getMemberBuildingById = `-- name: GetMemberBuildingById :one
+SELECT EXISTS(SELECT mb.member_id, mb.building_id 
+FROM members_buildings mb
+WHERE mb.member_id = ? AND mb.building_id = ?
+LIMIT 1)
+`
+
+type GetMemberBuildingByIdParams struct {
+	MemberID   int64
+	BuildingID int64
+}
+
+func (q *Queries) GetMemberBuildingById(ctx context.Context, arg GetMemberBuildingByIdParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getMemberBuildingById, arg.MemberID, arg.BuildingID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const getMembersByRoomId = `-- name: GetMembersByRoomId :many
@@ -121,8 +155,8 @@ func (q *Queries) GetMembersByRoomId(ctx context.Context, roomID sql.NullInt64) 
 }
 
 const getRoomsByBuildingId = `-- name: GetRoomsByBuildingId :many
-Select r.id, r.name
-FROM  rooms r
+SELECT r.id, r.name
+FROM rooms r
 WHERE r.building_id = ?
 LIMIT 10
 `

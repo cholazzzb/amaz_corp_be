@@ -23,8 +23,14 @@ type BuildingRepository interface {
 
 	CreateMemberBuilding(
 		ctx context.Context,
-		memberId int64,
+		memberId,
 		buildingId int64,
+	) error
+
+	DeleteBuilding(
+		ctx context.Context,
+		buildingId,
+		memberId int64,
 	) error
 }
 

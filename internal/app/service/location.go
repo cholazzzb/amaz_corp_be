@@ -71,6 +71,19 @@ func (svc *LocationService) GetBuildings(
 	return bs, nil
 }
 
+func (svc *LocationService) DeleteBuilding(
+	ctx context.Context,
+	buildingId,
+	memberId int64,
+) error {
+	err := svc.repo.DeleteBuilding(ctx, buildingId, memberId)
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return fmt.Errorf("cannot delete with id %d", buildingId)
+	}
+	return nil
+}
+
 func (svc *LocationService) GetBuildingsByMemberId(
 	ctx context.Context,
 	memberId int64,

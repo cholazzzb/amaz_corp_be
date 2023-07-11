@@ -3,6 +3,7 @@ package location
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -13,6 +14,7 @@ import (
 )
 
 type MySQLLocationRepository struct {
+	db     *sql.DB
 	Mysql  *mysql.Queries
 	logger zerolog.Logger
 }
@@ -26,6 +28,7 @@ func NewMySQLLocationRepository(
 
 	queries := mysql.New(mysqlRepo.Db)
 	return &MySQLLocationRepository{
+		db:     mysqlRepo.Db,
 		Mysql:  queries,
 		logger: sublogger,
 	}
@@ -75,11 +78,50 @@ func (r *MySQLLocationRepository) CreateMemberBuilding(
 	memberId int64,
 	buildingId int64,
 ) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		r.logger.Error().Err(err)
+		return err
+	}
+	defer tx.Rollback()
+	qtx := r.Mysql.WithTx(tx)
+	exist, err := qtx.GetMemberBuildingById(ctx, mysql.GetMemberBuildingByIdParams{
+		MemberID:   memberId,
+		BuildingID: buildingId,
+	})
+
+	if err != nil {
+		r.logger.Error().Err(err)
+		return err
+	}
+
+	if exist {
+		return errors.New("member building already created")
+	}
+
 	param := mysql.CreateMemberBuildingParams{
 		MemberID:   memberId,
 		BuildingID: buildingId,
 	}
-	_, err := r.Mysql.CreateMemberBuilding(ctx, param)
+	_, err = qtx.CreateMemberBuilding(ctx, param)
+	if err != nil {
+		r.logger.Error().Err(err)
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (r *MySQLLocationRepository) DeleteBuilding(
+	ctx context.Context,
+	memberId,
+	buildingId int64,
+) error {
+	params := mysql.DeleteMemberBuildingParams{
+		MemberID:   memberId,
+		BuildingID: buildingId,
+	}
+	err := r.Mysql.DeleteMemberBuilding(ctx, params)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return err

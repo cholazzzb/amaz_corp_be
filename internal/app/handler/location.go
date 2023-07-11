@@ -36,6 +36,27 @@ func (h *LocationHandler) GetBuildings(ctx *fiber.Ctx) error {
 	})
 }
 
+type DeleteBuildingRequest struct {
+	MemberId   int64 `json:"memberId" validate:"required"`
+	BuildingId int64 `json:"buildingId" validate:"required"`
+}
+
+func (h *LocationHandler) DeleteBuilding(ctx *fiber.Ctx) error {
+	req := new(DeleteBuildingRequest)
+	if err := ctx.BodyParser(req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	err := h.svc.DeleteBuilding(ctx.Context(), req.BuildingId, req.MemberId)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+	return nil
+}
+
 type GetBuildingsByMemberIdRequest struct {
 	MemberId int64 `json:"memberId" validate:"required"`
 }
@@ -67,8 +88,8 @@ func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
 }
 
 type JoinRoomRequest struct {
-	MemberId   int64
-	BuildingId int64
+	MemberId   int64 `json:"memberId" validate:"required"`
+	BuildingId int64 `json:"buildingId" validate:"required"`
 }
 
 func (h *LocationHandler) JoinRoomById(ctx *fiber.Ctx) error {
