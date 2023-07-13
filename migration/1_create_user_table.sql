@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS users (
-  id varchar(36) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id varchar(36) UNIQUE NOT NULL PRIMARY KEY UNIQUE,
   username text NOT NULL,
   password text NOT NULL,
   salt text NOT NULL
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS members (
-  id varchar(36) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id varchar(36) UNIQUE NOT NULL PRIMARY KEY,
   user_id varchar(36) NOT NULL,
   name varchar(255) NOT NULL,
   status text NOT NULL,

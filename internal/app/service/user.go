@@ -44,12 +44,12 @@ func NewUserService(
 
 func (svc *UserService) RegisterUser(ctx context.Context, username, password string) error {
 	uuid, err := uuid.NewV7()
-	salt := uuid.String()
-
 	if err != nil {
 		svc.logger.Error().Err(err)
 		return errors.New("failed to generate uuid")
 	}
+
+	salt := uuid.String()
 	saltedPassword := append(
 		[]byte(password),
 		salt...,
@@ -70,6 +70,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 	}
 
 	if err := svc.repo.CreateUser(ctx, newUserParams); err != nil {
+		svc.logger.Error().Err(err)
 		return errors.New("failed to create user")
 	}
 

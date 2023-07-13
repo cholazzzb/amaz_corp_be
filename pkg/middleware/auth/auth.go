@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog/log"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware"
@@ -49,14 +50,31 @@ func CreateAuthMiddleware() middleware.Middleware {
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
-		username, claimOk := claims["Username"].(string)
-		userId, userIdClaimOk := claims["UserId"].(float64)
+		username, usernameOk := claims["Username"].(string)
+		userId, userIdOk := claims["UserId"].(string)
 
-		if ok && token.Valid && claimOk && userIdClaimOk {
-			ctx.Locals("Username", username)
-			ctx.Locals("UserId", userId)
-			return ctx.Next()
+		if !ok {
+			log.Error().Err(err).Msg("jwt claim failed")
+			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
-		return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
+
+		if !token.Valid {
+			log.Error().Err(err).Msg("token invalid")
+			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
+		}
+
+		if !usernameOk {
+			log.Error().Err(err).Msg("username in token not found")
+			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
+		}
+
+		if !userIdOk {
+			log.Error().Err(err).Msg("userId in token not found")
+			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
+		}
+
+		ctx.Locals("Username", username)
+		ctx.Locals("UserId", userId)
+		return ctx.Next()
 	}
 }

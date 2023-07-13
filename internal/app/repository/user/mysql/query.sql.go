@@ -25,33 +25,45 @@ func (q *Queries) CreateFriend(ctx context.Context, arg CreateFriendParams) (sql
 }
 
 const createMember = `-- name: CreateMember :execresult
-INSERT INTO members(name, status, user_id)
-VALUES (?, ?, ?)
+INSERT INTO members(id, name, status, user_id)
+VALUES (?, ?, ?, ?)
 `
 
 type CreateMemberParams struct {
+	ID     string
 	Name   string
 	Status string
 	UserID string
 }
 
 func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createMember, arg.Name, arg.Status, arg.UserID)
+	return q.db.ExecContext(ctx, createMember,
+		arg.ID,
+		arg.Name,
+		arg.Status,
+		arg.UserID,
+	)
 }
 
 const createUser = `-- name: CreateUser :execresult
-INSERT INTO users(username, password, salt)
-VALUES (?, ?, ?)
+INSERT INTO users(id, username, password, salt)
+VALUES (?, ?, ?, ?)
 `
 
 type CreateUserParams struct {
+	ID       string
 	Username string
 	Password string
 	Salt     string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createUser, arg.Username, arg.Password, arg.Salt)
+	return q.db.ExecContext(ctx, createUser,
+		arg.ID,
+		arg.Username,
+		arg.Password,
+		arg.Salt,
+	)
 }
 
 const getFriendsByMemberId = `-- name: GetFriendsByMemberId :many
