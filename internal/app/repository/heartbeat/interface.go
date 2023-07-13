@@ -10,7 +10,7 @@ type Heartbeat struct {
 }
 
 // map[userId]*Heartbeat
-type HeartbeatMap map[int64]*Heartbeat
+type HeartbeatMap map[string]*Heartbeat
 
 type HeartbeatRepo interface {
 	GetHeartbeatMap(
@@ -18,14 +18,14 @@ type HeartbeatRepo interface {
 	) (HeartbeatMap, error)
 	CheckUserIdExistence(
 		ctx context.Context,
-		userId int64,
+		userId string,
 	) (bool, error)
 	UpdateToOnline(
 		ctx context.Context,
-		userId int64,
+		userId string,
 	) error
 	UpdateToOffline(
 		ctx context.Context,
-		userId int64,
+		userId string,
 	) error
 }

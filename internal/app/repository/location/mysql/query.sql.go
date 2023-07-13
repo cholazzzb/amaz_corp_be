@@ -16,8 +16,8 @@ VALUES (?, ?)
 `
 
 type CreateMemberBuildingParams struct {
-	MemberID   int64
-	BuildingID int64
+	MemberID   string
+	BuildingID string
 }
 
 func (q *Queries) CreateMemberBuilding(ctx context.Context, arg CreateMemberBuildingParams) (sql.Result, error) {
@@ -30,8 +30,8 @@ WHERE member_id = ? AND building_id = ?
 `
 
 type DeleteMemberBuildingParams struct {
-	MemberID   int64
-	BuildingID int64
+	MemberID   string
+	BuildingID string
 }
 
 func (q *Queries) DeleteMemberBuilding(ctx context.Context, arg DeleteMemberBuildingParams) error {
@@ -76,7 +76,7 @@ WHERE mb.member_id = ?
 LIMIT 10
 `
 
-func (q *Queries) GetBuildingsByMemberId(ctx context.Context, memberID int64) ([]Building, error) {
+func (q *Queries) GetBuildingsByMemberId(ctx context.Context, memberID string) ([]Building, error) {
 	rows, err := q.db.QueryContext(ctx, getBuildingsByMemberId, memberID)
 	if err != nil {
 		return nil, err
@@ -107,8 +107,8 @@ LIMIT 1)
 `
 
 type GetMemberBuildingByIdParams struct {
-	MemberID   int64
-	BuildingID int64
+	MemberID   string
+	BuildingID string
 }
 
 func (q *Queries) GetMemberBuildingById(ctx context.Context, arg GetMemberBuildingByIdParams) (bool, error) {
@@ -128,10 +128,10 @@ LIMIT 10
 type GetMembersByRoomIdRow struct {
 	Name   string
 	Status string
-	UserID int64
+	UserID string
 }
 
-func (q *Queries) GetMembersByRoomId(ctx context.Context, roomID sql.NullInt64) ([]GetMembersByRoomIdRow, error) {
+func (q *Queries) GetMembersByRoomId(ctx context.Context, roomID sql.NullString) ([]GetMembersByRoomIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getMembersByRoomId, roomID)
 	if err != nil {
 		return nil, err
@@ -162,11 +162,11 @@ LIMIT 10
 `
 
 type GetRoomsByBuildingIdRow struct {
-	ID   int64
+	ID   string
 	Name string
 }
 
-func (q *Queries) GetRoomsByBuildingId(ctx context.Context, buildingID int64) ([]GetRoomsByBuildingIdRow, error) {
+func (q *Queries) GetRoomsByBuildingId(ctx context.Context, buildingID string) ([]GetRoomsByBuildingIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getRoomsByBuildingId, buildingID)
 	if err != nil {
 		return nil, err
@@ -198,11 +198,11 @@ LIMIT 10
 `
 
 type GetRoomsByMemberIdRow struct {
-	ID   int64
+	ID   string
 	Name string
 }
 
-func (q *Queries) GetRoomsByMemberId(ctx context.Context, memberID int64) ([]GetRoomsByMemberIdRow, error) {
+func (q *Queries) GetRoomsByMemberId(ctx context.Context, memberID string) ([]GetRoomsByMemberIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getRoomsByMemberId, memberID)
 	if err != nil {
 		return nil, err

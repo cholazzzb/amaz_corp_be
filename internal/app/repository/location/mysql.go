@@ -55,7 +55,7 @@ func (r *MySQLLocationRepository) GetAllBuildings(
 
 func (r *MySQLLocationRepository) GetBuildingsByMemberId(
 	ctx context.Context,
-	memberId int64,
+	memberId string,
 ) ([]ent.Building, error) {
 	res, err := r.Mysql.GetBuildingsByMemberId(ctx, memberId)
 	if err != nil {
@@ -75,8 +75,8 @@ func (r *MySQLLocationRepository) GetBuildingsByMemberId(
 
 func (r *MySQLLocationRepository) CreateMemberBuilding(
 	ctx context.Context,
-	memberId int64,
-	buildingId int64,
+	memberId,
+	buildingId string,
 ) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -115,7 +115,7 @@ func (r *MySQLLocationRepository) CreateMemberBuilding(
 func (r *MySQLLocationRepository) DeleteBuilding(
 	ctx context.Context,
 	memberId,
-	buildingId int64,
+	buildingId string,
 ) error {
 	params := mysql.DeleteMemberBuildingParams{
 		MemberID:   memberId,
@@ -131,11 +131,11 @@ func (r *MySQLLocationRepository) DeleteBuilding(
 
 func (r *MySQLLocationRepository) GetMembersByRoomId(
 	ctx context.Context,
-	roomId int64,
+	roomId string,
 ) ([]ent.Member, error) {
-	res, err := r.Mysql.GetMembersByRoomId(ctx, sql.NullInt64{
-		Int64: roomId, Valid: true,
-	})
+	res, err := r.Mysql.GetMembersByRoomId(ctx,
+		sql.NullString{String: roomId, Valid: true},
+	)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return []ent.Member{}, nil
@@ -155,7 +155,7 @@ func (r *MySQLLocationRepository) GetMembersByRoomId(
 
 func (r *MySQLLocationRepository) GetRoomsByMemberId(
 	ctx context.Context,
-	memberId int64,
+	memberId string,
 ) ([]ent.Room, error) {
 	res, err := r.Mysql.GetRoomsByMemberId(ctx, memberId)
 	if err != nil {
@@ -175,7 +175,7 @@ func (r *MySQLLocationRepository) GetRoomsByMemberId(
 
 func (r *MySQLLocationRepository) GetRoomsByBuildingId(
 	ctx context.Context,
-	buildingId int64,
+	buildingId string,
 ) ([]ent.Room, error) {
 	res, err := r.Mysql.GetRoomsByBuildingId(ctx, buildingId)
 	if err != nil {

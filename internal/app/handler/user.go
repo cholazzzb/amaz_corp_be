@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"strconv"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -141,12 +139,12 @@ func (h *UserHandler) CreateMemberByUsername(ctx *fiber.Ctx) error {
 }
 
 type GetFriendsByMemberIdRequest struct {
-	MemberID int64 `json:"memberId" validate:"required"`
+	MemberID string `json:"memberId" validate:"required"`
 }
 
 func (h *UserHandler) GetFriendsByMemberId(ctx *fiber.Ctx) error {
-	mID, err := strconv.ParseInt(ctx.Params("memberId"), 10, 64)
-	if err != nil {
+	mID := ctx.Params("memberId")
+	if len(mID) == 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "memberId is missing from the request",
 		})

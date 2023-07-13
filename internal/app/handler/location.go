@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"strconv"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -37,8 +35,8 @@ func (h *LocationHandler) GetBuildings(ctx *fiber.Ctx) error {
 }
 
 type DeleteBuildingRequest struct {
-	MemberId   int64 `json:"memberId" validate:"required"`
-	BuildingId int64 `json:"buildingId" validate:"required"`
+	MemberId   string `json:"memberId" validate:"required"`
+	BuildingId string `json:"buildingId" validate:"required"`
 }
 
 func (h *LocationHandler) DeleteBuilding(ctx *fiber.Ctx) error {
@@ -58,14 +56,14 @@ func (h *LocationHandler) DeleteBuilding(ctx *fiber.Ctx) error {
 }
 
 type GetBuildingsByMemberIdRequest struct {
-	MemberId int64 `json:"memberId" validate:"required"`
+	MemberId string `json:"memberId" validate:"required"`
 }
 
 func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
-	memberId, err := strconv.ParseInt(ctx.Query("memberId"), 10, 64)
-	if err != nil {
+	memberId := ctx.Query("memberId")
+	if len(memberId) == 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "memberId is invalid from the request",
+			"message": "memberId is missing from the request",
 		})
 	}
 
@@ -88,8 +86,8 @@ func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
 }
 
 type JoinBuildingRequest struct {
-	MemberId   int64 `json:"memberId" validate:"required"`
-	BuildingId int64 `json:"buildingId" validate:"required"`
+	MemberId   string `json:"memberId" validate:"required"`
+	BuildingId string `json:"buildingId" validate:"required"`
 }
 
 func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
@@ -113,12 +111,12 @@ func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
 }
 
 type GetRoomsByBuildingIdRequest struct {
-	BuildingId int64 `json:"buildingId" validate:"required"`
+	BuildingId string `json:"buildingId" validate:"required"`
 }
 
 func (h *LocationHandler) GetRoomsByBuildingId(ctx *fiber.Ctx) error {
-	buildingId, err := strconv.ParseInt(ctx.Params("buildingId"), 10, 64)
-	if err != nil {
+	buildingId := ctx.Params("buildingId")
+	if len(buildingId) == 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "buildingId is missing from the request",
 		})
@@ -143,12 +141,12 @@ func (h *LocationHandler) GetRoomsByBuildingId(ctx *fiber.Ctx) error {
 }
 
 type GetListOnlineMembersRequest struct {
-	RoomId int64 `json:"roomId" validate:"required"`
+	RoomId string `json:"roomId" validate:"required"`
 }
 
 func (h *LocationHandler) GetListOnlineMembers(ctx *fiber.Ctx) error {
-	roomId, err := strconv.ParseInt(ctx.Params("roomId"), 10, 64)
-	if err != nil {
+	roomId := ctx.Params("roomId")
+	if len(roomId) == 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "roomId is missing from the request",
 		})

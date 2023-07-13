@@ -16,8 +16,8 @@ VALUES (?, ?)
 `
 
 type CreateFriendParams struct {
-	Member1ID int64
-	Member2ID int64
+	Member1ID string
+	Member2ID string
 }
 
 func (q *Queries) CreateFriend(ctx context.Context, arg CreateFriendParams) (sql.Result, error) {
@@ -32,7 +32,7 @@ VALUES (?, ?, ?)
 type CreateMemberParams struct {
 	Name   string
 	Status string
-	UserID int64
+	UserID string
 }
 
 func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (sql.Result, error) {
@@ -63,13 +63,13 @@ LIMIT 10
 `
 
 type GetFriendsByMemberIdParams struct {
-	Member1ID int64
-	Member2ID int64
-	ID        int64
+	Member1ID string
+	Member2ID string
+	ID        string
 }
 
 type GetFriendsByMemberIdRow struct {
-	ID     int64
+	ID     string
 	Name   string
 	Status string
 }

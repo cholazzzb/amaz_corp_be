@@ -3,8 +3,9 @@ package session
 import (
 	"context"
 	"fmt"
-	"os/exec"
 	"time"
+
+	"github.com/gofrs/uuid"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/session"
 )
@@ -65,11 +66,11 @@ func (repo *MockSessionRepo) CreateSession(
 	startTime time.Time,
 	endTime time.Time,
 ) (session.SessionId, error) {
-	uuidByte, err := exec.Command("uuidgen").Output()
+	uuidRaw, err := uuid.NewV7()
 	if err != nil {
-		return session.SessionId(""), err
+		panic(err)
 	}
-	uuid := string(uuidByte[:])
+	uuid := string(uuidRaw.String())
 	s := session.Session{
 		Id:        session.SessionId(uuid),
 		StartTime: startTime,
@@ -139,11 +140,11 @@ func (repo *MockSessionRepo) CreateRoom(
 		return session.RoomId(""), err
 	}
 
-	uuidByte, err := exec.Command("uuidgen").Output()
+	uuidRaw, err := uuid.NewV7()
 	if err != nil {
-		return session.RoomId(""), err
+		panic(err)
 	}
-	uuid := string(uuidByte[:])
+	uuid := string(uuidRaw.String())
 	roomId := session.RoomId(uuid)
 	newRoom := session.Room{
 		Id:           roomId,

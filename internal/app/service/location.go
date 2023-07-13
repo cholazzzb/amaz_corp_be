@@ -36,7 +36,7 @@ func NewLocationService(
 
 func (svc *LocationService) GetListOnlineMembers(
 	ctx context.Context,
-	roomId int64,
+	roomId string,
 ) ([]ent.Member, error) {
 	membersInRoom, err := svc.repo.GetMembersByRoomId(ctx, roomId)
 	if err != nil {
@@ -74,49 +74,49 @@ func (svc *LocationService) GetBuildings(
 func (svc *LocationService) DeleteBuilding(
 	ctx context.Context,
 	buildingId,
-	memberId int64,
+	memberId string,
 ) error {
 	err := svc.repo.DeleteBuilding(ctx, buildingId, memberId)
 	if err != nil {
 		svc.logger.Error().Err(err)
-		return fmt.Errorf("cannot delete with id %d", buildingId)
+		return fmt.Errorf("cannot delete with id %s", buildingId)
 	}
 	return nil
 }
 
 func (svc *LocationService) GetBuildingsByMemberId(
 	ctx context.Context,
-	memberId int64,
+	memberId string,
 ) ([]ent.Building, error) {
 	bs, err := svc.repo.GetBuildingsByMemberId(ctx, memberId)
 	if err != nil {
 		svc.logger.Error().Err(err)
-		return nil, fmt.Errorf("cannot get buildings with memberId %d", memberId)
+		return nil, fmt.Errorf("cannot get buildings with memberId %s", memberId)
 	}
 	return bs, nil
 }
 
 func (svc *LocationService) JoinBuilding(
 	ctx context.Context,
-	memberId int64,
-	buildingId int64,
+	memberId,
+	buildingId string,
 ) error {
 	err := svc.repo.CreateMemberBuilding(ctx, memberId, buildingId)
 	if err != nil {
 		svc.logger.Error().Err(err)
-		return fmt.Errorf("cannot join member with id %d to building id %d", memberId, buildingId)
+		return fmt.Errorf("cannot join member with id %s to building id %s", memberId, buildingId)
 	}
 	return nil
 }
 
 func (svc *LocationService) GetRoomsByBuildingId(
 	ctx context.Context,
-	buildingId int64,
+	buildingId string,
 ) ([]ent.Room, error) {
 	bs, err := svc.repo.GetRoomsByBuildingId(ctx, buildingId)
 	if err != nil {
 		svc.logger.Error().Err(err)
-		return nil, fmt.Errorf("cannot get rooms with buildingID %d", buildingId)
+		return nil, fmt.Errorf("cannot get rooms with buildingID %s", buildingId)
 	}
 	return bs, nil
 }

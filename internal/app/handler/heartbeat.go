@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,17 +23,17 @@ func NewHeartBeatHandler(svc *service.HeartbeatService) *HeartbeatHandler {
 }
 
 func (h *HeartbeatHandler) Pulse(ctx *fiber.Ctx) error {
-	userId, success := ctx.Locals("UserId").(float64)
+	userId, success := ctx.Locals("UserId").(string)
 
 	if !success {
-		err := errors.New("userId from JWT is not float")
+		err := errors.New("failed to get userId from JWT")
 		h.logger.Error().Err(err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			err.Error(),
 		)
 	}
 
-	err := h.svc.Pulse(ctx.Context(), (int64(userId)))
+	err := h.svc.Pulse(ctx.Context(), userId)
 
 	if err != nil {
 		h.logger.Error().Err(err)
@@ -53,15 +52,7 @@ func (h *HeartbeatHandler) GetStatusByUserId(ctx *fiber.Ctx) error {
 		[]byte(strings.Trim(ctx.Params("userId"), " ")),
 	)
 
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
-		h.logger.Error().Err(err)
-		return ctx.Status(fiber.StatusInternalServerError).JSON(
-			err.Error(),
-		)
-	}
-
-	status, err := h.svc.CheckUserStatus(ctx.Context(), int64(userIdInt))
+	status, err := h.svc.CheckUserStatus(ctx.Context(), userId)
 
 	if err != nil {
 		h.logger.Error().Err(err)

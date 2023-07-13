@@ -20,7 +20,7 @@ func TestCreateUser(t *testing.T) {
 	})
 
 	expected1 := mysql.User{
-		ID:       1,
+		ID:       "1",
 		Username: "new",
 		Password: "password",
 		Salt:     "salt",
@@ -35,7 +35,7 @@ func TestCreateUser(t *testing.T) {
 	})
 
 	expected2 := mysql.User{
-		ID:       2,
+		ID:       "2",
 		Username: "new2",
 		Password: "password2",
 		Salt:     "salt2",
@@ -57,7 +57,7 @@ func TestGetUser(t *testing.T) {
 
 	user, err = mur.GetUser(context.Background(), "test1")
 	assert.Equal(t, mysql.User{
-		ID:       1,
+		ID:       "1",
 		Username: "test1",
 		Password: "password1",
 		Salt:     "salt",
@@ -71,26 +71,26 @@ func TestCreateMember(t *testing.T) {
 	mmr.CreateMember(context.Background(), ent.Member{
 		Name:   "test1",
 		Status: "new",
-	}, 3)
+	}, "3")
 
 	expected1 := mysql.Member{
-		ID:     1,
+		ID:     "1",
 		Name:   "test1",
 		Status: "new",
-		UserID: 3,
+		UserID: "3",
 	}
 	assert.Equal(t, expected1, mmr.Member.Members["test1"], "mock member data not same with request")
 
 	mmr.CreateMember(context.Background(), ent.Member{
 		Name:   "test2",
 		Status: "new",
-	}, 2)
+	}, "2")
 
 	expected2 := mysql.Member{
-		ID:     2,
+		ID:     "2",
 		Name:   "test2",
 		Status: "new",
-		UserID: 2,
+		UserID: "2",
 	}
 
 	assert.Equal(t, expected2, mmr.Member.Members["test2"], "second member data not same with request")
@@ -105,7 +105,7 @@ func TestGetMemberByName(t *testing.T) {
 	mmr.CreateMember(context.Background(), ent.Member{
 		Name:   "name1",
 		Status: "status1",
-	}, 2)
+	}, "2")
 
 	m2, err := mmr.GetMemberByName(context.Background(), "name1")
 	assert.Empty(t, err, "exist member return error")

@@ -66,7 +66,7 @@ func (r *MySQLUserRepository) GetMemberByName(
 
 func (r *MySQLUserRepository) CreateMemberParams(
 	newMember user.Member,
-	userID int64,
+	userID string,
 ) mysql.CreateMemberParams {
 	return mysql.CreateMemberParams{
 		Name:   newMember.Name,
@@ -78,7 +78,7 @@ func (r *MySQLUserRepository) CreateMemberParams(
 func (r *MySQLUserRepository) CreateMember(
 	ctx context.Context,
 	newMember user.Member,
-	userID int64,
+	userID string,
 ) (user.Member, error) {
 	params := r.CreateMemberParams(newMember, userID)
 	_, err := r.Mysql.CreateMember(ctx, params)
@@ -91,7 +91,7 @@ func (r *MySQLUserRepository) CreateMember(
 
 func (r *MySQLUserRepository) GetFriendsByUserId(
 	ctx context.Context,
-	userId int64,
+	userId string,
 ) ([]user.Member, error) {
 	fs, err := r.Mysql.GetFriendsByMemberId(ctx, mysql.GetFriendsByMemberIdParams{
 		Member1ID: userId,
@@ -115,7 +115,7 @@ func (r *MySQLUserRepository) GetFriendsByUserId(
 func (r *MySQLUserRepository) CreateFriend(
 	ctx context.Context,
 	member1Id,
-	member2Id int64,
+	member2Id string,
 ) error {
 	return errors.New("")
 }

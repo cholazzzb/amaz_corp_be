@@ -9,43 +9,43 @@ import (
 )
 
 type Building struct {
-	ID   int64
+	ID   string
 	Name string
 }
 
 type Friend struct {
-	Member1ID int64
-	Member2ID int64
+	Member1ID string
+	Member2ID string
 }
 
 type Member struct {
-	ID     int64
-	UserID int64
+	ID     string
+	UserID string
 	Name   string
 	Status string
-	RoomID sql.NullInt64
+	RoomID sql.NullString
 }
 
 type MembersBuilding struct {
-	MemberID   int64
-	BuildingID int64
+	MemberID   string
+	BuildingID string
 }
 
 type Room struct {
-	ID         int64
+	ID         string
 	Name       string
-	BuildingID int64
+	BuildingID string
 }
 
 type Session struct {
-	ID        int64
-	RoomID    int64
+	ID        string
+	RoomID    string
 	StartTime sql.NullTime
 	EndTime   sql.NullTime
 }
 
 type User struct {
-	ID       int64
+	ID       string
 	Username string
 	Password string
 	Salt     string

@@ -18,33 +18,33 @@ type BuildingRepository interface {
 
 	GetBuildingsByMemberId(
 		ctx context.Context,
-		memberId int64,
+		memberId string,
 	) ([]ent.Building, error)
 
 	CreateMemberBuilding(
 		ctx context.Context,
 		memberId,
-		buildingId int64,
+		buildingId string,
 	) error
 
 	DeleteBuilding(
 		ctx context.Context,
 		buildingId,
-		memberId int64,
+		memberId string,
 	) error
 }
 
 type RoomRepository interface {
 	GetMembersByRoomId(
 		ctx context.Context,
-		roomId int64,
+		roomId string,
 	) ([]ent.Member, error)
 	GetRoomsByMemberId(
 		ctx context.Context,
-		memberId int64,
+		memberId string,
 	) ([]ent.Room, error)
 	GetRoomsByBuildingId(
 		ctx context.Context,
-		buildingId int64,
+		buildingId string,
 	) ([]ent.Room, error)
 }

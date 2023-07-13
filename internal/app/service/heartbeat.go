@@ -26,7 +26,7 @@ func NewHeartbeatService(
 	}
 }
 
-func (s *HeartbeatService) Pulse(ctx context.Context, userId int64) error {
+func (s *HeartbeatService) Pulse(ctx context.Context, userId string) error {
 	err := s.repo.UpdateToOnline(ctx, userId)
 
 	if err != nil {
@@ -38,7 +38,7 @@ func (s *HeartbeatService) Pulse(ctx context.Context, userId int64) error {
 	return nil
 }
 
-func (s *HeartbeatService) CheckUserStatus(ctx context.Context, userId int64) (string, error) {
+func (s *HeartbeatService) CheckUserStatus(ctx context.Context, userId string) (string, error) {
 	exist, err := s.repo.CheckUserIdExistence(ctx, userId)
 
 	if err != nil {

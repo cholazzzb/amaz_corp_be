@@ -21,7 +21,7 @@ import (
 type UserClaims struct {
 	jwt.RegisteredClaims
 	Username string
-	UserId   int64
+	UserId   string
 }
 
 type UserService struct {
@@ -76,11 +76,11 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 	return nil
 }
 
-func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, int64, error) {
+func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, string, error) {
 	result, err := svc.repo.GetUser(ctx, username)
 	if err != nil {
 		svc.logger.Error().Err(err).Msg("username not found")
-		return false, -1, errors.New("username not found")
+		return false, "", errors.New("username not found")
 	}
 
 	saltedPassword := append(
@@ -94,7 +94,7 @@ func (svc *UserService) authenticateUser(ctx context.Context, username, password
 	)
 
 	if err != nil {
-		return false, -1, errors.New("wrong Password")
+		return false, "", errors.New("wrong Password")
 	}
 	return true, result.ID, nil
 }
@@ -145,7 +145,7 @@ func (svc *UserService) CreateMember(ctx context.Context, memberReq user.Member,
 	return newMember, nil
 }
 
-func (svc *UserService) GetFriendsByMemberId(ctx context.Context, userId int64) ([]user.Member, error) {
+func (svc *UserService) GetFriendsByMemberId(ctx context.Context, userId string) ([]user.Member, error) {
 	fs, err := svc.repo.GetFriendsByUserId(ctx, userId)
 	if err != nil {
 		svc.logger.Error().Err(err)

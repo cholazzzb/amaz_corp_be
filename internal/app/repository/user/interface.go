@@ -33,18 +33,18 @@ type MemberRepository interface {
 	CreateMember(
 		ctx context.Context,
 		newMember user.Member,
-		userID int64,
+		userID string,
 	) (user.Member, error)
 }
 
 type FriendRepository interface {
 	GetFriendsByUserId(
 		ctx context.Context,
-		userId int64,
+		userId string,
 	) ([]user.Member, error)
 	CreateFriend(
 		ctx context.Context,
 		member1Id,
-		member2Id int64,
+		member2Id string,
 	) error
 }

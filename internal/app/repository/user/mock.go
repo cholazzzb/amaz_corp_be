@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
@@ -53,7 +54,7 @@ func (mur *MockUserRepo) CreateUser(
 ) error {
 	id := mur.User.BiggestId + 1
 	newUser := mysql.User{
-		ID:       id,
+		ID:       strconv.FormatInt(id, 10),
 		Username: params.Username,
 		Password: params.Password,
 		Salt:     params.Salt,
@@ -95,13 +96,13 @@ func (mmr *MockUserRepo) GetMemberByName(
 func (mmr *MockUserRepo) CreateMember(
 	ctx context.Context,
 	newMember user.Member,
-	userID int64,
+	userID string,
 ) (user.Member, error) {
 	ID := mmr.Member.BiggestId + 1
 
 	mmr.Member.BiggestId = ID
 	mmr.Member.Members[Name(newMember.Name)] = mysql.Member{
-		ID:     ID,
+		ID:     strconv.FormatInt(ID, 10),
 		Name:   newMember.Name,
 		Status: newMember.Status,
 		UserID: userID,
@@ -125,7 +126,7 @@ func newMockFriendRepository() *MockFriendRepository {
 
 func (mur *MockUserRepo) GetFriendsByUserId(
 	ctx context.Context,
-	userId int64,
+	userId string,
 ) ([]user.Member, error) {
 	return nil, nil
 }
@@ -133,7 +134,7 @@ func (mur *MockUserRepo) GetFriendsByUserId(
 func (mur *MockUserRepo) CreateFriend(
 	ctx context.Context,
 	member1Id,
-	member2Id int64,
+	member2Id string,
 ) error {
 	return nil
 }
