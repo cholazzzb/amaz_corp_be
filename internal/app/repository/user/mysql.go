@@ -37,6 +37,18 @@ func (r *MySQLUserRepository) GetUser(
 	return result, nil
 }
 
+func (r *MySQLUserRepository) GetUserExistance(
+	ctx context.Context,
+	username string,
+) (bool, error) {
+	exist, err := r.Mysql.GetUserExistance(ctx, username)
+	if err != nil {
+		r.logger.Error().Err(err)
+		return true, err
+	}
+	return exist, nil
+}
+
 func (r *MySQLUserRepository) CreateUser(
 	ctx context.Context,
 	params mysql.CreateUserParams,
@@ -69,6 +81,7 @@ func (r *MySQLUserRepository) CreateMemberParams(
 	userID string,
 ) mysql.CreateMemberParams {
 	return mysql.CreateMemberParams{
+		ID:     newMember.Id,
 		Name:   newMember.Name,
 		Status: newMember.Status,
 		UserID: userID,

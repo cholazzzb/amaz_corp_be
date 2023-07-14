@@ -8,7 +8,6 @@ import (
 
 	repo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
 	svc "github.com/cholazzzb/amaz_corp_be/internal/app/service"
-	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
 func CreateMockService() *svc.UserService {
@@ -44,21 +43,15 @@ func TestGetMemberByName(t *testing.T) {
 
 	err = s.RegisterUser(context.Background(), "username1", "password1")
 	assert.NoError(t, err, "register user service with right params should success")
-	m2, err := s.CreateMember(context.Background(), ent.Member{
-		Name:   "name1",
-		Status: "status1",
-	}, "username1")
+	m2, err := s.CreateMember(context.Background(), "name1", "username1")
 	assert.Empty(t, err, "create member with true params should not return error")
-	assert.Equal(t, ent.Member{
-		Name:   "name1",
-		Status: "status1",
-	}, m2, "create member with true params should return the true member data")
+	assert.Equal(t, "name1", m2.Name, "create member with true params should return the true member name")
+	assert.Equal(t, "new member", m2.Status, "create member with true params should return the true member status")
 
 	m3, err := s.GetMemberByName(context.Background(), "name1")
-	assert.Equal(t, ent.Member{
-		Name:   "name1",
-		Status: "status1",
-	}, m3, "exist member should return member object")
+	assert.Equal(t, "name1", m3.Name, "exist member should return the true member name")
+	assert.Equal(t, "new member", m3.Status, "exist member with true params should return the true member name")
+
 	assert.Empty(t, err, "exist member should not return error")
 }
 
@@ -67,13 +60,8 @@ func TestCreateMember(t *testing.T) {
 
 	err := s.RegisterUser(context.Background(), "username1", "password1")
 	assert.NoError(t, err, "register user service with right params should success")
-	m1, err := s.CreateMember(context.Background(), ent.Member{
-		Name:   "name1",
-		Status: "status1",
-	}, "username1")
+	m1, err := s.CreateMember(context.Background(), "name1", "username1")
 	assert.Empty(t, err, "create member with true params should not return error")
-	assert.Equal(t, ent.Member{
-		Name:   "name1",
-		Status: "status1",
-	}, m1, "create member with true params should return the true member data")
+	assert.Equal(t, "name1", m1.Name, "create member with true params should return the true member name")
+	assert.Equal(t, "new member", m1.Status, "create member with true params should return the true member status")
 }

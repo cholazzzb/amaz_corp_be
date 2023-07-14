@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
@@ -75,6 +74,27 @@ func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 	})
 }
 
+func (h *UserHandler) CheckUserExistance(ctx *fiber.Ctx) error {
+	username := ctx.Params("userId")
+	if len(username) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "userId must be filled",
+		})
+	}
+
+	exist, err := h.svc.CheckUserExistance(ctx.Context(), username)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(
+			err.Error(),
+		)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
+		"exist":   exist,
+	})
+}
+
 type GetMemberByNameRequest struct {
 	Name string `json:"name" validate:"required"`
 }
@@ -122,10 +142,7 @@ func (h *UserHandler) CreateMemberByUsername(ctx *fiber.Ctx) error {
 	}
 
 	username := ctx.Locals("Username").(string)
-	member, err := h.svc.CreateMember(ctx.Context(), user.Member{
-		Name:   req.Name,
-		Status: "new member",
-	}, username)
+	member, err := h.svc.CreateMember(ctx.Context(), req.Name, username)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal Server Error",

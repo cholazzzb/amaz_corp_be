@@ -48,6 +48,14 @@ func (mur *MockUserRepo) GetUser(
 	return user, nil
 }
 
+func (mur *MockUserRepo) GetUserExistance(
+	ctx context.Context,
+	username string,
+) (bool, error) {
+	_, exist := mur.User.Users[Username(username)]
+	return exist, nil
+}
+
 func (mur *MockUserRepo) CreateUser(
 	ctx context.Context,
 	params mysql.CreateUserParams,

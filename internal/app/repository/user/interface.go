@@ -19,6 +19,10 @@ type UserRepository interface {
 		ctx context.Context,
 		params string,
 	) (mysql.User, error)
+	GetUserExistance(
+		ctx context.Context,
+		username string,
+	) (bool, error)
 	CreateUser(
 		ctx context.Context,
 		params mysql.CreateUserParams,

@@ -147,3 +147,17 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 	)
 	return i, err
 }
+
+const getUserExistance = `-- name: GetUserExistance :one
+SELECT EXISTS(SELECT id, username, password, salt
+FROM users
+WHERE username = ?
+LIMIT 1)
+`
+
+func (q *Queries) GetUserExistance(ctx context.Context, username string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getUserExistance, username)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}

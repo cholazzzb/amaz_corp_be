@@ -43,13 +43,30 @@ func NewUserService(
 }
 
 func (svc *UserService) RegisterUser(ctx context.Context, username, password string) error {
-	uuid, err := uuid.NewV7()
+	exist, err := svc.CheckUserExistance(ctx, username)
+
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return errors.New("failed to check username existence")
+	}
+
+	if exist {
+		return errors.New("username already taken")
+	}
+
+	uuidSalt, err := uuid.NewV7()
 	if err != nil {
 		svc.logger.Error().Err(err)
 		return errors.New("failed to generate uuid")
 	}
 
-	salt := uuid.String()
+	userId, err := uuid.NewV7()
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return errors.New("failed to generate uuid")
+	}
+
+	salt := uuidSalt.String()
 	saltedPassword := append(
 		[]byte(password),
 		salt...,
@@ -64,6 +81,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 		return errors.New("failed to hash password")
 	}
 	newUserParams := mysql.CreateUserParams{
+		ID:       userId.String(),
 		Username: username,
 		Password: string(hashedPassword[:]),
 		Salt:     string(salt[:]),
@@ -124,6 +142,14 @@ func (svc *UserService) Login(ctx context.Context, username, password string) (T
 	return Token(signedToken), nil
 }
 
+func (svc *UserService) CheckUserExistance(ctx context.Context, username string) (bool, error) {
+	exist, err := svc.repo.GetUserExistance(ctx, username)
+	if err != nil {
+		return false, err
+	}
+	return exist, nil
+}
+
 func (svc *UserService) GetMemberByName(ctx context.Context, name string) (user.Member, error) {
 	member, err := svc.repo.GetMemberByName(ctx, name)
 	if err != nil {
@@ -132,16 +158,28 @@ func (svc *UserService) GetMemberByName(ctx context.Context, name string) (user.
 	return member, nil
 }
 
-func (svc *UserService) CreateMember(ctx context.Context, memberReq user.Member, username string) (user.Member, error) {
+func (svc *UserService) CreateMember(ctx context.Context, memberName string, username string) (user.Member, error) {
 	userData, err := svc.repo.GetUser(ctx, username)
 	if err != nil {
 		svc.logger.Error().Err(err)
 		return user.Member{}, fmt.Errorf("cannot found user with username %s", username)
 	}
-	newMember, err := svc.repo.CreateMember(ctx, memberReq, userData.ID)
+
+	memberId, err := uuid.NewV7()
 	if err != nil {
 		svc.logger.Error().Err(err)
-		return user.Member{}, fmt.Errorf("failed to create member %v", memberReq)
+		return user.Member{}, errors.New("failed to generate memberId")
+	}
+
+	newMember, err := svc.repo.CreateMember(ctx, user.Member{
+		Id:     memberId.String(),
+		Name:   memberName,
+		Status: "new member",
+	}, userData.ID)
+
+	if err != nil {
+		svc.logger.Error().Err(err)
+		return user.Member{}, fmt.Errorf("failed to create member %v", newMember)
 	}
 	return newMember, nil
 }

@@ -60,7 +60,7 @@ func (r *MySQLLocationRepository) GetBuildingsByMemberId(
 	res, err := r.Mysql.GetBuildingsByMemberId(ctx, memberId)
 	if err != nil {
 		r.logger.Error().Err(err)
-		return []ent.Building{}, nil
+		return []ent.Building{}, err
 	}
 
 	bs := []ent.Building{}
