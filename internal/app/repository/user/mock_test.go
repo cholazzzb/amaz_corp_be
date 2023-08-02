@@ -7,19 +7,18 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
 func TestCreateUser(t *testing.T) {
 	mur := user.NewMockUserRepo()
-	mur.CreateUser(context.Background(), mysql.CreateUserParams{
+	mur.CreateUser(context.Background(), ent.User{
 		Username: "new",
 		Password: "password",
 		Salt:     "salt",
 	})
 
-	expected1 := mysql.User{
+	expected1 := ent.User{
 		ID:       "1",
 		Username: "new",
 		Password: "password",
@@ -28,13 +27,13 @@ func TestCreateUser(t *testing.T) {
 
 	assert.Equal(t, expected1, mur.User.Users["new"], "mock data not same with request")
 
-	mur.CreateUser(context.Background(), mysql.CreateUserParams{
+	mur.CreateUser(context.Background(), ent.User{
 		Username: "new2",
 		Password: "password2",
 		Salt:     "salt2",
 	})
 
-	expected2 := mysql.User{
+	expected2 := ent.User{
 		ID:       "2",
 		Username: "new2",
 		Password: "password2",
@@ -49,14 +48,14 @@ func TestGetUser(t *testing.T) {
 	assert.Error(t, err, "not exist user not return error")
 	assert.Empty(t, user, "not exist user return user")
 
-	mur.CreateUser(context.Background(), mysql.CreateUserParams{
+	mur.CreateUser(context.Background(), ent.User{
 		Username: "test1",
 		Password: "password1",
 		Salt:     "salt",
 	})
 
 	user, err = mur.GetUser(context.Background(), "test1")
-	assert.Equal(t, mysql.User{
+	assert.Equal(t, ent.User{
 		ID:       "1",
 		Username: "test1",
 		Password: "password1",
@@ -73,7 +72,7 @@ func TestCreateMember(t *testing.T) {
 		Status: "new",
 	}, "3")
 
-	expected1 := mysql.Member{
+	expected1 := ent.Member{
 		ID:     "1",
 		Name:   "test1",
 		Status: "new",
@@ -86,7 +85,7 @@ func TestCreateMember(t *testing.T) {
 		Status: "new",
 	}, "2")
 
-	expected2 := mysql.Member{
+	expected2 := ent.Member{
 		ID:     "2",
 		Name:   "test2",
 		Status: "new",

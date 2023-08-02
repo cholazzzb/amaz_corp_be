@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
-
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
 )
 
 type UserRepo interface {
@@ -18,14 +16,14 @@ type UserRepository interface {
 	GetUser(
 		ctx context.Context,
 		params string,
-	) (mysql.User, error)
+	) (user.User, error)
 	GetUserExistance(
 		ctx context.Context,
 		username string,
 	) (bool, error)
 	CreateUser(
 		ctx context.Context,
-		params mysql.CreateUserParams,
+		params user.User,
 	) error
 }
 

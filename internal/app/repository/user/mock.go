@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
@@ -27,25 +26,25 @@ type Username string
 
 type MockUserRepository struct {
 	BiggestId int64
-	Users     map[Username]mysql.User
+	Users     map[Username]user.User
 }
 
 func newMockUserRepository() *MockUserRepository {
 	return &MockUserRepository{
 		BiggestId: 0,
-		Users:     map[Username]mysql.User{},
+		Users:     map[Username]user.User{},
 	}
 }
 
 func (mur *MockUserRepo) GetUser(
 	ctx context.Context,
 	params string,
-) (mysql.User, error) {
-	user, ok := mur.User.Users[Username(params)]
+) (user.User, error) {
+	res, ok := mur.User.Users[Username(params)]
 	if !ok {
-		return mysql.User{}, fmt.Errorf("user not found")
+		return user.User{}, fmt.Errorf("user not found")
 	}
-	return user, nil
+	return res, nil
 }
 
 func (mur *MockUserRepo) GetUserExistance(
@@ -58,10 +57,10 @@ func (mur *MockUserRepo) GetUserExistance(
 
 func (mur *MockUserRepo) CreateUser(
 	ctx context.Context,
-	params mysql.CreateUserParams,
+	params user.User,
 ) error {
 	id := mur.User.BiggestId + 1
-	newUser := mysql.User{
+	newUser := user.User{
 		ID:       strconv.FormatInt(id, 10),
 		Username: params.Username,
 		Password: params.Password,
@@ -77,13 +76,13 @@ type Name string
 
 type MockMemberRepository struct {
 	BiggestId int64
-	Members   map[Name]mysql.Member
+	Members   map[Name]user.Member
 }
 
 func newMockMemberRepository() *MockMemberRepository {
 	return &MockMemberRepository{
 		BiggestId: 0,
-		Members:   map[Name]mysql.Member{},
+		Members:   map[Name]user.Member{},
 	}
 }
 
@@ -109,7 +108,7 @@ func (mmr *MockUserRepo) CreateMember(
 	ID := mmr.Member.BiggestId + 1
 
 	mmr.Member.BiggestId = ID
-	mmr.Member.Members[Name(newMember.Name)] = mysql.Member{
+	mmr.Member.Members[Name(newMember.Name)] = user.Member{
 		ID:     strconv.FormatInt(ID, 10),
 		Name:   newMember.Name,
 		Status: newMember.Status,

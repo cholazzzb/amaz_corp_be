@@ -8,28 +8,28 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
+	userpostgres "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/postgresql"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
 
-type MySQLUserRepository struct {
-	Mysql  *mysql.Queries
-	logger zerolog.Logger
+type PostgresUserRepository struct {
+	Postgres *userpostgres.Queries
+	logger   zerolog.Logger
 }
 
-func NewMySQLUserRepository(sqlRepo *database.SqlRepository) *MySQLUserRepository {
+func NewPostgresUserRepository(sqlRepo *database.SqlRepository) *PostgresUserRepository {
 	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
 
-	queries := mysql.New(sqlRepo.Db)
-	return &MySQLUserRepository{Mysql: queries, logger: sublogger}
+	queries := userpostgres.New(sqlRepo.Db)
+	return &PostgresUserRepository{Postgres: queries, logger: sublogger}
 }
 
-func (r *MySQLUserRepository) GetUser(
+func (r *PostgresUserRepository) GetUser(
 	ctx context.Context,
 	params string,
 ) (user.User, error) {
-	result, err := r.Mysql.GetUser(ctx, params)
+	result, err := r.Postgres.GetUser(ctx, params)
 	if err != nil {
 		r.logger.Err(err)
 		return user.User{}, err
@@ -42,11 +42,11 @@ func (r *MySQLUserRepository) GetUser(
 	}, nil
 }
 
-func (r *MySQLUserRepository) GetUserExistance(
+func (r *PostgresUserRepository) GetUserExistance(
 	ctx context.Context,
 	username string,
 ) (bool, error) {
-	exist, err := r.Mysql.GetUserExistance(ctx, username)
+	exist, err := r.Postgres.GetUserExistance(ctx, username)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return true, err
@@ -54,11 +54,11 @@ func (r *MySQLUserRepository) GetUserExistance(
 	return exist, nil
 }
 
-func (r *MySQLUserRepository) CreateUser(
+func (r *PostgresUserRepository) CreateUser(
 	ctx context.Context,
 	params user.User,
 ) error {
-	_, err := r.Mysql.CreateUser(ctx, mysql.CreateUserParams{
+	_, err := r.Postgres.CreateUser(ctx, userpostgres.CreateUserParams{
 		ID:       params.ID,
 		Username: params.Username,
 		Password: params.Password,
@@ -71,11 +71,11 @@ func (r *MySQLUserRepository) CreateUser(
 	return nil
 }
 
-func (r *MySQLUserRepository) GetMemberByName(
+func (r *PostgresUserRepository) GetMemberByName(
 	ctx context.Context,
 	memberName string,
 ) (user.Member, error) {
-	result, err := r.Mysql.GetMemberByName(ctx, memberName)
+	result, err := r.Postgres.GetMemberByName(ctx, memberName)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return user.Member{}, err
@@ -86,11 +86,11 @@ func (r *MySQLUserRepository) GetMemberByName(
 	}, nil
 }
 
-func (r *MySQLUserRepository) CreateMemberParams(
+func (r *PostgresUserRepository) CreateMemberParams(
 	newMember user.Member,
 	userID string,
-) mysql.CreateMemberParams {
-	return mysql.CreateMemberParams{
+) userpostgres.CreateMemberParams {
+	return userpostgres.CreateMemberParams{
 		ID:     newMember.ID,
 		Name:   newMember.Name,
 		Status: newMember.Status,
@@ -98,13 +98,13 @@ func (r *MySQLUserRepository) CreateMemberParams(
 	}
 }
 
-func (r *MySQLUserRepository) CreateMember(
+func (r *PostgresUserRepository) CreateMember(
 	ctx context.Context,
 	newMember user.Member,
 	userID string,
 ) (user.Member, error) {
 	params := r.CreateMemberParams(newMember, userID)
-	_, err := r.Mysql.CreateMember(ctx, params)
+	_, err := r.Postgres.CreateMember(ctx, params)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return user.Member{}, err
@@ -112,15 +112,11 @@ func (r *MySQLUserRepository) CreateMember(
 	return newMember, nil
 }
 
-func (r *MySQLUserRepository) GetFriendsByUserId(
+func (r *PostgresUserRepository) GetFriendsByUserId(
 	ctx context.Context,
 	userId string,
 ) ([]user.Member, error) {
-	fs, err := r.Mysql.GetFriendsByMemberId(ctx, mysql.GetFriendsByMemberIdParams{
-		Member1ID: userId,
-		Member2ID: userId,
-		ID:        userId,
-	})
+	fs, err := r.Postgres.GetFriendsByMemberId(ctx, userId)
 	if err != nil {
 		r.logger.Error().Err(err)
 		return nil, err
@@ -135,7 +131,7 @@ func (r *MySQLUserRepository) GetFriendsByUserId(
 	return result, nil
 }
 
-func (r *MySQLUserRepository) CreateFriend(
+func (r *PostgresUserRepository) CreateFriend(
 	ctx context.Context,
 	member1Id,
 	member2Id string,

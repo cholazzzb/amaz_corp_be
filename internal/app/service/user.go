@@ -13,7 +13,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	repo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
-	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
@@ -80,7 +79,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 		svc.logger.Error().Err(err)
 		return errors.New("failed to hash password")
 	}
-	newUserParams := mysql.CreateUserParams{
+	newUserParams := user.User{
 		ID:       userId.String(),
 		Username: username,
 		Password: string(hashedPassword[:]),
@@ -172,7 +171,7 @@ func (svc *UserService) CreateMember(ctx context.Context, memberName string, use
 	}
 
 	newMember, err := svc.repo.CreateMember(ctx, user.Member{
-		Id:     memberId.String(),
+		ID:     memberId.String(),
 		Name:   memberName,
 		Status: "new member",
 	}, userData.ID)
