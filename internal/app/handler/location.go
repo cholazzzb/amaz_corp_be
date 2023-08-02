@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -60,7 +62,15 @@ type GetBuildingsByMemberIdRequest struct {
 }
 
 func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
-	memberId := ctx.Query("memberId")
+	memberId, success := ctx.Locals("UserId").(string)
+	if !success {
+		err := errors.New("failed to get userId from JWT")
+		h.logger.Error().Err(err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(
+			err.Error(),
+		)
+	}
+
 	if len(memberId) == 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "memberId is missing from the request",
