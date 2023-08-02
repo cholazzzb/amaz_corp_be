@@ -9,6 +9,7 @@ import (
 
 type Env struct {
 	ENVIRONMENT                    string
+	DB_TYPE                        string
 	DB_CON_STRING                  string
 	REDIS_CON_STRING               string
 	LOGIN_EXPIRATION_DURATION_HOUR time.Duration
@@ -23,6 +24,7 @@ func GetEnv(envLocation string) Env {
 	}
 
 	ENV.ENVIRONMENT = env["ENVIRONMENT"]
+	ENV.DB_TYPE = env["DB_TYPE"]
 	ENV.DB_CON_STRING = env["DB_CON_STRING"]
 	ENV.REDIS_CON_STRING = env["REDIS_CON_STRING"]
 

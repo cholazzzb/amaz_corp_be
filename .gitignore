@@ -3,7 +3,7 @@ secret
 
 # Environment
 .env.dev
-.env
+.env.**
 
 # Binaries for programs and plugins
 *.exe
