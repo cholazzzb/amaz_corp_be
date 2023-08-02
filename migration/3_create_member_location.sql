@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS members_buildings (
 
 -- +migrate Up
 ALTER TABLE members
-ADD COLUMN room_id varchar(36) AFTER status;
+ADD COLUMN room_id varchar(36);
 
 -- +migrate Up
 ALTER TABLE members

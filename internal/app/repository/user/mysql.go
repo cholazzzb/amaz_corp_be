@@ -18,10 +18,10 @@ type MySQLUserRepository struct {
 	logger zerolog.Logger
 }
 
-func NewMySQLUserRepository(mysqlRepo *database.MysqlRepository) *MySQLUserRepository {
+func NewMySQLUserRepository(sqlRepo *database.SqlRepository) *MySQLUserRepository {
 	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
 
-	queries := mysql.New(mysqlRepo.Db)
+	queries := mysql.New(sqlRepo.Db)
 	return &MySQLUserRepository{Mysql: queries, logger: sublogger}
 }
 

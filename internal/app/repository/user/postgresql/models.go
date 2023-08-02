@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.19.1
 
-package locationmysql
+package userpostgres
 
 import (
 	"database/sql"
@@ -40,8 +40,8 @@ type Room struct {
 type Session struct {
 	ID        string
 	RoomID    string
-	StartTime sql.NullTime
-	EndTime   sql.NullTime
+	StartTime interface{}
+	EndTime   interface{}
 }
 
 type User struct {
