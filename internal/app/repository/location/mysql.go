@@ -20,15 +20,15 @@ type MySQLLocationRepository struct {
 }
 
 func NewMySQLLocationRepository(
-	mysqlRepo *database.MysqlRepository,
+	sqlRepo *database.SqlRepository,
 ) *MySQLLocationRepository {
 	sublogger := log.With().
 		Str("layer", "repository").
 		Str("package", "location").Logger()
 
-	queries := mysql.New(mysqlRepo.Db)
+	queries := mysql.New(sqlRepo.Db)
 	return &MySQLLocationRepository{
-		db:     mysqlRepo.Db,
+		db:     sqlRepo.Db,
 		Mysql:  queries,
 		logger: sublogger,
 	}

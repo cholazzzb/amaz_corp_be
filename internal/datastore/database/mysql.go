@@ -4,12 +4,12 @@ import (
 	"database/sql"
 )
 
-type MysqlRepository struct {
+type SqlRepository struct {
 	Db *sql.DB
 }
 
-func NewMysqlRepository(db *sql.DB) *MysqlRepository {
-	return &MysqlRepository{
+func NewSqlRepository(db *sql.DB) *SqlRepository {
+	return &SqlRepository{
 		Db: db,
 	}
 }

@@ -33,7 +33,7 @@ func GetApp() *fiber.App {
 			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		}
 
-		dbSql, err := sql.Open("mysql", config.ENV.DB_CON_STRING)
+		dbSql, err := sql.Open(config.ENV.DB_TYPE, config.ENV.DB_CON_STRING)
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to connect mysql database")
 		}
