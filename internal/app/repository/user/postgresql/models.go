@@ -40,8 +40,8 @@ type Room struct {
 type Session struct {
 	ID        string
 	RoomID    string
-	StartTime interface{}
-	EndTime   interface{}
+	StartTime sql.NullTime
+	EndTime   sql.NullTime
 }
 
 type User struct {

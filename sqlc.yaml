@@ -1,29 +1,29 @@
 version: 2
 sql:
   - engine: "postgresql"
-    schema: "migration"
+    schema: "migration/postgresql"
     queries: "internal/datastore/database/user/postgresql.sql"
     gen:
       go:
         package: "userpostgres"
         out: "internal/app/repository/user/postgresql"
   - engine: "postgresql"
-    schema: "migration"
+    schema: "migration/postgresql"
     queries: "internal/datastore/database/location/postgresql.sql"
     gen:
       go: 
         package: "locationpostgres"
         out: "internal/app/repository/location/postgresql"
-  # Old 
+  # Legacy mysql
   - engine: "mysql"
-    schema: "migration"
+    schema: "migration/mysql"
     queries: "internal/datastore/database/user/mysql.sql"
     gen:
       go:
         package: "usermysql"
         out: "internal/app/repository/user/mysql"
   - engine: "mysql"
-    schema: "migration"
+    schema: "migration/mysql"
     queries: "internal/datastore/database/location/mysql.sql"
     gen:
       go: 

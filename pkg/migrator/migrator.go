@@ -11,8 +11,18 @@ import (
 )
 
 func newMigrator() *migrate.FileMigrationSource {
+	var dir string
+	switch config.ENV.DB_TYPE {
+	case "postgres":
+		dir = "./migration/postgresql"
+	case "mysql":
+		dir = "./migration/mysql"
+	default:
+		log.Panic().Msg("config.ENV.DB_TYPE is not recognized")
+	}
+
 	return &migrate.FileMigrationSource{
-		Dir: "./migration",
+		Dir: dir,
 	}
 }
 
