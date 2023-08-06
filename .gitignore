@@ -1,7 +1,14 @@
 # other
 secret
 
+# Logs
+logs.log
+
+# Build result
+app
+
 # Environment
+.env
 .env.dev
 .env.**
 

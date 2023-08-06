@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	config.GetEnv(".env.dev")
+	config.GetEnv(".env")
 
 	app := app.GetApp()
 
