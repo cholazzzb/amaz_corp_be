@@ -21,7 +21,6 @@ import (
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/heartbeat"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware/auth"
-	"github.com/cholazzzb/amaz_corp_be/pkg/migrator"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -46,7 +45,8 @@ func GetApp() *fiber.App {
 				log.Panic().Err(err).Msg("failed to connect sql database")
 			}
 
-			migrator.MigrateUp(dbSql)
+			// TODO: only migrate when not test
+			// migrator.MigrateUp(dbSql)
 
 			opt, err := redis.ParseURL(config.ENV.REDIS_CON_STRING)
 			if err != nil {

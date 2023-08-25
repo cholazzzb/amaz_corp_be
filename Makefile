@@ -28,8 +28,13 @@ docker-inspect-fs:
 	#[[check filesystem inside the image in container name ${CONTAINER_NAME} and export it to image-fs.txt]]
 	@docker export ${CONTAINER_NAME} | tar t > image-fs.txt
 
+#Test logic
 test:
-	@go test ./...
+	@go -short ./...
+
+#Test with mock call to the app
+test-mock:
+	@go test ./internal/app/route
 
 clean-test-cache:
 	@go clean -testcache

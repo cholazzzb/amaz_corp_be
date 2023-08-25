@@ -50,8 +50,8 @@ func (h *UserHandler) Register(ctx *fiber.Ctx) error {
 }
 
 type LoginRequest struct {
-	Username string
-	Password string
+	Username string `json:"username" validate:"required,min=8,max=32"`
+	Password string `json:"password" validate:"required,min=8,max=32"`
 }
 
 func (h *UserHandler) Login(ctx *fiber.Ctx) error {
