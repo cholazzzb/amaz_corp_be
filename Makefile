@@ -2,7 +2,7 @@ dev:
 	@go run main.go
 
 build:
-	@go build -tags netgo -ldflags '-s -w' -o app
+	@go build -tags netgo -ldflags '-s -w' -o amaz-corp-app
 
 #Docker Related
 REGION := asia-southeast1
