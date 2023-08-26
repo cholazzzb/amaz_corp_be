@@ -11,7 +11,7 @@ type Friend struct {
 }
 
 type Member struct {
-	ID     string
+	ID     string `json:"id"`
 	UserID string
 	Name   string
 	Status string

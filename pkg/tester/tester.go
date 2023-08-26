@@ -24,8 +24,7 @@ type MockTest struct {
 	ExpectedCode    int
 	ExpectedMessage string
 	ExpectedData    interface{}
-	withAuth        bool
-	Request         *http.Request
+	request         *http.Request
 }
 
 func NewMockTest() *MockTest {
@@ -73,15 +72,12 @@ func (b *MockTest) Expected(
 	return b
 }
 
-func (b *MockTest) WithAuth() *MockTest {
-	b.withAuth = true
-	return b
-}
-
-func (b *MockTest) BuildRequest() *http.Request {
+func (b *MockTest) BuildRequest() *MockTest {
 	switch {
 	case b.method == http.MethodGet:
-		return httptest.NewRequest(b.method, b.route, nil)
+		req := httptest.NewRequest(b.method, b.route, nil)
+		b.request = req
+		return b
 	default:
 		body, err := json.Marshal(b.body)
 		if err != nil {
@@ -89,82 +85,99 @@ func (b *MockTest) BuildRequest() *http.Request {
 		}
 		req := httptest.NewRequest(b.method, b.route, bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
-		return req
+		b.request = req
+		return b
 	}
 }
 
-type MockTester struct {
-	Tests       []MockTest
-	app         *fiber.App
-	withAuth    bool
-	bearerToken string
+func (b *MockTest) WithBearer(bearerToken string) *MockTest {
+	b.request.Header.Add("Authorization", "Bearer "+bearerToken)
+	return b
 }
 
-func (mc *MockTester) Setup(envPath string) {
+func (b *MockTest) Test(app *fiber.App, t *testing.T) []byte {
+	resp, err := app.Test(b.request, 10000)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyString := string(bodyBytes)
+	fmt.Println("respond body:", bodyString)
+	fmt.Println()
+
+	assert.Equalf(t, b.ExpectedCode, resp.StatusCode, b.Description)
+	return bodyBytes
+}
+
+func Register(app *fiber.App) {
+	body, err := json.Marshal(map[string]interface{}{
+		"username": "testing1",
+		"password": "testing1",
+	})
+	if err != nil {
+		panic(fmt.Errorf("failed to marshal %v", body))
+	}
+	req := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/register", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req, 10000)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyString := string(bodyBytes)
+	fmt.Println("respond body:", bodyString)
+	fmt.Println()
+}
+
+func Login(app *fiber.App) string {
+	body, err := json.Marshal(map[string]interface{}{
+		"username": "testing1",
+		"password": "testing1",
+	})
+	if err != nil {
+		panic(fmt.Errorf("failed to marshal %v", body))
+	}
+	req := httptest.NewRequest(http.MethodPost, "http://localhost:8000/api/v1/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req, 10000)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyString := string(bodyBytes)
+	fmt.Println("respond body:", bodyString)
+	fmt.Println()
+
+	type BearerToken struct {
+		Token string `json:"token"`
+	}
+	bearer := BearerToken{}
+	json.Unmarshal(bodyBytes, &bearer)
+	return bearer.Token
+}
+
+type MockApp struct {
+}
+
+func NewMockApp() *MockApp {
+	return &MockApp{}
+}
+
+func (mc *MockApp) Setup(envPath string) *fiber.App {
 	config.GetEnv(envPath)
-	mc.app = app.GetApp()
-}
-
-func (mc *MockTester) Test(t *testing.T) {
-	if mc.withAuth {
-		// TODO: Make sure the user is registered
-		body, err := json.Marshal(map[string]interface{}{
-			"username": "testing1",
-			"password": "testing1",
-		})
-		if err != nil {
-			panic(fmt.Errorf("failed to marshal %v", body))
-		}
-		req := httptest.NewRequest(http.MethodPost, "http://localhost:8000/api/v1/login", bytes.NewReader(body))
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, err := mc.app.Test(req, 10000)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer resp.Body.Close()
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		bodyString := string(bodyBytes)
-		fmt.Println("respond body:", bodyString)
-		fmt.Println()
-
-		type BearerToken struct {
-			Token string `json:"token"`
-		}
-		bearer := BearerToken{}
-		json.Unmarshal(bodyBytes, &bearer)
-		mc.bearerToken = bearer.Token
-	}
-
-	for _, test := range mc.Tests {
-		req := test.BuildRequest()
-
-		if test.withAuth {
-			req.Header.Add("Authorization", "Bearer "+mc.bearerToken)
-		}
-		resp, err := mc.app.Test(req, 10000)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer resp.Body.Close()
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		bodyString := string(bodyBytes)
-		fmt.Println("respond body:", bodyString)
-		fmt.Println()
-
-		assert.Equalf(t, test.ExpectedCode, resp.StatusCode, test.Description)
-	}
-}
-
-func (mc *MockTester) AddTest(test MockTest) {
-	mc.Tests = append(mc.Tests, test)
-	if test.withAuth {
-		mc.withAuth = true
-	}
+	return app.GetApp()
 }

@@ -1,8 +1,10 @@
 package route_test
 
 import (
+	"encoding/json"
 	"testing"
 
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 	"github.com/cholazzzb/amaz_corp_be/pkg/random"
 	"github.com/cholazzzb/amaz_corp_be/pkg/tester"
 )
@@ -14,24 +16,26 @@ func TestUserRoute(t *testing.T) {
 		t.Skip("skipping user route test in short mode.")
 	}
 
-	tests := tester.MockTester{}
+	testApp := tester.NewMockApp().Setup("../../../.env.test")
 
-	test1 := *tester.NewMockTest().
+	tester.NewMockTest().
 		Desc("unauthorized get api").
 		GET().
 		Route(BASE_URL+"/users").
-		Expected(401, "", "")
-	tests.AddTest(test1)
+		Expected(401, "", "").
+		BuildRequest().
+		Test(testApp, t)
 
-	test2 := *tester.NewMockTest().
+	tester.NewMockTest().
 		Desc("get HTTP status 404, when route is not exists").
 		GET().
 		Route(BASE_URL+"/not-found").
-		Expected(404, "", "")
-	tests.AddTest(test2)
+		Expected(404, "", "").
+		BuildRequest().
+		Test(testApp, t)
 
 	// TODO: Fix login api, when user not found return 400
-	// test3 := *tester.NewMockTest().
+	//  tester.NewMockTest().
 	// 	Desc("login").
 	// 	POST().
 	// 	Route(BASE_URL+"/login").
@@ -39,23 +43,21 @@ func TestUserRoute(t *testing.T) {
 	// 		"username": "gaada",
 	// 		"password": "gaada",
 	// 	}).
-	// 	Expected(400, "", "")
-	// tests.AddTest(test3)
-
-	tests.Setup("../../../.env.test")
-	tests.Test(t)
+	// 	Expected(400, "", "").
+	//  BuildRequest2().
+	//  Test(testApp, t)
 }
 
-func TestAfterLogin(t *testing.T) {
+func TestUserRouteAfterLogin(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping user route test in short mode.")
 	}
 
 	newUsername := random.RandomString(12)
 
-	tests := tester.MockTester{}
+	testApp := tester.NewMockApp().Setup("../../../.env.test")
 
-	test1 := *tester.NewMockTest().
+	tester.NewMockTest().
 		Desc("/register when user not register should successfull").
 		POST().
 		Route(BASE_URL+"/register").
@@ -64,10 +66,10 @@ func TestAfterLogin(t *testing.T) {
 			"password": newUsername,
 		}).
 		Expected(200, "", "").
-		WithAuth()
-	tests.AddTest(test1)
+		BuildRequest().
+		Test(testApp, t)
 
-	test2 := *tester.NewMockTest().
+	loginResByte := tester.NewMockTest().
 		Desc("/login after register should successfull").
 		POST().
 		Route(BASE_URL+"/login").
@@ -76,21 +78,30 @@ func TestAfterLogin(t *testing.T) {
 			"password": newUsername,
 		}).
 		Expected(200, "", "").
-		WithAuth()
-	tests.AddTest(test2)
+		BuildRequest().
+		Test(testApp, t)
 
-	test3 := *tester.NewMockTest().
-		Desc("/members").
+	type LoginRes struct {
+		Token string `json:"token"`
+	}
+	loginRes := LoginRes{}
+	json.Unmarshal(loginResByte, &loginRes)
+
+	createMemberResByte := tester.NewMockTest().
+		Desc("/members should success create member").
 		POST().
 		Route(BASE_URL+"/members").
 		Body(map[string]interface{}{
-			"name": newUsername + "_name",
+			"name": newUsername,
 		}).
 		Expected(200, "", "").
-		WithAuth()
-	tests.AddTest(test3)
+		BuildRequest().
+		WithBearer(loginRes.Token).
+		Test(testApp, t)
 
-	tests.Setup("../../../.env.dev")
-	tests.Test(t)
-
+	type CreateMemberRes struct {
+		Member user.Member `json:"member"`
+	}
+	createMemberRes := CreateMemberRes{}
+	json.Unmarshal(createMemberResByte, &createMemberRes)
 }
