@@ -42,7 +42,7 @@ func TestUserRoute(t *testing.T) {
 	// 	Expected(400, "", "")
 	// tests.AddTest(test3)
 
-	tests.Setup("../../../.env.dev")
+	tests.Setup("../../../.env.test")
 	tests.Test(t)
 }
 

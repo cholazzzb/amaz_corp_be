@@ -30,7 +30,7 @@ docker-inspect-fs:
 
 #Test logic
 test:
-	@go -short ./...
+	@go test -short ./...
 
 #Test with mock call to the app
 test-mock:
