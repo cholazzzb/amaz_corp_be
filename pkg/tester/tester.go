@@ -20,7 +20,7 @@ type MockTest struct {
 	Description     string
 	method          string
 	route           string
-	body            map[string]interface{}
+	body            interface{}
 	ExpectedCode    int
 	ExpectedMessage string
 	ExpectedData    interface{}
@@ -51,12 +51,18 @@ func (b *MockTest) PUT() *MockTest {
 	return b
 }
 
+func (b *MockTest) DELETE(route string) *MockTest {
+	b.method = http.MethodDelete
+	b.route = route
+	return b
+}
+
 func (b *MockTest) Route(route string) *MockTest {
 	b.route = route
 	return b
 }
 
-func (b *MockTest) Body(body map[string]interface{}) *MockTest {
+func (b *MockTest) Body(body interface{}) *MockTest {
 	b.body = body
 	return b
 }

@@ -157,6 +157,7 @@ func (svc *UserService) GetMemberByName(ctx context.Context, name string) (user.
 	return member, nil
 }
 
+// TODO: Use transaction here
 func (svc *UserService) CreateMember(ctx context.Context, memberName string, username string) (user.Member, error) {
 	userData, err := svc.repo.GetUser(ctx, username)
 	if err != nil {
