@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/rs/zerolog/log"
 	migrate "github.com/rubenv/sql-migrate"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 func newMigrator() *migrate.FileMigrationSource {
@@ -18,7 +18,8 @@ func newMigrator() *migrate.FileMigrationSource {
 	case "mysql":
 		dir = "./migration/mysql"
 	default:
-		log.Panic().Msg("config.ENV.DB_TYPE is not recognized")
+		logger.Get().Error("config.ENV.DB_TYPE is not recognized")
+		panic("config.ENV.DB_TYPE is not recognized")
 	}
 
 	return &migrate.FileMigrationSource{
@@ -29,7 +30,8 @@ func newMigrator() *migrate.FileMigrationSource {
 func MigrateUp(dbSql *sql.DB) {
 	n, err := migrate.Exec(dbSql, config.ENV.DB_TYPE, newMigrator(), migrate.Up)
 	if err != nil {
-		log.Panic().Err(err).Msg("failed to migrate database")
+		logger.Get().Error("failed to migrate database")
+		panic("failed to migrate database")
 	}
 	fmt.Printf("Applied %d migrations!\n", n)
 }

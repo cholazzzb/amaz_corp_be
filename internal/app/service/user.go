@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
 	repo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 type UserClaims struct {
@@ -25,7 +25,7 @@ type UserClaims struct {
 
 type UserService struct {
 	repo   repo.UserRepo
-	logger zerolog.Logger
+	logger *slog.Logger
 }
 
 type Token string
@@ -33,7 +33,7 @@ type Token string
 func NewUserService(
 	repo repo.UserRepo,
 ) *UserService {
-	sublogger := log.With().Str("layer", "service").Str("package", "user").Logger()
+	sublogger := logger.Get().With(slog.String("domain", "user"), slog.String("layer", "svc"))
 
 	return &UserService{
 		repo:   repo,
@@ -45,7 +45,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 	exist, err := svc.CheckUserExistance(ctx, username)
 
 	if err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return errors.New("failed to check username existence")
 	}
 
@@ -55,13 +55,13 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 
 	uuidSalt, err := uuid.NewV7()
 	if err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return errors.New("failed to generate uuid")
 	}
 
 	userId, err := uuid.NewV7()
 	if err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return errors.New("failed to generate uuid")
 	}
 
@@ -76,7 +76,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return errors.New("failed to hash password")
 	}
 	newUserParams := user.User{
@@ -87,7 +87,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 	}
 
 	if err := svc.repo.CreateUser(ctx, newUserParams); err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return errors.New("failed to create user")
 	}
 
@@ -97,7 +97,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, string, error) {
 	result, err := svc.repo.GetUser(ctx, username)
 	if err != nil {
-		svc.logger.Error().Err(err).Msg("username not found")
+		svc.logger.Error(err.Error())
 		return false, "", errors.New("username not found")
 	}
 
@@ -112,6 +112,7 @@ func (svc *UserService) authenticateUser(ctx context.Context, username, password
 	)
 
 	if err != nil {
+		svc.logger.Error(err.Error())
 		return false, "", errors.New("wrong Password")
 	}
 	return true, result.ID, nil
@@ -120,6 +121,7 @@ func (svc *UserService) authenticateUser(ctx context.Context, username, password
 func (svc *UserService) Login(ctx context.Context, username, password string) (Token, error) {
 	isAuthentic, userId, err := svc.authenticateUser(ctx, username, password)
 	if !isAuthentic || err != nil {
+		svc.logger.Error(err.Error())
 		return "", errors.New("failed to authenticate user")
 	}
 
@@ -135,6 +137,7 @@ func (svc *UserService) Login(ctx context.Context, username, password string) (T
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString(config.UserConfig.JWT_SIGNATURE_KEY)
 	if err != nil {
+		svc.logger.Error(err.Error())
 		return "", errors.New("failed to sign token")
 	}
 
@@ -144,6 +147,7 @@ func (svc *UserService) Login(ctx context.Context, username, password string) (T
 func (svc *UserService) CheckUserExistance(ctx context.Context, username string) (bool, error) {
 	exist, err := svc.repo.GetUserExistance(ctx, username)
 	if err != nil {
+		svc.logger.Error(err.Error())
 		return false, err
 	}
 	return exist, nil
@@ -152,6 +156,7 @@ func (svc *UserService) CheckUserExistance(ctx context.Context, username string)
 func (svc *UserService) GetMemberByName(ctx context.Context, name string) (user.Member, error) {
 	member, err := svc.repo.GetMemberByName(ctx, name)
 	if err != nil {
+		svc.logger.Error(err.Error())
 		return member, fmt.Errorf("cannot find member with name %s", name)
 	}
 	return member, nil
@@ -161,13 +166,13 @@ func (svc *UserService) GetMemberByName(ctx context.Context, name string) (user.
 func (svc *UserService) CreateMember(ctx context.Context, memberName string, username string) (user.Member, error) {
 	userData, err := svc.repo.GetUser(ctx, username)
 	if err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return user.Member{}, fmt.Errorf("cannot found user with username %s", username)
 	}
 
 	memberId, err := uuid.NewV7()
 	if err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return user.Member{}, errors.New("failed to generate memberId")
 	}
 
@@ -178,7 +183,7 @@ func (svc *UserService) CreateMember(ctx context.Context, memberName string, use
 	}, userData.ID)
 
 	if err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return user.Member{}, fmt.Errorf("failed to create member %v", newMember)
 	}
 	return newMember, nil
@@ -187,7 +192,7 @@ func (svc *UserService) CreateMember(ctx context.Context, memberName string, use
 func (svc *UserService) GetFriendsByMemberId(ctx context.Context, userId string) ([]user.Member, error) {
 	fs, err := svc.repo.GetFriendsByUserId(ctx, userId)
 	if err != nil {
-		svc.logger.Error().Err(err)
+		svc.logger.Error(err.Error())
 		return nil, fmt.Errorf("cannot find friends with name %s", fs)
 	}
 	return fs, nil

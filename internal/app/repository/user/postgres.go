@@ -3,11 +3,10 @@ package user
 import (
 	"context"
 	"errors"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 
 	userpostgres "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/postgresql"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
@@ -15,11 +14,11 @@ import (
 
 type PostgresUserRepository struct {
 	Postgres *userpostgres.Queries
-	logger   zerolog.Logger
+	logger   *slog.Logger
 }
 
 func NewPostgresUserRepository(sqlRepo *database.SqlRepository) *PostgresUserRepository {
-	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
+	sublogger := logger.Get().With("domain", "user", "layer", "repo")
 
 	queries := userpostgres.New(sqlRepo.Db)
 	return &PostgresUserRepository{Postgres: queries, logger: sublogger}
@@ -31,7 +30,7 @@ func (r *PostgresUserRepository) GetUser(
 ) (user.User, error) {
 	result, err := r.Postgres.GetUser(ctx, params)
 	if err != nil {
-		r.logger.Err(err)
+		r.logger.Error(err.Error())
 		return user.User{}, err
 	}
 	return user.User{
@@ -48,7 +47,7 @@ func (r *PostgresUserRepository) GetUserExistance(
 ) (bool, error) {
 	exist, err := r.Postgres.GetUserExistance(ctx, username)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return true, err
 	}
 	return exist, nil
@@ -65,7 +64,7 @@ func (r *PostgresUserRepository) CreateUser(
 		Salt:     params.Salt,
 	})
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 	return nil
@@ -77,7 +76,7 @@ func (r *PostgresUserRepository) GetMemberByName(
 ) (user.Member, error) {
 	result, err := r.Postgres.GetMemberByName(ctx, memberName)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return user.Member{}, err
 	}
 	return user.Member{
@@ -106,7 +105,7 @@ func (r *PostgresUserRepository) CreateMember(
 	params := r.CreateMemberParams(newMember, userID)
 	_, err := r.Postgres.CreateMember(ctx, params)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return user.Member{}, err
 	}
 	return newMember, nil
@@ -118,7 +117,7 @@ func (r *PostgresUserRepository) GetFriendsByUserId(
 ) ([]user.Member, error) {
 	fs, err := r.Postgres.GetFriendsByMemberId(ctx, userId)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return nil, err
 	}
 	result := make([]user.Member, len(fs))

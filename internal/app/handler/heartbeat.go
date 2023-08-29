@@ -2,22 +2,22 @@ package handler
 
 import (
 	"errors"
+	"log/slog"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 type HeartbeatHandler struct {
 	svc    *service.HeartbeatService
-	logger zerolog.Logger
+	logger *slog.Logger
 }
 
 func NewHeartBeatHandler(svc *service.HeartbeatService) *HeartbeatHandler {
-	sublogger := log.With().Str("layer", "handler").Str("package", "heartbeat").Logger()
+	sublogger := logger.Get().With(slog.String("layer", "handler"), slog.String("package", "heartbeat"))
 
 	return &HeartbeatHandler{svc: svc, logger: sublogger}
 }
@@ -27,7 +27,7 @@ func (h *HeartbeatHandler) Pulse(ctx *fiber.Ctx) error {
 
 	if !success {
 		err := errors.New("failed to get userId from JWT")
-		h.logger.Error().Err(err)
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			err.Error(),
 		)
@@ -36,7 +36,7 @@ func (h *HeartbeatHandler) Pulse(ctx *fiber.Ctx) error {
 	err := h.svc.Pulse(ctx.Context(), userId)
 
 	if err != nil {
-		h.logger.Error().Err(err)
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			err.Error(),
 		)
@@ -55,7 +55,7 @@ func (h *HeartbeatHandler) GetStatusByUserId(ctx *fiber.Ctx) error {
 	status, err := h.svc.CheckUserStatus(ctx.Context(), userId)
 
 	if err != nil {
-		h.logger.Error().Err(err)
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			err.Error(),
 		)

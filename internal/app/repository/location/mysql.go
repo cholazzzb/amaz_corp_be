@@ -4,27 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/location/mysql"
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/location"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 type MySQLLocationRepository struct {
 	db     *sql.DB
 	Mysql  *mysql.Queries
-	logger zerolog.Logger
+	logger *slog.Logger
 }
 
 func NewMySQLLocationRepository(
 	sqlRepo *database.SqlRepository,
 ) *MySQLLocationRepository {
-	sublogger := log.With().
-		Str("layer", "repository").
-		Str("package", "location").Logger()
+	sublogger := logger.Get().With(slog.String("domain", "location"), slog.String("layer", "repo"))
 
 	queries := mysql.New(sqlRepo.Db)
 	return &MySQLLocationRepository{
@@ -39,7 +36,7 @@ func (r *MySQLLocationRepository) GetAllBuildings(
 ) ([]ent.Building, error) {
 	res, err := r.Mysql.GetAllBuildings(ctx)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Building{}, err
 	}
 
@@ -59,7 +56,7 @@ func (r *MySQLLocationRepository) GetBuildingsByMemberId(
 ) ([]ent.Building, error) {
 	res, err := r.Mysql.GetBuildingsByMemberId(ctx, memberId)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Building{}, err
 	}
 
@@ -80,7 +77,7 @@ func (r *MySQLLocationRepository) CreateMemberBuilding(
 ) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 	defer tx.Rollback()
@@ -91,7 +88,7 @@ func (r *MySQLLocationRepository) CreateMemberBuilding(
 	})
 
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 
@@ -105,7 +102,7 @@ func (r *MySQLLocationRepository) CreateMemberBuilding(
 	}
 	_, err = qtx.CreateMemberBuilding(ctx, param)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 
@@ -123,7 +120,7 @@ func (r *MySQLLocationRepository) DeleteBuilding(
 	}
 	err := r.Mysql.DeleteMemberBuilding(ctx, params)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 	return nil
@@ -137,7 +134,7 @@ func (r *MySQLLocationRepository) GetMembersByRoomId(
 		sql.NullString{String: roomId, Valid: true},
 	)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Member{}, nil
 	}
 
@@ -159,7 +156,7 @@ func (r *MySQLLocationRepository) GetRoomsByMemberId(
 ) ([]ent.Room, error) {
 	res, err := r.Mysql.GetRoomsByMemberId(ctx, memberId)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Room{}, nil
 	}
 
@@ -179,7 +176,7 @@ func (r *MySQLLocationRepository) GetRoomsByBuildingId(
 ) ([]ent.Room, error) {
 	res, err := r.Mysql.GetRoomsByBuildingId(ctx, buildingId)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Room{}, nil
 	}
 

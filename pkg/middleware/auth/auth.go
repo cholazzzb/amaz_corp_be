@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/rs/zerolog/log"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware"
 )
 
@@ -54,22 +54,22 @@ func CreateAuthMiddleware() middleware.Middleware {
 		userId, userIdOk := claims["UserId"].(string)
 
 		if !ok {
-			log.Error().Err(err).Msg("jwt claim failed")
+			logger.Get().Error("jwt claim failed")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !token.Valid {
-			log.Error().Err(err).Msg("token invalid")
+			logger.Get().Error("token invalid")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !usernameOk {
-			log.Error().Err(err).Msg("username in token not found")
+			logger.Get().Error("username in token not found")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !userIdOk {
-			log.Error().Err(err).Msg("userId in token not found")
+			logger.Get().Error("userId in token not found")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 

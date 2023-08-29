@@ -6,6 +6,8 @@ package userpostgres
 
 import (
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 type Building struct {
@@ -37,11 +39,37 @@ type Room struct {
 	BuildingID string
 }
 
+type Schedule struct {
+	ID     uuid.UUID
+	RoomID string
+}
+
 type Session struct {
 	ID        string
 	RoomID    string
 	StartTime sql.NullTime
 	EndTime   sql.NullTime
+}
+
+type Task struct {
+	ID           uuid.UUID
+	ScheduleID   uuid.UUID
+	StartTime    sql.NullTime
+	DurationDay  sql.NullInt32
+	TaskDetailID uuid.UUID
+}
+
+type TaskDetail struct {
+	ID         uuid.UUID
+	Name       sql.NullString
+	OwnerID    sql.NullString
+	AssigneeID sql.NullString
+	Status     sql.NullString
+}
+
+type TasksDependency struct {
+	TaskID         uuid.NullUUID
+	DependedTaskID uuid.NullUUID
 }
 
 type User struct {

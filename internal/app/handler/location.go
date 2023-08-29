@@ -2,22 +2,22 @@ package handler
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
 type LocationHandler struct {
 	svc    *service.LocationService
-	logger zerolog.Logger
+	logger *slog.Logger
 }
 
 func NewLocationHandler(svc *service.LocationService) *LocationHandler {
-	sublogger := log.With().Str("layer", "handler").Str("package", "location").Logger()
+	sublogger := logger.Get().With(slog.String("domain", "location"), slog.String("layer", "handler"))
 
 	return &LocationHandler{svc: svc, logger: sublogger}
 }
@@ -44,12 +44,14 @@ type DeleteBuildingRequest struct {
 func (h *LocationHandler) DeleteBuilding(ctx *fiber.Ctx) error {
 	req := new(DeleteBuildingRequest)
 	if err := ctx.BodyParser(req); err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
 	err := h.svc.DeleteBuilding(ctx.Context(), req.BuildingId, req.MemberId)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal Server Error",
 		})
@@ -65,7 +67,7 @@ func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
 	memberId, success := ctx.Locals("UserId").(string)
 	if !success {
 		err := errors.New("failed to get userId from JWT")
-		h.logger.Error().Err(err)
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			err.Error(),
 		)
@@ -84,6 +86,7 @@ func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
 
 	lbs, err := h.svc.GetBuildingsByMemberId(ctx.Context(), memberId)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal Server Error",
 		})
@@ -103,6 +106,7 @@ type JoinBuildingRequest struct {
 func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
 	req := new(JoinBuildingRequest)
 	if err := ctx.BodyParser(req); err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
@@ -110,6 +114,7 @@ func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
 
 	err := h.svc.JoinBuilding(ctx.Context(), req.MemberId, req.BuildingId)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			err.Error(),
 		)
@@ -139,6 +144,7 @@ func (h *LocationHandler) GetRoomsByBuildingId(ctx *fiber.Ctx) error {
 
 	rs, err := h.svc.GetRoomsByBuildingId(ctx.Context(), buildingId)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal Server Error",
 		})
@@ -169,6 +175,7 @@ func (h *LocationHandler) GetListOnlineMembers(ctx *fiber.Ctx) error {
 
 	loms, err := h.svc.GetListOnlineMembers(ctx.Context(), roomId)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal Server Error",
 		})

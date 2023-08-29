@@ -3,22 +3,21 @@ package service
 import (
 	"context"
 	"fmt"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 
 	repo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/heartbeat"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 type HeartbeatService struct {
 	repo   repo.HeartbeatRepo
-	logger zerolog.Logger
+	logger *slog.Logger
 }
 
 func NewHeartbeatService(
 	repo repo.HeartbeatRepo,
 ) *HeartbeatService {
-	sublogger := log.With().Str("layer", "service").Str("package", "heartbeat").Logger()
+	sublogger := logger.Get().With(slog.String("domain", "heartbeat"), slog.String("layer", "svc"))
 
 	return &HeartbeatService{
 		repo:   repo,
@@ -31,7 +30,7 @@ func (s *HeartbeatService) Pulse(ctx context.Context, userId string) error {
 
 	if err != nil {
 		errMessage := fmt.Errorf("failed to update to online in the heartbeat map")
-		s.logger.Error().Err(errMessage)
+		s.logger.Error(err.Error())
 		return errMessage
 	}
 
@@ -43,7 +42,7 @@ func (s *HeartbeatService) CheckUserStatus(ctx context.Context, userId string) (
 
 	if err != nil {
 		errMessage := fmt.Errorf("failed to checkUserIdExistence: %v", userId)
-		s.logger.Error().Err(errMessage)
+		s.logger.Error(err.Error())
 		return "", errMessage
 	}
 

@@ -2,24 +2,24 @@ package app
 
 import (
 	"database/sql"
-	"os"
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/redis/go-redis/v9"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
 	hbRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/heartbeat"
 	locRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/location"
+	schRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/schedule"
+
 	"github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/route"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/heartbeat"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware/auth"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -36,13 +36,12 @@ func GetApp() *fiber.App {
 		defer lock.Unlock()
 
 		if app == nil {
-			if config.ENV.ENVIRONMENT == "DEV" {
-				log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-			}
+			// TODO: Write the log into file
 
 			dbSql, err := sql.Open(config.ENV.DB_TYPE, config.ENV.DB_CON_STRING)
 			if err != nil {
-				log.Panic().Err(err).Msg("failed to connect sql database")
+				logger.Get().Error(err.Error())
+				panic("failed to connect sql database")
 			}
 
 			// TODO: only migrate when not test
@@ -50,7 +49,8 @@ func GetApp() *fiber.App {
 
 			opt, err := redis.ParseURL(config.ENV.REDIS_CON_STRING)
 			if err != nil {
-				log.Panic().Err(err).Msg("failed to connect redis database")
+				logger.Get().Error(err.Error())
+				panic("failed to connect redis database")
 			}
 			redis.NewClient(opt)
 
@@ -86,6 +86,12 @@ func GetApp() *fiber.App {
 			lh := handler.NewLocationHandler(ls)
 			lRoute := route.NewLocationRoute(v1, lh)
 			lRoute.InitRoute(authMiddleware)
+
+			sr := schRepo.NewPostgresLocationRepository(sqlRepo)
+			ss := service.NewScheduleService(sr)
+			sh := handler.NewScheduleHandler(ss)
+			sRoute := route.NewScheduleRoute(v1, sh)
+			sRoute.InitRoute(authMiddleware)
 		}
 	}
 

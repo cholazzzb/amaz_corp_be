@@ -3,23 +3,22 @@ package user
 import (
 	"context"
 	"errors"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 
 	mysql "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/mysql"
 )
 
 type MySQLUserRepository struct {
 	Mysql  *mysql.Queries
-	logger zerolog.Logger
+	logger *slog.Logger
 }
 
 func NewMySQLUserRepository(sqlRepo *database.SqlRepository) *MySQLUserRepository {
-	sublogger := log.With().Str("layer", "repository").Str("package", "user").Logger()
+	sublogger := logger.Get().With(slog.String("domain", "user"), slog.String("layer", "repo"))
 
 	queries := mysql.New(sqlRepo.Db)
 	return &MySQLUserRepository{Mysql: queries, logger: sublogger}
@@ -31,7 +30,7 @@ func (r *MySQLUserRepository) GetUser(
 ) (user.User, error) {
 	result, err := r.Mysql.GetUser(ctx, params)
 	if err != nil {
-		r.logger.Err(err)
+		r.logger.Error(err.Error())
 		return user.User{}, err
 	}
 	return user.User{
@@ -48,7 +47,7 @@ func (r *MySQLUserRepository) GetUserExistance(
 ) (bool, error) {
 	exist, err := r.Mysql.GetUserExistance(ctx, username)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return true, err
 	}
 	return exist, nil
@@ -65,7 +64,7 @@ func (r *MySQLUserRepository) CreateUser(
 		Salt:     params.Salt,
 	})
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 	return nil
@@ -77,7 +76,7 @@ func (r *MySQLUserRepository) GetMemberByName(
 ) (user.Member, error) {
 	result, err := r.Mysql.GetMemberByName(ctx, memberName)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return user.Member{}, err
 	}
 	return user.Member{
@@ -106,7 +105,7 @@ func (r *MySQLUserRepository) CreateMember(
 	params := r.CreateMemberParams(newMember, userID)
 	_, err := r.Mysql.CreateMember(ctx, params)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return user.Member{}, err
 	}
 	return newMember, nil
@@ -122,7 +121,7 @@ func (r *MySQLUserRepository) GetFriendsByUserId(
 		ID:        userId,
 	})
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return nil, err
 	}
 	result := make([]user.Member, len(fs))

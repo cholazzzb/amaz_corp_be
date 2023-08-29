@@ -1,21 +1,22 @@
 package handler
 
 import (
+	"log/slog"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
 type UserHandler struct {
 	svc    *service.UserService
-	logger zerolog.Logger
+	logger *slog.Logger
 }
 
 func NewUserHandler(svc *service.UserService) *UserHandler {
-	sublogger := log.With().Str("layer", "handler").Str("package", "user").Logger()
+	sublogger := logger.Get().With(slog.String("domain", "user"), slog.String("layer", "handler"))
 
 	return &UserHandler{svc: svc, logger: sublogger}
 }
@@ -28,6 +29,7 @@ type RegisterRequest struct {
 func (h *UserHandler) Register(ctx *fiber.Ctx) error {
 	req := new(RegisterRequest)
 	if err := ctx.BodyParser(req); err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
@@ -39,6 +41,7 @@ func (h *UserHandler) Register(ctx *fiber.Ctx) error {
 
 	err := h.svc.RegisterUser(ctx.Context(), req.Username, req.Password)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
@@ -57,6 +60,7 @@ type LoginRequest struct {
 func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 	req := new(LoginRequest)
 	if err := ctx.BodyParser(req); err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
@@ -64,6 +68,7 @@ func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 
 	token, err := h.svc.Login(ctx.Context(), req.Username, req.Password)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
@@ -84,6 +89,7 @@ func (h *UserHandler) CheckUserExistance(ctx *fiber.Ctx) error {
 
 	exist, err := h.svc.CheckUserExistance(ctx.Context(), username)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			err.Error(),
 		)
@@ -114,6 +120,7 @@ func (h *UserHandler) GetMemberByName(ctx *fiber.Ctx) error {
 
 	member, err := h.svc.GetMemberByName(ctx.Context(), req.Name)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			err.Error(),
 		)
@@ -132,6 +139,7 @@ type CreateMemberByUsernameRequest struct {
 func (h *UserHandler) CreateMemberByUsername(ctx *fiber.Ctx) error {
 	req := new(CreateMemberByUsernameRequest)
 	if err := ctx.BodyParser(req); err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
 		})
@@ -144,6 +152,7 @@ func (h *UserHandler) CreateMemberByUsername(ctx *fiber.Ctx) error {
 	username := ctx.Locals("Username").(string)
 	member, err := h.svc.CreateMember(ctx.Context(), req.Name, username)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal Server Error",
 		})
@@ -174,6 +183,7 @@ func (h *UserHandler) GetFriendsByMemberId(ctx *fiber.Ctx) error {
 
 	fs, err := h.svc.GetFriendsByMemberId(ctx.Context(), mID)
 	if err != nil {
+		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal Server Error",
 		})

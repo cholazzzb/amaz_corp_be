@@ -1,10 +1,9 @@
 package main
 
 import (
-	"github.com/rs/zerolog/log"
-
 	"github.com/cholazzzb/amaz_corp_be/internal/app"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 func main() {
@@ -12,5 +11,5 @@ func main() {
 
 	app := app.GetApp()
 
-	log.Error().Err(app.Listen(":8080"))
+	logger.Get().Error(app.Listen(":8080").Error())
 }

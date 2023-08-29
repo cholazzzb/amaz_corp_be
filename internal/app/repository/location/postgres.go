@@ -4,25 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 
 	locationpostgres "github.com/cholazzzb/amaz_corp_be/internal/app/repository/location/postgresql"
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/location"
+	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 type PostgresLocationRepository struct {
 	db       *sql.DB
 	Postgres *locationpostgres.Queries
-	logger   zerolog.Logger
+	logger   *slog.Logger
 }
 
 func NewPostgresLocationRepository(postgresRepo *database.SqlRepository) *PostgresLocationRepository {
-	sublogger := log.With().Str("layer", "repository").Str("package", "location").Logger()
-
+	sublogger := logger.Get().With(slog.String("domain", "location"), slog.String("layer", "repo"))
 	queries := locationpostgres.New(postgresRepo.Db)
+
 	return &PostgresLocationRepository{
 		db:       postgresRepo.Db,
 		Postgres: queries,
@@ -35,7 +34,7 @@ func (r *PostgresLocationRepository) GetAllBuildings(
 ) ([]ent.Building, error) {
 	res, err := r.Postgres.GetAllBuildings(ctx)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Building{}, err
 	}
 
@@ -55,7 +54,7 @@ func (r *PostgresLocationRepository) GetBuildingsByMemberId(
 ) ([]ent.Building, error) {
 	res, err := r.Postgres.GetBuildingsByMemberId(ctx, memberId)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Building{}, err
 	}
 
@@ -76,7 +75,7 @@ func (r *PostgresLocationRepository) CreateMemberBuilding(
 ) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 	defer tx.Rollback()
@@ -87,7 +86,7 @@ func (r *PostgresLocationRepository) CreateMemberBuilding(
 	})
 
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 
@@ -101,7 +100,7 @@ func (r *PostgresLocationRepository) CreateMemberBuilding(
 	}
 	_, err = qtx.CreateMemberBuilding(ctx, param)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 
@@ -119,7 +118,7 @@ func (r *PostgresLocationRepository) DeleteBuilding(
 	}
 	err := r.Postgres.DeleteMemberBuilding(ctx, params)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return err
 	}
 	return nil
@@ -133,7 +132,7 @@ func (r *PostgresLocationRepository) GetMembersByRoomId(
 		sql.NullString{String: roomId, Valid: true},
 	)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Member{}, nil
 	}
 
@@ -155,7 +154,7 @@ func (r *PostgresLocationRepository) GetRoomsByMemberId(
 ) ([]ent.Room, error) {
 	res, err := r.Postgres.GetRoomsByMemberId(ctx, memberId)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Room{}, nil
 	}
 
@@ -175,7 +174,7 @@ func (r *PostgresLocationRepository) GetRoomsByBuildingId(
 ) ([]ent.Room, error) {
 	res, err := r.Postgres.GetRoomsByBuildingId(ctx, buildingId)
 	if err != nil {
-		r.logger.Error().Err(err)
+		r.logger.Error(err.Error())
 		return []ent.Room{}, nil
 	}
 
