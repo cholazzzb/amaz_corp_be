@@ -112,8 +112,10 @@ func (b *MockTest) Test(app *fiber.App, t *testing.T) []byte {
 		log.Fatal(err)
 	}
 	bodyString := string(bodyBytes)
-	fmt.Println("respond body:", bodyString)
-	fmt.Println()
+	if resp.StatusCode >= 300 {
+		fmt.Println("respond body:", bodyString)
+		fmt.Println()
+	}
 
 	assert.Equalf(t, b.ExpectedCode, resp.StatusCode, b.Description)
 	return bodyBytes
@@ -140,8 +142,10 @@ func Register(app *fiber.App) {
 		log.Fatal(err)
 	}
 	bodyString := string(bodyBytes)
-	fmt.Println("respond body:", bodyString)
-	fmt.Println()
+	if resp.StatusCode >= 300 {
+		fmt.Println("respond body:", bodyString)
+		fmt.Println()
+	}
 }
 
 func Login(app *fiber.App) string {
@@ -165,8 +169,10 @@ func Login(app *fiber.App) string {
 		log.Fatal(err)
 	}
 	bodyString := string(bodyBytes)
-	fmt.Println("respond body:", bodyString)
-	fmt.Println()
+	if resp.StatusCode >= 300 {
+		fmt.Println("respond body:", bodyString)
+		fmt.Println()
+	}
 
 	type BearerToken struct {
 		Token string `json:"token"`
