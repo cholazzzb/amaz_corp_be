@@ -55,7 +55,7 @@ type Task struct {
 	ID           uuid.UUID
 	ScheduleID   uuid.UUID
 	StartTime    sql.NullTime
-	DurationDay  sql.NullInt32
+	EndTime      sql.NullTime
 	TaskDetailID uuid.UUID
 }
 

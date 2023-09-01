@@ -25,7 +25,18 @@ type TaskQuery struct {
 	ScheduleID   string
 	StartTime    time.Time
 	DurationDay  int32
+	EndTime      time.Time
 	TaskDetailID string
+}
+
+type TaskQueryFilter struct {
+	StartTime time.Time
+	EndTime   time.Time
+}
+
+type TaskQueryFilterParams struct {
+	StartTime string `query:"start-time"`
+	EndTime   string `query:"end-time"`
 }
 
 type TaskDetailCommand struct {

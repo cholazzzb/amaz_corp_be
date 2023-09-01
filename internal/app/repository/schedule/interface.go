@@ -43,6 +43,7 @@ type ScheduleRepoQuery interface {
 	GetListTaskByScheduleID(
 		ctx context.Context,
 		scheduleID string,
+		queryFilter ent.TaskQueryFilter,
 	) ([]ent.TaskQuery, error)
 
 	GetListTaskWithDetailByScheduleID(

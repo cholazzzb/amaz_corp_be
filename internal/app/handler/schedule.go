@@ -2,6 +2,7 @@ package handler
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -95,6 +96,13 @@ func (h *ScheduleHandler) GetTaskDetail(ctx *fiber.Ctx) error {
 	})
 }
 
+// TODO:
+// ## Filter
+// assignee=string
+// dependency=Array<taskID>
+// ## Sort
+// sort-by=Array<assignee|owner|startDate|endDate|duration>
+// sort-dir=asc|dsc
 func (h *ScheduleHandler) GetListTaskByScheduleID(ctx *fiber.Ctx) error {
 	scheduleID := ctx.Params("scheduleID")
 	if len(scheduleID) == 0 {
@@ -102,7 +110,23 @@ func (h *ScheduleHandler) GetListTaskByScheduleID(ctx *fiber.Ctx) error {
 			"message": "scheduleID is missing from the request",
 		})
 	}
-	tks, err := h.svc.GetListTaskByScheduleID(ctx.Context(), scheduleID)
+
+	queryFilterParams := new(ent.TaskQueryFilterParams)
+
+	if err := ctx.QueryParser(queryFilterParams); err != nil {
+		h.logger.Error(err.Error())
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "query params is in wrong format",
+		})
+	}
+
+	startTime, err := time.Parse(time.RFC1123, queryFilterParams.StartTime) // ex on javascript: new Date("2023-09-3").toUTCString()
+	endTime, err := time.Parse(time.RFC1123, queryFilterParams.EndTime)
+
+	tks, err := h.svc.GetListTaskByScheduleID(ctx.Context(), scheduleID, ent.TaskQueryFilter{
+		StartTime: startTime,
+		EndTime:   endTime,
+	})
 	if err != nil {
 		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

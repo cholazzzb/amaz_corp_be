@@ -26,14 +26,14 @@ func (q *Queries) CreateScheduleByRoomID(ctx context.Context, roomID string) (st
 }
 
 const createTask = `-- name: CreateTask :execresult
-INSERT INTO tasks(schedule_id, start_time, duration_day, task_detail_id)
+INSERT INTO tasks(schedule_id, start_time, end_time, task_detail_id)
 VALUES ($1, $2, $3, $4)
 `
 
 type CreateTaskParams struct {
 	ScheduleID   uuid.UUID
 	StartTime    sql.NullTime
-	DurationDay  sql.NullInt32
+	EndTime      sql.NullTime
 	TaskDetailID uuid.UUID
 }
 
@@ -41,7 +41,7 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (sql.Res
 	return q.db.ExecContext(ctx, createTask,
 		arg.ScheduleID,
 		arg.StartTime,
-		arg.DurationDay,
+		arg.EndTime,
 		arg.TaskDetailID,
 	)
 }
@@ -74,7 +74,7 @@ func (q *Queries) CreateTaskDetail(ctx context.Context, arg CreateTaskDetailPara
 const editTask = `-- name: EditTask :execresult
 UPDATE tasks
 SET start_time = $2,
-    duration_day = $3,
+    end_time = $3,
     task_detail_id = $4
 WHERE id = $1
 `
@@ -82,7 +82,7 @@ WHERE id = $1
 type EditTaskParams struct {
 	ID           uuid.UUID
 	StartTime    sql.NullTime
-	DurationDay  sql.NullInt32
+	EndTime      sql.NullTime
 	TaskDetailID uuid.UUID
 }
 
@@ -90,7 +90,7 @@ func (q *Queries) EditTask(ctx context.Context, arg EditTaskParams) (sql.Result,
 	return q.db.ExecContext(ctx, editTask,
 		arg.ID,
 		arg.StartTime,
-		arg.DurationDay,
+		arg.EndTime,
 		arg.TaskDetailID,
 	)
 }
@@ -99,7 +99,7 @@ const getListTaskAndDetailByScheduleID = `-- name: GetListTaskAndDetailBySchedul
 SELECT tasks.id,
 	   tasks.schedule_id,
 	   tasks.start_time,
-	   tasks.duration_day,
+	   tasks.end_time,
 	   tasks.task_detail_id,
 	   task_details.name,
 	   task_details.owner_id,
@@ -112,15 +112,27 @@ ON tasks.task_detail_id = task_details.id
 FULL OUTER JOIN tasks_dependencies TD
 ON TD.task_id = tasks.id
 WHERE tasks.schedule_id = $1
+	AND tasks.start_time = $2
+	AND tasks.end_time = $3
+	AND task_details.owner_id = $4
+	AND task_details.assignee_id = $5
 GROUP BY tasks.id
 LIMIT 100
 `
+
+type GetListTaskAndDetailByScheduleIDParams struct {
+	ScheduleID uuid.UUID
+	StartTime  sql.NullTime
+	EndTime    sql.NullTime
+	OwnerID    sql.NullString
+	AssigneeID sql.NullString
+}
 
 type GetListTaskAndDetailByScheduleIDRow struct {
 	ID           uuid.UUID
 	ScheduleID   uuid.UUID
 	StartTime    sql.NullTime
-	DurationDay  sql.NullInt32
+	EndTime      sql.NullTime
 	TaskDetailID uuid.UUID
 	Name         sql.NullString
 	OwnerID      sql.NullString
@@ -129,8 +141,14 @@ type GetListTaskAndDetailByScheduleIDRow struct {
 	ArrayAgg     interface{}
 }
 
-func (q *Queries) GetListTaskAndDetailByScheduleID(ctx context.Context, scheduleID uuid.UUID) ([]GetListTaskAndDetailByScheduleIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getListTaskAndDetailByScheduleID, scheduleID)
+func (q *Queries) GetListTaskAndDetailByScheduleID(ctx context.Context, arg GetListTaskAndDetailByScheduleIDParams) ([]GetListTaskAndDetailByScheduleIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getListTaskAndDetailByScheduleID,
+		arg.ScheduleID,
+		arg.StartTime,
+		arg.EndTime,
+		arg.OwnerID,
+		arg.AssigneeID,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +160,7 @@ func (q *Queries) GetListTaskAndDetailByScheduleID(ctx context.Context, schedule
 			&i.ID,
 			&i.ScheduleID,
 			&i.StartTime,
-			&i.DurationDay,
+			&i.EndTime,
 			&i.TaskDetailID,
 			&i.Name,
 			&i.OwnerID,
@@ -164,14 +182,22 @@ func (q *Queries) GetListTaskAndDetailByScheduleID(ctx context.Context, schedule
 }
 
 const getListTaskByScheduleID = `-- name: GetListTaskByScheduleID :many
-SELECT id, schedule_id, start_time, duration_day, task_detail_id
+SELECT id, schedule_id, start_time, end_time, task_detail_id
 FROM tasks
 WHERE tasks.schedule_id = $1
+	AND tasks.start_time >= $2 AND tasks.start_time <= $2 + interval '1 day'
+	AND tasks.end_time >= $3 AND tasks.end_time <= $3 + interval '1 day'
 LIMIT 100
 `
 
-func (q *Queries) GetListTaskByScheduleID(ctx context.Context, scheduleID uuid.UUID) ([]Task, error) {
-	rows, err := q.db.QueryContext(ctx, getListTaskByScheduleID, scheduleID)
+type GetListTaskByScheduleIDParams struct {
+	ScheduleID uuid.UUID
+	StartTime  sql.NullTime
+	EndTime    sql.NullTime
+}
+
+func (q *Queries) GetListTaskByScheduleID(ctx context.Context, arg GetListTaskByScheduleIDParams) ([]Task, error) {
+	rows, err := q.db.QueryContext(ctx, getListTaskByScheduleID, arg.ScheduleID, arg.StartTime, arg.EndTime)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +209,7 @@ func (q *Queries) GetListTaskByScheduleID(ctx context.Context, scheduleID uuid.U
 			&i.ID,
 			&i.ScheduleID,
 			&i.StartTime,
-			&i.DurationDay,
+			&i.EndTime,
 			&i.TaskDetailID,
 		); err != nil {
 			return nil, err

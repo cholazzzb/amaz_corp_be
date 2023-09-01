@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -90,10 +92,25 @@ func (r *PostgresScheduleRepository) GetTaskDetail(
 func (r *PostgresScheduleRepository) GetListTaskByScheduleID(
 	ctx context.Context,
 	scheduleID string,
+	queryFilter ent.TaskQueryFilter,
 ) ([]ent.TaskQuery, error) {
 	sUUID, err := uuid.Parse(scheduleID)
-	res, err := r.Postgres.GetListTaskByScheduleID(ctx, sUUID)
 	tasks := []ent.TaskQuery{}
+	if err != nil {
+		r.logger.Error(err.Error())
+		return tasks, err
+	}
+	startTime := sql.NullTime{}
+	startTime.Scan(queryFilter.StartTime)
+	endTime := sql.NullTime{}
+	endTime.Scan(queryFilter.EndTime)
+
+	arg := schedulepostgres.GetListTaskByScheduleIDParams{
+		ScheduleID: sUUID,
+		StartTime:  startTime,
+		EndTime:    endTime,
+	}
+	res, err := r.Postgres.GetListTaskByScheduleID(ctx, arg)
 	if err != nil {
 		r.logger.Error(err.Error())
 		return tasks, err
@@ -104,7 +121,7 @@ func (r *PostgresScheduleRepository) GetListTaskByScheduleID(
 			ID:           task.ID.String(),
 			ScheduleID:   task.ScheduleID.String(),
 			StartTime:    task.StartTime.Time,
-			DurationDay:  task.DurationDay.Int32,
+			DurationDay:  calDurationDay(task.EndTime.Time, task.StartTime.Time),
 			TaskDetailID: task.TaskDetailID.String(),
 		})
 	}
@@ -120,7 +137,11 @@ func (r *PostgresScheduleRepository) GetListTaskWithDetailByScheduleID(
 	if err != nil {
 		return twds, err
 	}
-	res, err := r.Postgres.GetListTaskAndDetailByScheduleID(ctx, scUUID)
+
+	arg := schedulepostgres.GetListTaskAndDetailByScheduleIDParams{
+		ScheduleID: scUUID,
+	}
+	res, err := r.Postgres.GetListTaskAndDetailByScheduleID(ctx, arg)
 	if err != nil {
 		return twds, err
 	}
@@ -130,7 +151,7 @@ func (r *PostgresScheduleRepository) GetListTaskWithDetailByScheduleID(
 			TaskID:       twd.ID.String(),
 			ScheduleID:   twd.ScheduleID.String(),
 			StartTime:    twd.StartTime.Time,
-			DurationDay:  twd.DurationDay.Int32,
+			DurationDay:  calDurationDay(twd.EndTime.Time, twd.StartTime.Time),
 			TaskDetailID: twd.TaskDetailID.String(),
 			Name:         twd.Name.String,
 			OwnerID:      twd.OwnerID.String,
@@ -190,8 +211,8 @@ func (r *PostgresScheduleRepository) CreateTask(
 			Time:  task.StartTime,
 			Valid: true,
 		},
-		DurationDay: sql.NullInt32{
-			Int32: task.DurationDay,
+		EndTime: sql.NullTime{
+			Time:  calEndTime(task.StartTime, task.DurationDay),
 			Valid: true,
 		},
 		TaskDetailID: tdUUID,
@@ -236,8 +257,8 @@ func (r *PostgresScheduleRepository) EditTask(
 			Time:  task.StartTime,
 			Valid: true,
 		},
-		DurationDay: sql.NullInt32{
-			Int32: task.DurationDay,
+		EndTime: sql.NullTime{
+			Time:  calEndTime(task.StartTime, task.DurationDay),
 			Valid: true,
 		},
 		TaskDetailID: td.ID,
@@ -249,4 +270,14 @@ func (r *PostgresScheduleRepository) EditTask(
 	}
 
 	return tx.Commit()
+}
+
+func calDurationDay(endTime time.Time, startTime time.Time) int32 {
+	dif := endTime.Sub(startTime).Hours()
+	return int32(math.Ceil(dif / 24))
+}
+
+func calEndTime(startTime time.Time, durationDay int32) time.Time {
+	add := time.Duration(durationDay*24) * time.Hour
+	return startTime.Add(add)
 }

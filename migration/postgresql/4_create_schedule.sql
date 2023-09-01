@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
     schedule_id uuid NOT NULL,
     start_time timestamp,
-    duration_day integer,
+    end_time timestamp,
     task_detail_id uuid UNIQUE NOT NULL,
     CONSTRAINT fk_schedule_id FOREIGN KEY(schedule_id) REFERENCES schedules(id) ON DELETE CASCADE,
     CONSTRAINT fk_task_detail_id FOREIGN KEY(task_detail_id) REFERENCES task_details(id) ON DELETE CASCADE

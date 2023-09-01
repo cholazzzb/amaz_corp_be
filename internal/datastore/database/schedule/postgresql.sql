@@ -19,13 +19,15 @@ LIMIT 1;
 SELECT *
 FROM tasks
 WHERE tasks.schedule_id = $1
+	AND tasks.start_time >= $2 AND tasks.start_time <= $2 + interval '1 day'
+	AND tasks.end_time >= $3 AND tasks.end_time <= $3 + interval '1 day'
 LIMIT 100;
 
 -- name: GetListTaskAndDetailByScheduleID :many
 SELECT tasks.id,
 	   tasks.schedule_id,
 	   tasks.start_time,
-	   tasks.duration_day,
+	   tasks.end_time,
 	   tasks.task_detail_id,
 	   task_details.name,
 	   task_details.owner_id,
@@ -38,11 +40,15 @@ ON tasks.task_detail_id = task_details.id
 FULL OUTER JOIN tasks_dependencies TD
 ON TD.task_id = tasks.id
 WHERE tasks.schedule_id = $1
+	AND tasks.start_time = $2
+	AND tasks.end_time = $3
+	AND task_details.owner_id = $4
+	AND task_details.assignee_id = $5
 GROUP BY tasks.id
 LIMIT 100;
 
 -- name: CreateTask :execresult
-INSERT INTO tasks(schedule_id, start_time, duration_day, task_detail_id)
+INSERT INTO tasks(schedule_id, start_time, end_time, task_detail_id)
 VALUES ($1, $2, $3, $4);
 
 -- name: CreateTaskDetail :one
@@ -53,6 +59,6 @@ RETURNING id;
 -- name: EditTask :execresult
 UPDATE tasks
 SET start_time = $2,
-    duration_day = $3,
+    end_time = $3,
     task_detail_id = $4
 WHERE id = $1;

@@ -64,8 +64,9 @@ func (svc *ScheduleService) GetTaskDetail(
 func (svc *ScheduleService) GetListTaskByScheduleID(
 	ctx context.Context,
 	scheduleID string,
+	queryFilter ent.TaskQueryFilter,
 ) ([]ent.TaskQuery, error) {
-	res, err := svc.repo.GetListTaskByScheduleID(ctx, scheduleID)
+	res, err := svc.repo.GetListTaskByScheduleID(ctx, scheduleID, queryFilter)
 	if err != nil {
 		svc.logger.Error(err.Error())
 		return []ent.TaskQuery{}, fmt.Errorf("failed to get list task with scheduleID: %s", scheduleID)
