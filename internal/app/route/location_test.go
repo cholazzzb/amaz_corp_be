@@ -44,6 +44,15 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 		WithBearer(bearerToken).
 		Test(testApp, t)
 
+	tester.NewMockTest().
+		Desc("/buildings/:buildingID/members should return all members in the building").
+		GET().
+		Route(BASE_URL+"/buildings/bc133e57-df08-407e-b1e5-8e10c653ad3c/members").
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(bearerToken).
+		Test(testApp, t)
+
 	createMemberResByte := tester.NewMockTest().
 		Desc("/members should success create member").
 		POST().

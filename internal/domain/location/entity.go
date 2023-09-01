@@ -15,3 +15,9 @@ type Member struct {
 	Status string
 	UserId string
 }
+
+type MemberQuery struct {
+	MemberID string
+	Name     string
+	Status   string
+}

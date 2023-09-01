@@ -68,6 +68,28 @@ func (r *PostgresLocationRepository) GetBuildingsByMemberId(
 	return bs, nil
 }
 
+func (r *PostgresLocationRepository) GetListMemberByBuildingID(
+	ctx context.Context,
+	buildingID string,
+) ([]ent.MemberQuery, error) {
+	res, err := r.Postgres.GetListMemberByBuildingID(ctx, buildingID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return []ent.MemberQuery{}, err
+	}
+
+	ms := []ent.MemberQuery{}
+	for _, m := range res {
+		ms = append(ms, ent.MemberQuery{
+			MemberID: m.ID,
+			Name:     m.Name,
+			Status:   m.Status,
+		})
+	}
+
+	return ms, nil
+}
+
 func (r *PostgresLocationRepository) CreateMemberBuilding(
 	ctx context.Context,
 	memberId,

@@ -12,15 +12,11 @@ type LocationRepo interface {
 }
 
 type BuildingRepository interface {
-	GetAllBuildings(
-		ctx context.Context,
-	) ([]ent.Building, error)
+	BuildingRepoCommand
+	BuildingRepoQuery
+}
 
-	GetBuildingsByMemberId(
-		ctx context.Context,
-		memberId string,
-	) ([]ent.Building, error)
-
+type BuildingRepoCommand interface {
 	CreateMemberBuilding(
 		ctx context.Context,
 		memberId,
@@ -32,6 +28,22 @@ type BuildingRepository interface {
 		buildingId,
 		memberId string,
 	) error
+}
+
+type BuildingRepoQuery interface {
+	GetAllBuildings(
+		ctx context.Context,
+	) ([]ent.Building, error)
+
+	GetBuildingsByMemberId(
+		ctx context.Context,
+		memberId string,
+	) ([]ent.Building, error)
+
+	GetListMemberByBuildingID(
+		ctx context.Context,
+		buildingID string,
+	) ([]ent.MemberQuery, error)
 }
 
 type RoomRepository interface {

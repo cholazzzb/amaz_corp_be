@@ -156,6 +156,28 @@ func (h *LocationHandler) GetRoomsByBuildingId(ctx *fiber.Ctx) error {
 	})
 }
 
+func (h *LocationHandler) GetListMemberByBuildingID(ctx *fiber.Ctx) error {
+	buildingID := ctx.Params("buildingID")
+	if len(buildingID) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "buildingID is missing from the request",
+		})
+	}
+
+	ms, err := h.svc.GetListMemberByBuildingID(ctx.Context(), buildingID)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal Server Error",
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
+		"members": ms,
+	})
+}
+
 type GetListOnlineMembersRequest struct {
 	RoomId string `json:"roomId" validate:"required"`
 }

@@ -99,6 +99,44 @@ func (q *Queries) GetBuildingsByMemberId(ctx context.Context, memberID string) (
 	return items, nil
 }
 
+const getListMemberByBuildingID = `-- name: GetListMemberByBuildingID :many
+SELECT members.id, members.name, members.status
+FROM members
+INNER JOIN members_buildings
+ON members.id = members_buildings.member_id
+WHERE members_buildings.building_id = $1
+LIMIT 20
+`
+
+type GetListMemberByBuildingIDRow struct {
+	ID     string
+	Name   string
+	Status string
+}
+
+func (q *Queries) GetListMemberByBuildingID(ctx context.Context, buildingID string) ([]GetListMemberByBuildingIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getListMemberByBuildingID, buildingID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetListMemberByBuildingIDRow
+	for rows.Next() {
+		var i GetListMemberByBuildingIDRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Status); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMemberBuildingById = `-- name: GetMemberBuildingById :one
 SELECT EXISTS(SELECT mb.member_id, mb.building_id 
 FROM members_buildings mb

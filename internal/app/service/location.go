@@ -95,6 +95,19 @@ func (svc *LocationService) GetBuildingsByMemberId(
 	return bs, nil
 }
 
+func (svc *LocationService) GetListMemberByBuildingID(
+	ctx context.Context,
+	buildingID string,
+) ([]ent.MemberQuery, error) {
+	ms, err := svc.repo.GetListMemberByBuildingID(ctx, buildingID)
+	if err != nil {
+		svc.logger.Error(err.Error())
+		return []ent.MemberQuery{}, nil
+	}
+
+	return ms, nil
+}
+
 func (svc *LocationService) JoinBuilding(
 	ctx context.Context,
 	memberId,

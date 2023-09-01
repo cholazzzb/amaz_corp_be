@@ -23,6 +23,7 @@ func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 	buildingApi.Get("/", r.h.GetBuildingsByMemberId)
 	buildingApi.Get("/all", r.h.GetBuildings)
 	buildingApi.Get("/:buildingId/rooms", r.h.GetRoomsByBuildingId)
+	buildingApi.Get("/:buildingID/members", r.h.GetListMemberByBuildingID)
 
 	buildingApi.Post("/join", r.h.JoinBuildingById)
 

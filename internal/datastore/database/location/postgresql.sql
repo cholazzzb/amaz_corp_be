@@ -35,6 +35,14 @@ FROM members_buildings mb
 WHERE mb.member_id = $1 AND mb.building_id = $2
 LIMIT 1);
 
+-- name: GetListMemberByBuildingID :many
+SELECT members.id, members.name, members.status
+FROM members
+INNER JOIN members_buildings
+ON members.id = members_buildings.member_id
+WHERE members_buildings.building_id = $1
+LIMIT 20;
+
 -- name: CreateMemberBuilding :execresult
 INSERT INTO members_buildings(member_id, building_id)
 VALUES ($1, $2);
