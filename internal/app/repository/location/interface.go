@@ -38,6 +38,12 @@ type BuildingRepoQuery interface {
 		ctx context.Context,
 	) ([]ent.Building, error)
 
+	GetMemberBuildingExist(
+		ctx context.Context,
+		userID,
+		buildingID string,
+	) (bool, error)
+
 	GetBuildingsByMemberId(
 		ctx context.Context,
 		memberId string,

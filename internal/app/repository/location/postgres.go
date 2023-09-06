@@ -51,6 +51,34 @@ func (r *PostgresLocationRepository) GetAllBuildings(
 	return bs, nil
 }
 
+func (r *PostgresLocationRepository) GetMemberBuildingExist(
+	ctx context.Context,
+	userID,
+	buildingID string,
+) (bool, error) {
+	buildingUUID, err := uuid.Parse(buildingID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return true, err
+	}
+
+	exist, err := r.Postgres.GetUserBuildingExist(ctx, locationpostgres.GetUserBuildingExistParams{
+		ID:         userID,
+		BuildingID: buildingUUID,
+	})
+
+	if err != nil {
+		r.logger.Error(err.Error())
+		return true, err
+	}
+
+	if exist {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (r *PostgresLocationRepository) GetMemberByName(
 	ctx context.Context,
 	memberName string,
@@ -169,18 +197,6 @@ func (r *PostgresLocationRepository) CreateMemberBuilding(
 	defer tx.Rollback()
 	qtx := r.Postgres.WithTx(tx)
 
-	exist, err := qtx.GetUserBuildingExist(ctx, userID)
-
-	if err != nil {
-		r.logger.Error(err.Error())
-		return err
-	}
-
-	if exist {
-		return errors.New("member building already exist")
-	}
-	fmt.Println("db", userID, buildingId)
-
 	memberUUID, err := qtx.CreateMember(ctx, locationpostgres.CreateMemberParams{
 		Name:   memberName,
 		Status: "new member",
@@ -196,19 +212,6 @@ func (r *PostgresLocationRepository) CreateMemberBuilding(
 	if err != nil {
 		r.logger.Error(err.Error())
 		return err
-	}
-	exist, err = qtx.GetMemberBuildingById(ctx, locationpostgres.GetMemberBuildingByIdParams{
-		MemberID:   memberUUID,
-		BuildingID: buildingUUID,
-	})
-
-	if err != nil {
-		r.logger.Error(err.Error())
-		return err
-	}
-
-	if exist {
-		return errors.New("member building already created")
 	}
 
 	param := locationpostgres.CreateMemberBuildingParams{

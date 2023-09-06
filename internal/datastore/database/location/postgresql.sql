@@ -67,7 +67,7 @@ SELECT EXISTS(
     ON users.id = members.user_id
     INNER JOIN members_buildings
     ON members_buildings.member_id = members.id
-    WHERE users.id = $1
+    WHERE users.id = $1 AND members_buildings.building_id = $2
     LIMIT 1
 );
 

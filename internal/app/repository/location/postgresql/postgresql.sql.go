@@ -365,13 +365,18 @@ SELECT EXISTS(
     ON users.id = members.user_id
     INNER JOIN members_buildings
     ON members_buildings.member_id = members.id
-    WHERE users.id = $1
+    WHERE users.id = $1 AND members_buildings.building_id = $2
     LIMIT 1
 )
 `
 
-func (q *Queries) GetUserBuildingExist(ctx context.Context, id string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, getUserBuildingExist, id)
+type GetUserBuildingExistParams struct {
+	ID         string
+	BuildingID uuid.UUID
+}
+
+func (q *Queries) GetUserBuildingExist(ctx context.Context, arg GetUserBuildingExistParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getUserBuildingExist, arg.ID, arg.BuildingID)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

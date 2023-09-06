@@ -108,6 +108,14 @@ func (svc *LocationService) GetListMemberByBuildingID(
 	return ms, nil
 }
 
+func (svc *LocationService) CheckMemberBuildingExist(
+	ctx context.Context,
+	userID,
+	buildingID string,
+) (bool, error) {
+	return svc.repo.GetMemberBuildingExist(ctx, userID, buildingID)
+}
+
 func (svc *LocationService) JoinBuilding(
 	ctx context.Context,
 	memberName,

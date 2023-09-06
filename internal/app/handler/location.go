@@ -115,7 +115,18 @@ func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err := h.svc.JoinBuilding(ctx.Context(), req.Name, userID, req.BuildingId)
+	exist, err := h.svc.CheckMemberBuildingExist(ctx.Context(), userID, req.BuildingId)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return response.InternalServerError(ctx)
+	}
+	if exist {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "user already joined in the building",
+		})
+	}
+
+	err = h.svc.JoinBuilding(ctx.Context(), req.Name, userID, req.BuildingId)
 	if err != nil {
 		h.logger.Error(err.Error())
 		return response.InternalServerError(ctx)
