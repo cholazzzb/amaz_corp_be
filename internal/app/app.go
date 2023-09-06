@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/redis/go-redis/v9"
 
@@ -59,6 +60,8 @@ func GetApp() *fiber.App {
 			app.Use(fiberLogger.New(fiberLogger.Config{
 				TimeFormat: "2006-01-02T15:04:05-0700",
 			}))
+
+			app.Use(cors.New())
 
 			api := app.Group("/api")
 			v1 := api.Group("/v1")
