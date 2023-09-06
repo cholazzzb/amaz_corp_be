@@ -24,10 +24,10 @@ type MemberCommand struct {
 
 type MemberQuery struct {
 	ID     string `json:"id"`
-	UserID string
-	Name   string
-	Status string
-	RoomID string
+	UserID string `json:"userID"`
+	Name   string `json:"name"`
+	Status string `json:"status"`
+	RoomID string `json:"roomID"`
 }
 
 type JoinBuildingCommand struct {
