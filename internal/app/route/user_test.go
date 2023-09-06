@@ -19,16 +19,14 @@ func TestUserRoute(t *testing.T) {
 
 	tester.NewMockTest().
 		Desc("unauthorized get api").
-		GET().
-		Route(BASE_URL+"/users").
+		GET(BASE_URL+"/users").
 		Expected(401, "", "").
 		BuildRequest().
 		Test(testApp, t)
 
 	tester.NewMockTest().
 		Desc("get HTTP status 404, when route is not exists").
-		GET().
-		Route(BASE_URL+"/not-found").
+		GET(BASE_URL+"/not-found").
 		Expected(404, "", "").
 		BuildRequest().
 		Test(testApp, t)
@@ -58,8 +56,7 @@ func TestUserRouteAfterLogin(t *testing.T) {
 
 	tester.NewMockTest().
 		Desc("/register when user not register should successfull").
-		POST().
-		Route(BASE_URL+"/register").
+		POST(BASE_URL+"/register").
 		Body(map[string]interface{}{
 			"username": newUsername,
 			"password": newUsername,
@@ -70,8 +67,7 @@ func TestUserRouteAfterLogin(t *testing.T) {
 
 	loginResByte := tester.NewMockTest().
 		Desc("/login after register should successfull").
-		POST().
-		Route(BASE_URL+"/login").
+		POST(BASE_URL+"/login").
 		Body(map[string]interface{}{
 			"username": newUsername,
 			"password": newUsername,

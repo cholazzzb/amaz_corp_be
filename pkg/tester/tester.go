@@ -36,28 +36,26 @@ func (b *MockTest) Desc(desc string) *MockTest {
 	return b
 }
 
-func (b *MockTest) GET() *MockTest {
+func (b *MockTest) GET(route string) *MockTest {
 	b.method = http.MethodGet
+	b.route = route
 	return b
 }
 
-func (b *MockTest) POST() *MockTest {
+func (b *MockTest) POST(route string) *MockTest {
 	b.method = http.MethodPost
+	b.route = route
 	return b
 }
 
-func (b *MockTest) PUT() *MockTest {
+func (b *MockTest) PUT(route string) *MockTest {
 	b.method = http.MethodPut
+	b.route = route
 	return b
 }
 
 func (b *MockTest) DELETE(route string) *MockTest {
 	b.method = http.MethodDelete
-	b.route = route
-	return b
-}
-
-func (b *MockTest) Route(route string) *MockTest {
 	b.route = route
 	return b
 }

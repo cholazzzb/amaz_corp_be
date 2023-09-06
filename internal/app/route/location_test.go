@@ -25,8 +25,7 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 
 	tester.NewMockTest().
 		Desc("/buildings should return all buildings of current member").
-		GET().
-		Route(BASE_URL+"/buildings").
+		GET(BASE_URL+"/buildings").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -34,8 +33,7 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 
 	tester.NewMockTest().
 		Desc("/buildings/all should return all buildings").
-		GET().
-		Route(BASE_URL+"/buildings/all").
+		GET(BASE_URL+"/buildings/all").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -44,8 +42,7 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 	// Note: buildingID from the seeder
 	tester.NewMockTest().
 		Desc("/buildings/:buildingId/rooms should return all rooms in the building").
-		GET().
-		Route(BASE_URL+"/buildings/bc133e57-df08-407e-b1e5-8e10c653ad3c/rooms").
+		GET(BASE_URL+"/buildings/bc133e57-df08-407e-b1e5-8e10c653ad3c/rooms").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -53,8 +50,7 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 
 	tester.NewMockTest().
 		Desc("/buildings/:buildingID/members should return all members in the building").
-		GET().
-		Route(BASE_URL+"/buildings/bc133e57-df08-407e-b1e5-8e10c653ad3c/members").
+		GET(BASE_URL+"/buildings/bc133e57-df08-407e-b1e5-8e10c653ad3c/members").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -63,12 +59,11 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 	// Note: buildingID from the seeder
 	tester.NewMockTest().
 		Desc("/buildings/join should success joining member to a building").
-		POST().
+		POST(BASE_URL+"/buildings/join").
 		Body(map[string]interface{}{
 			"name":       memberName,
 			"buildingId": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
 		}).
-		Route(BASE_URL+"/buildings/join").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -76,8 +71,7 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 
 	getMemberByNameByte := tester.NewMockTest().
 		Desc("/members/:name should return the true member").
-		GET().
-		Route(BASE_URL+"/members/"+memberName).
+		GET(BASE_URL+"/members/"+memberName).
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).

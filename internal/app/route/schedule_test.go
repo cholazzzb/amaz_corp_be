@@ -27,12 +27,11 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 	// Note: buildingID from the seeder
 	tester.NewMockTest().
 		Desc("/buildings/join should success joining member to a building").
-		POST().
+		POST(BASE_URL+"/buildings/join").
 		Body(map[string]interface{}{
 			"name":       memberName,
 			"buildingId": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
 		}).
-		Route(BASE_URL+"/buildings/join").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -40,8 +39,7 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 
 	getRoomsResByte := tester.NewMockTest().
 		Desc("/:buildingId/rooms should return all rooms").
-		GET().
-		Route(BASE_URL+"/buildings/bc133e57-df08-407e-b1e5-8e10c653ad3c/rooms").
+		GET(BASE_URL+"/buildings/bc133e57-df08-407e-b1e5-8e10c653ad3c/rooms").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -56,11 +54,10 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 
 	tester.NewMockTest().
 		Desc("/schedules should success create new schedule").
-		POST().
+		POST(BASE_URL+"/schedules").
 		Body(ent.ScheduleCommand{
 			RoomID: getRoomRes.Rooms[0].Id,
 		}).
-		Route(BASE_URL+"/schedules").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -68,8 +65,7 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 
 	getScheduleIDResByte := tester.NewMockTest().
 		Desc("/schedules/rooms/:roomID should success return the scheduleID").
-		GET().
-		Route(BASE_URL+"/schedules/rooms/"+getRoomRes.Rooms[0].Id).
+		GET(BASE_URL+"/schedules/rooms/"+getRoomRes.Rooms[0].Id).
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -83,14 +79,13 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 
 	tester.NewMockTest().
 		Desc("/schedules/tasks should success create new task").
-		POST().
+		POST(BASE_URL+"/tasks").
 		Body(map[string]interface{}{
 			"ScheduleID":  getScheduleIDRes.ScheduleID,
 			"StartTime":   time.Now(),
 			"DurationDay": 3,
 			"Name":        "task test 1",
 		}).
-		Route(BASE_URL+"/tasks").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
@@ -98,8 +93,7 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 
 	tester.NewMockTest().
 		Desc("/schedules/:scheduleID/tasks should successfully return list task").
-		GET().
-		Route(fmt.Sprintf("%s/schedules/%s/tasks", BASE_URL, getScheduleIDRes.ScheduleID)).
+		GET(fmt.Sprintf("%s/schedules/%s/tasks", BASE_URL, getScheduleIDRes.ScheduleID)).
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).
