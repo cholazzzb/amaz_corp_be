@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
@@ -68,72 +67,4 @@ func (r *PostgresUserRepository) CreateUser(
 		return err
 	}
 	return nil
-}
-
-func (r *PostgresUserRepository) GetMemberByName(
-	ctx context.Context,
-	memberName string,
-) (user.Member, error) {
-	result, err := r.Postgres.GetMemberByName(ctx, memberName)
-	if err != nil {
-		r.logger.Error(err.Error())
-		return user.Member{}, err
-	}
-	return user.Member{
-		Name:   result.Name,
-		Status: result.Status,
-	}, nil
-}
-
-func (r *PostgresUserRepository) CreateMemberParams(
-	newMember user.Member,
-	userID string,
-) userpostgres.CreateMemberParams {
-	return userpostgres.CreateMemberParams{
-		ID:     newMember.ID,
-		Name:   newMember.Name,
-		Status: newMember.Status,
-		UserID: userID,
-	}
-}
-
-func (r *PostgresUserRepository) CreateMember(
-	ctx context.Context,
-	newMember user.Member,
-	userID string,
-) (user.Member, error) {
-	params := r.CreateMemberParams(newMember, userID)
-	_, err := r.Postgres.CreateMember(ctx, params)
-	if err != nil {
-		r.logger.Error(err.Error())
-		return user.Member{}, err
-	}
-	return newMember, nil
-}
-
-func (r *PostgresUserRepository) GetFriendsByUserId(
-	ctx context.Context,
-	userId string,
-) ([]user.Member, error) {
-	fs, err := r.Postgres.GetFriendsByMemberId(ctx, userId)
-	if err != nil {
-		r.logger.Error(err.Error())
-		return nil, err
-	}
-	result := make([]user.Member, len(fs))
-	for i, friend := range fs {
-		result[i] = user.Member{
-			Name:   friend.Name,
-			Status: friend.Status,
-		}
-	}
-	return result, nil
-}
-
-func (r *PostgresUserRepository) CreateFriend(
-	ctx context.Context,
-	member1Id,
-	member2Id string,
-) error {
-	return errors.New("")
 }

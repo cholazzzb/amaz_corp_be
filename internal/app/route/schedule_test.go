@@ -8,7 +8,6 @@ import (
 
 	entLocation "github.com/cholazzzb/amaz_corp_be/internal/domain/location"
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 	"github.com/cholazzzb/amaz_corp_be/pkg/random"
 	"github.com/cholazzzb/amaz_corp_be/pkg/tester"
 )
@@ -18,36 +17,19 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 		t.Skip("skipping schedule route test in short mode.")
 	}
 
-	newMemberName := random.RandomString(12)
+	username := random.RandomString(12)
+	memberName := username + "_smember"
 
 	testApp := tester.NewMockApp().Setup("../../../.env.test")
-	tester.Register(testApp)
-	bearerToken := tester.Login(testApp)
-
-	createMemberResByte := tester.NewMockTest().
-		Desc("/members should success create member").
-		POST().
-		Route(BASE_URL+"/members").
-		Body(map[string]interface{}{
-			"name": newMemberName,
-		}).
-		Expected(200, "", "").
-		BuildRequest().
-		WithBearer(bearerToken).
-		Test(testApp, t)
-
-	type CreateMemberRes struct {
-		Member user.Member `json:"member"`
-	}
-	createMemberRes := CreateMemberRes{}
-	json.Unmarshal(createMemberResByte, &createMemberRes)
+	tester.Register(testApp, username)
+	bearerToken := tester.Login(testApp, username)
 
 	// Note: buildingID from the seeder
 	tester.NewMockTest().
 		Desc("/buildings/join should success joining member to a building").
 		POST().
 		Body(map[string]interface{}{
-			"memberId":   createMemberRes.Member.ID,
+			"name":       memberName,
 			"buildingId": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
 		}).
 		Route(BASE_URL+"/buildings/join").

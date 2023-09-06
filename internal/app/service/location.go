@@ -110,15 +110,34 @@ func (svc *LocationService) GetListMemberByBuildingID(
 
 func (svc *LocationService) JoinBuilding(
 	ctx context.Context,
-	memberId,
+	memberName,
+	userID,
 	buildingId string,
 ) error {
-	err := svc.repo.CreateMemberBuilding(ctx, memberId, buildingId)
+	err := svc.repo.CreateMemberBuilding(ctx, memberName, userID, buildingId)
 	if err != nil {
 		svc.logger.Error(err.Error())
-		return fmt.Errorf("cannot join member with id %s to building id %s", memberId, buildingId)
+		return fmt.Errorf("cannot join member with userID %s to building id %s", userID, buildingId)
 	}
 	return nil
+}
+
+func (svc *LocationService) GetMemberByName(ctx context.Context, name string) (ent.MemberQuery, error) {
+	member, err := svc.repo.GetMemberByName(ctx, name)
+	if err != nil {
+		svc.logger.Error(err.Error())
+		return member, fmt.Errorf("cannot find member with name %s", name)
+	}
+	return member, nil
+}
+
+func (svc *LocationService) GetFriendsByMemberId(ctx context.Context, userId string) ([]ent.MemberQuery, error) {
+	fs, err := svc.repo.GetFriendsByUserId(ctx, userId)
+	if err != nil {
+		svc.logger.Error(err.Error())
+		return nil, fmt.Errorf("cannot find friends with name %s", fs)
+	}
+	return fs, nil
 }
 
 func (svc *LocationService) GetRoomsByBuildingId(

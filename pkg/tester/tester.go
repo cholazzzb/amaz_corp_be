@@ -121,10 +121,10 @@ func (b *MockTest) Test(app *fiber.App, t *testing.T) []byte {
 	return bodyBytes
 }
 
-func Register(app *fiber.App) {
+func Register(app *fiber.App, username string) {
 	body, err := json.Marshal(map[string]interface{}{
-		"username": "testing1",
-		"password": "testing1",
+		"username": username,
+		"password": username,
 	})
 	if err != nil {
 		panic(fmt.Errorf("failed to marshal %v", body))
@@ -148,10 +148,10 @@ func Register(app *fiber.App) {
 	}
 }
 
-func Login(app *fiber.App) string {
+func Login(app *fiber.App, username string) string {
 	body, err := json.Marshal(map[string]interface{}{
-		"username": "testing1",
-		"password": "testing1",
+		"username": username,
+		"password": username,
 	})
 	if err != nil {
 		panic(fmt.Errorf("failed to marshal %v", body))

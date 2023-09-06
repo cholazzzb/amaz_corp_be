@@ -11,42 +11,42 @@ import (
 )
 
 type Building struct {
-	ID   string
+	ID   uuid.UUID
 	Name string
 }
 
 type Friend struct {
-	Member1ID string
-	Member2ID string
+	Member1ID uuid.UUID
+	Member2ID uuid.UUID
 }
 
 type Member struct {
-	ID     string
+	ID     uuid.UUID
 	UserID string
 	Name   string
 	Status string
-	RoomID sql.NullString
+	RoomID uuid.NullUUID
 }
 
 type MembersBuilding struct {
-	MemberID   string
-	BuildingID string
+	MemberID   uuid.UUID
+	BuildingID uuid.UUID
 }
 
 type Room struct {
-	ID         string
+	ID         uuid.UUID
 	Name       string
-	BuildingID string
+	BuildingID uuid.UUID
 }
 
 type Schedule struct {
 	ID     uuid.UUID
-	RoomID string
+	RoomID uuid.UUID
 }
 
 type Session struct {
-	ID        string
-	RoomID    string
+	ID        uuid.UUID
+	RoomID    uuid.UUID
 	StartTime sql.NullTime
 	EndTime   sql.NullTime
 }
@@ -62,8 +62,8 @@ type Task struct {
 type TaskDetail struct {
 	ID         uuid.UUID
 	Name       sql.NullString
-	OwnerID    sql.NullString
-	AssigneeID sql.NullString
+	OwnerID    uuid.NullUUID
+	AssigneeID uuid.NullUUID
 	Status     sql.NullString
 }
 

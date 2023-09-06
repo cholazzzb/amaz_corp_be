@@ -30,7 +30,7 @@ func newMigrator() *migrate.FileMigrationSource {
 func MigrateUp(dbSql *sql.DB) {
 	n, err := migrate.Exec(dbSql, config.ENV.DB_TYPE, newMigrator(), migrate.Up)
 	if err != nil {
-		logger.Get().Error("failed to migrate database")
+		logger.Get().Error("failed to migrate database. error: ", err.Error())
 		panic("failed to migrate database")
 	}
 	fmt.Printf("Applied %d migrations!\n", n)

@@ -9,16 +9,12 @@ import (
 )
 
 type MockUserRepo struct {
-	User   *MockUserRepository
-	Member *MockMemberRepository
-	Friend *MockFriendRepository
+	User *MockUserRepository
 }
 
 func NewMockUserRepo() *MockUserRepo {
 	return &MockUserRepo{
-		User:   newMockUserRepository(),
-		Member: newMockMemberRepository(),
-		Friend: newMockFriendRepository(),
+		User: newMockUserRepository(),
 	}
 }
 
@@ -69,79 +65,5 @@ func (mur *MockUserRepo) CreateUser(
 
 	mur.User.BiggestId = id
 	mur.User.Users[Username(params.Username)] = newUser
-	return nil
-}
-
-type Name string
-
-type MockMemberRepository struct {
-	BiggestId int64
-	Members   map[Name]user.Member
-}
-
-func newMockMemberRepository() *MockMemberRepository {
-	return &MockMemberRepository{
-		BiggestId: 0,
-		Members:   map[Name]user.Member{},
-	}
-}
-
-func (mmr *MockUserRepo) GetMemberByName(
-	ctx context.Context,
-	memberName string,
-) (user.Member, error) {
-	m, ok := mmr.Member.Members[Name(memberName)]
-	if !ok {
-		return user.Member{}, fmt.Errorf("member not found")
-	}
-	return user.Member{
-		Name:   m.Name,
-		Status: m.Status,
-	}, nil
-}
-
-func (mmr *MockUserRepo) CreateMember(
-	ctx context.Context,
-	newMember user.Member,
-	userID string,
-) (user.Member, error) {
-	ID := mmr.Member.BiggestId + 1
-
-	mmr.Member.BiggestId = ID
-	mmr.Member.Members[Name(newMember.Name)] = user.Member{
-		ID:     strconv.FormatInt(ID, 10),
-		Name:   newMember.Name,
-		Status: newMember.Status,
-		UserID: userID,
-	}
-	return newMember, nil
-}
-
-type UserId int64
-
-type MockFriendRepository struct {
-	BiggestId int64
-	Friends   map[UserId]interface{}
-}
-
-func newMockFriendRepository() *MockFriendRepository {
-	return &MockFriendRepository{
-		BiggestId: 0,
-		Friends:   map[UserId]interface{}{},
-	}
-}
-
-func (mur *MockUserRepo) GetFriendsByUserId(
-	ctx context.Context,
-	userId string,
-) ([]user.Member, error) {
-	return nil, nil
-}
-
-func (mur *MockUserRepo) CreateFriend(
-	ctx context.Context,
-	member1Id,
-	member2Id string,
-) error {
 	return nil
 }

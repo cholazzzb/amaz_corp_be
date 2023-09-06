@@ -18,9 +18,9 @@ VALUES($1)
 RETURNING room_id
 `
 
-func (q *Queries) CreateScheduleByRoomID(ctx context.Context, roomID string) (string, error) {
+func (q *Queries) CreateScheduleByRoomID(ctx context.Context, roomID uuid.UUID) (uuid.UUID, error) {
 	row := q.db.QueryRowContext(ctx, createScheduleByRoomID, roomID)
-	var room_id string
+	var room_id uuid.UUID
 	err := row.Scan(&room_id)
 	return room_id, err
 }
@@ -54,8 +54,8 @@ RETURNING id
 
 type CreateTaskDetailParams struct {
 	Name       sql.NullString
-	OwnerID    sql.NullString
-	AssigneeID sql.NullString
+	OwnerID    uuid.NullUUID
+	AssigneeID uuid.NullUUID
 	Status     sql.NullString
 }
 
@@ -124,8 +124,8 @@ type GetListTaskAndDetailByScheduleIDParams struct {
 	ScheduleID uuid.UUID
 	StartTime  sql.NullTime
 	EndTime    sql.NullTime
-	OwnerID    sql.NullString
-	AssigneeID sql.NullString
+	OwnerID    uuid.NullUUID
+	AssigneeID uuid.NullUUID
 }
 
 type GetListTaskAndDetailByScheduleIDRow struct {
@@ -135,8 +135,8 @@ type GetListTaskAndDetailByScheduleIDRow struct {
 	EndTime      sql.NullTime
 	TaskDetailID uuid.UUID
 	Name         sql.NullString
-	OwnerID      sql.NullString
-	AssigneeID   sql.NullString
+	OwnerID      uuid.NullUUID
+	AssigneeID   uuid.NullUUID
 	Status       sql.NullString
 	ArrayAgg     interface{}
 }
@@ -232,7 +232,7 @@ WHERE schedules.room_id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetScheduleIdByRoomID(ctx context.Context, roomID string) (Schedule, error) {
+func (q *Queries) GetScheduleIdByRoomID(ctx context.Context, roomID uuid.UUID) (Schedule, error) {
 	row := q.db.QueryRowContext(ctx, getScheduleIdByRoomID, roomID)
 	var i Schedule
 	err := row.Scan(&i.ID, &i.RoomID)

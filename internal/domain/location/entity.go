@@ -16,8 +16,21 @@ type Member struct {
 	UserId string
 }
 
+type MemberCommand struct {
+	UserID string
+	Name   string
+	Status string
+}
+
 type MemberQuery struct {
-	MemberID string
-	Name     string
-	Status   string
+	ID     string `json:"id"`
+	UserID string
+	Name   string
+	Status string
+	RoomID string
+}
+
+type JoinBuildingCommand struct {
+	Name       string `json:"name" validate:"required"`
+	BuildingId string `json:"buildingId" validate:"required"`
 }

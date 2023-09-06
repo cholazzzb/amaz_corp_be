@@ -1,21 +1,24 @@
 -- +migrate Up
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- +migrate Up
 CREATE TABLE IF NOT EXISTS buildings (
-    id varchar(36) UNIQUE NOT NULL PRIMARY KEY,
+    id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
     name text NOT NULL
 );
 
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS rooms (
-    id varchar(36) UNIQUE NOT NULL PRIMARY KEY,
+    id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
     name text NOT NULL,
-    building_id varchar(36) NOT NULL,
+    building_id uuid NOT NULL,
     CONSTRAINT fk_building_id FOREIGN KEY(building_id) REFERENCES buildings(id)
 );
 
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS sessions (
-    id varchar(36) UNIQUE NOT NULL PRIMARY KEY,
-    room_id varchar(36) NOT NULL,
+    id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    room_id uuid NOT NULL,
     start_time timestamp,
     end_time timestamp,
     CONSTRAINT fk_room_id FOREIGN KEY(room_id) REFERENCES rooms(id)

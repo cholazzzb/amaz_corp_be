@@ -38,21 +38,31 @@ func (r *PostgresScheduleRepository) CreateSchedule(
 	ctx context.Context,
 	roomID string,
 ) (string, error) {
-	res, err := r.Postgres.CreateScheduleByRoomID(ctx, roomID)
+	roomUUID, err := uuid.Parse(roomID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return "", err
+	}
+	res, err := r.Postgres.CreateScheduleByRoomID(ctx, roomUUID)
 
 	if err != nil {
 		r.logger.Error(err.Error())
 		return "", fmt.Errorf("failed to create schedule with roomID: %s", roomID)
 	}
 
-	return res, nil
+	return res.String(), nil
 }
 
 func (r *PostgresScheduleRepository) GetScheduleIDByRoomID(
 	ctx context.Context,
 	roomID string,
 ) (ent.ScheduleQuery, error) {
-	res, err := r.Postgres.GetScheduleIdByRoomID(ctx, roomID)
+	roomUUID, err := uuid.Parse(roomID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return ent.ScheduleQuery{}, err
+	}
+	res, err := r.Postgres.GetScheduleIdByRoomID(ctx, roomUUID)
 	if err != nil {
 		r.logger.Error(err.Error())
 		return ent.ScheduleQuery{}, err
@@ -60,7 +70,7 @@ func (r *PostgresScheduleRepository) GetScheduleIDByRoomID(
 
 	return ent.ScheduleQuery{
 		ID:     res.ID.String(),
-		RoomID: res.RoomID,
+		RoomID: res.RoomID.String(),
 	}, nil
 }
 
@@ -83,8 +93,8 @@ func (r *PostgresScheduleRepository) GetTaskDetail(
 	return ent.TaskDetailQuery{
 		ID:         res.ID.String(),
 		Name:       res.Name.String,
-		OwnerID:    res.OwnerID.String,
-		AssigneeID: res.AssigneeID.String,
+		OwnerID:    res.OwnerID.UUID.String(),
+		AssigneeID: res.AssigneeID.UUID.String(),
 		Status:     res.Status.String,
 	}, nil
 }
@@ -154,8 +164,8 @@ func (r *PostgresScheduleRepository) GetListTaskWithDetailByScheduleID(
 			DurationDay:  calDurationDay(twd.EndTime.Time, twd.StartTime.Time),
 			TaskDetailID: twd.TaskDetailID.String(),
 			Name:         twd.Name.String,
-			OwnerID:      twd.OwnerID.String,
-			AssigneeID:   twd.AssigneeID.String,
+			OwnerID:      twd.OwnerID.UUID.String(),
+			AssigneeID:   twd.AssigneeID.UUID.String(),
 			Status:       twd.Status.String,
 		})
 	}
@@ -175,23 +185,33 @@ func (r *PostgresScheduleRepository) CreateTask(
 	defer tx.Rollback()
 
 	qtx := r.Postgres.WithTx(tx)
+
+	fmt.Println("pos sch", task, task.OwnerID, task.AssigneeID)
+
+	name := sql.NullString{}
+	name.Scan(task.Name)
+	ownerID := uuid.NullUUID{}
+	ownerUUID, err := uuid.Parse(task.OwnerID)
+	if len(task.OwnerID) > 0 && err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+	ownerID.Scan(ownerUUID)
+	assigneeID := uuid.NullUUID{}
+	assigneeUUID, err := uuid.Parse(task.AssigneeID)
+	if len(task.AssigneeID) > 0 && err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+	assigneeID.Scan(assigneeUUID)
+	status := sql.NullString{}
+	status.Scan(task.Status)
+
 	tdUUID, err := qtx.CreateTaskDetail(ctx, schedulepostgres.CreateTaskDetailParams{
-		Name: sql.NullString{
-			String: task.Name,
-			Valid:  len(task.Name) > 0,
-		},
-		OwnerID: sql.NullString{
-			String: task.OwnerID,
-			Valid:  len(task.OwnerID) > 0,
-		},
-		AssigneeID: sql.NullString{
-			String: task.AssigneeID,
-			Valid:  len(task.AssigneeID) > 0,
-		},
-		Status: sql.NullString{
-			String: task.Status,
-			Valid:  len(task.Status) > 0,
-		},
+		Name:       name,
+		OwnerID:    ownerID,
+		AssigneeID: assigneeID,
+		Status:     status,
 	})
 
 	if err != nil {

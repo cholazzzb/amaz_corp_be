@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -151,49 +150,4 @@ func (svc *UserService) CheckUserExistance(ctx context.Context, username string)
 		return false, err
 	}
 	return exist, nil
-}
-
-func (svc *UserService) GetMemberByName(ctx context.Context, name string) (user.Member, error) {
-	member, err := svc.repo.GetMemberByName(ctx, name)
-	if err != nil {
-		svc.logger.Error(err.Error())
-		return member, fmt.Errorf("cannot find member with name %s", name)
-	}
-	return member, nil
-}
-
-// TODO: Use transaction here
-func (svc *UserService) CreateMember(ctx context.Context, memberName string, username string) (user.Member, error) {
-	userData, err := svc.repo.GetUser(ctx, username)
-	if err != nil {
-		svc.logger.Error(err.Error())
-		return user.Member{}, fmt.Errorf("cannot found user with username %s", username)
-	}
-
-	memberId, err := uuid.NewV7()
-	if err != nil {
-		svc.logger.Error(err.Error())
-		return user.Member{}, errors.New("failed to generate memberId")
-	}
-
-	newMember, err := svc.repo.CreateMember(ctx, user.Member{
-		ID:     memberId.String(),
-		Name:   memberName,
-		Status: "new member",
-	}, userData.ID)
-
-	if err != nil {
-		svc.logger.Error(err.Error())
-		return user.Member{}, fmt.Errorf("failed to create member %v", newMember)
-	}
-	return newMember, nil
-}
-
-func (svc *UserService) GetFriendsByMemberId(ctx context.Context, userId string) ([]user.Member, error) {
-	fs, err := svc.repo.GetFriendsByUserId(ctx, userId)
-	if err != nil {
-		svc.logger.Error(err.Error())
-		return nil, fmt.Errorf("cannot find friends with name %s", fs)
-	}
-	return fs, nil
 }

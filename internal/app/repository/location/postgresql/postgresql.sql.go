@@ -8,7 +8,42 @@ package locationpostgres
 import (
 	"context"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
+
+const createFriend = `-- name: CreateFriend :execresult
+INSERT INTO friends(member1_id, member2_id)
+VALUES ($1, $2)
+`
+
+type CreateFriendParams struct {
+	Member1ID uuid.UUID
+	Member2ID uuid.UUID
+}
+
+func (q *Queries) CreateFriend(ctx context.Context, arg CreateFriendParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createFriend, arg.Member1ID, arg.Member2ID)
+}
+
+const createMember = `-- name: CreateMember :one
+INSERT INTO members(name, status, user_id)
+VALUES ($1, $2, $3)
+RETURNING id
+`
+
+type CreateMemberParams struct {
+	Name   string
+	Status string
+	UserID string
+}
+
+func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, createMember, arg.Name, arg.Status, arg.UserID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
 
 const createMemberBuilding = `-- name: CreateMemberBuilding :execresult
 INSERT INTO members_buildings(member_id, building_id)
@@ -16,8 +51,8 @@ VALUES ($1, $2)
 `
 
 type CreateMemberBuildingParams struct {
-	MemberID   string
-	BuildingID string
+	MemberID   uuid.UUID
+	BuildingID uuid.UUID
 }
 
 func (q *Queries) CreateMemberBuilding(ctx context.Context, arg CreateMemberBuildingParams) (sql.Result, error) {
@@ -30,8 +65,8 @@ WHERE member_id = $1 AND building_id = $2
 `
 
 type DeleteMemberBuildingParams struct {
-	MemberID   string
-	BuildingID string
+	MemberID   uuid.UUID
+	BuildingID uuid.UUID
 }
 
 func (q *Queries) DeleteMemberBuilding(ctx context.Context, arg DeleteMemberBuildingParams) error {
@@ -76,7 +111,7 @@ WHERE mb.member_id = $1
 LIMIT 10
 `
 
-func (q *Queries) GetBuildingsByMemberId(ctx context.Context, memberID string) ([]Building, error) {
+func (q *Queries) GetBuildingsByMemberId(ctx context.Context, memberID uuid.UUID) ([]Building, error) {
 	rows, err := q.db.QueryContext(ctx, getBuildingsByMemberId, memberID)
 	if err != nil {
 		return nil, err
@@ -86,6 +121,43 @@ func (q *Queries) GetBuildingsByMemberId(ctx context.Context, memberID string) (
 	for rows.Next() {
 		var i Building
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getFriendsByMemberId = `-- name: GetFriendsByMemberId :many
+SELECT m.id, m.name, m.status
+FROM members m
+JOIN friends f ON (m.id = f.member1_id OR m.id = f.member2_id)
+WHERE (f.member1_id = $1 OR f.member2_id = $1) AND m.id != $1
+LIMIT 10
+`
+
+type GetFriendsByMemberIdRow struct {
+	ID     uuid.UUID
+	Name   string
+	Status string
+}
+
+func (q *Queries) GetFriendsByMemberId(ctx context.Context, member1ID uuid.UUID) ([]GetFriendsByMemberIdRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFriendsByMemberId, member1ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFriendsByMemberIdRow
+	for rows.Next() {
+		var i GetFriendsByMemberIdRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Status); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -109,12 +181,12 @@ LIMIT 20
 `
 
 type GetListMemberByBuildingIDRow struct {
-	ID     string
+	ID     uuid.UUID
 	Name   string
 	Status string
 }
 
-func (q *Queries) GetListMemberByBuildingID(ctx context.Context, buildingID string) ([]GetListMemberByBuildingIDRow, error) {
+func (q *Queries) GetListMemberByBuildingID(ctx context.Context, buildingID uuid.UUID) ([]GetListMemberByBuildingIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getListMemberByBuildingID, buildingID)
 	if err != nil {
 		return nil, err
@@ -138,15 +210,17 @@ func (q *Queries) GetListMemberByBuildingID(ctx context.Context, buildingID stri
 }
 
 const getMemberBuildingById = `-- name: GetMemberBuildingById :one
-SELECT EXISTS(SELECT mb.member_id, mb.building_id 
-FROM members_buildings mb
-WHERE mb.member_id = $1 AND mb.building_id = $2
-LIMIT 1)
+SELECT EXISTS(
+    SELECT mb.member_id, mb.building_id 
+    FROM members_buildings mb
+    WHERE mb.member_id = $1 AND mb.building_id = $2
+    LIMIT 1
+)
 `
 
 type GetMemberBuildingByIdParams struct {
-	MemberID   string
-	BuildingID string
+	MemberID   uuid.UUID
+	BuildingID uuid.UUID
 }
 
 func (q *Queries) GetMemberBuildingById(ctx context.Context, arg GetMemberBuildingByIdParams) (bool, error) {
@@ -154,6 +228,26 @@ func (q *Queries) GetMemberBuildingById(ctx context.Context, arg GetMemberBuildi
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const getMemberByName = `-- name: GetMemberByName :one
+SELECT id, user_id, name, status, room_id
+FROM members
+WHERE name = $1
+LIMIT 1
+`
+
+func (q *Queries) GetMemberByName(ctx context.Context, name string) (Member, error) {
+	row := q.db.QueryRowContext(ctx, getMemberByName, name)
+	var i Member
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Status,
+		&i.RoomID,
+	)
+	return i, err
 }
 
 const getMembersByRoomId = `-- name: GetMembersByRoomId :many
@@ -169,7 +263,7 @@ type GetMembersByRoomIdRow struct {
 	UserID string
 }
 
-func (q *Queries) GetMembersByRoomId(ctx context.Context, roomID sql.NullString) ([]GetMembersByRoomIdRow, error) {
+func (q *Queries) GetMembersByRoomId(ctx context.Context, roomID uuid.NullUUID) ([]GetMembersByRoomIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getMembersByRoomId, roomID)
 	if err != nil {
 		return nil, err
@@ -200,11 +294,11 @@ LIMIT 10
 `
 
 type GetRoomsByBuildingIdRow struct {
-	ID   string
+	ID   uuid.UUID
 	Name string
 }
 
-func (q *Queries) GetRoomsByBuildingId(ctx context.Context, buildingID string) ([]GetRoomsByBuildingIdRow, error) {
+func (q *Queries) GetRoomsByBuildingId(ctx context.Context, buildingID uuid.UUID) ([]GetRoomsByBuildingIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getRoomsByBuildingId, buildingID)
 	if err != nil {
 		return nil, err
@@ -236,11 +330,11 @@ LIMIT 10
 `
 
 type GetRoomsByMemberIdRow struct {
-	ID   string
+	ID   uuid.UUID
 	Name string
 }
 
-func (q *Queries) GetRoomsByMemberId(ctx context.Context, memberID string) ([]GetRoomsByMemberIdRow, error) {
+func (q *Queries) GetRoomsByMemberId(ctx context.Context, memberID uuid.UUID) ([]GetRoomsByMemberIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getRoomsByMemberId, memberID)
 	if err != nil {
 		return nil, err
@@ -261,4 +355,24 @@ func (q *Queries) GetRoomsByMemberId(ctx context.Context, memberID string) ([]Ge
 		return nil, err
 	}
 	return items, nil
+}
+
+const getUserBuildingExist = `-- name: GetUserBuildingExist :one
+SELECT EXISTS(
+    SELECT users.id, username, password, salt, members.id, user_id, name, status, room_id, member_id, building_id 
+    FROM users
+    INNER JOIN members
+    ON users.id = members.user_id
+    INNER JOIN members_buildings
+    ON members_buildings.member_id = members.id
+    WHERE users.id = $1
+    LIMIT 1
+)
+`
+
+func (q *Queries) GetUserBuildingExist(ctx context.Context, id string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, getUserBuildingExist, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }

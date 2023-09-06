@@ -7,7 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
+	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/location"
 	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+	"github.com/cholazzzb/amaz_corp_be/pkg/response"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
@@ -37,8 +39,8 @@ func (h *LocationHandler) GetBuildings(ctx *fiber.Ctx) error {
 }
 
 type DeleteBuildingRequest struct {
-	MemberId   string `json:"memberId" validate:"required"`
-	BuildingId string `json:"buildingId" validate:"required"`
+	MemberId   string `json:"memberID" validate:"required"`
+	BuildingId string `json:"buildingID" validate:"required"`
 }
 
 func (h *LocationHandler) DeleteBuilding(ctx *fiber.Ctx) error {
@@ -98,13 +100,14 @@ func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
 	})
 }
 
-type JoinBuildingRequest struct {
-	MemberId   string `json:"memberId" validate:"required"`
-	BuildingId string `json:"buildingId" validate:"required"`
-}
-
 func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
-	req := new(JoinBuildingRequest)
+	userID, success := ctx.Locals("UserId").(string)
+	if !success {
+		err := errors.New("failed to get userId from JWT")
+		h.logger.Error(err.Error())
+		return response.InternalServerError(ctx)
+	}
+	req := new(ent.JoinBuildingCommand)
 	if err := ctx.BodyParser(req); err != nil {
 		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -112,12 +115,10 @@ func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err := h.svc.JoinBuilding(ctx.Context(), req.MemberId, req.BuildingId)
+	err := h.svc.JoinBuilding(ctx.Context(), req.Name, userID, req.BuildingId)
 	if err != nil {
 		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(
-			err.Error(),
-		)
+		return response.InternalServerError(ctx)
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -206,5 +207,63 @@ func (h *LocationHandler) GetListOnlineMembers(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "ok",
 		"members": loms,
+	})
+}
+
+type GetMemberByNameRequest struct {
+	Name string `json:"name" validate:"required"`
+}
+
+func (h *LocationHandler) GetMemberByName(ctx *fiber.Ctx) error {
+	name := ctx.Params("name")
+	if len(name) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "name must be filled",
+		})
+	}
+
+	req := GetMemberByNameRequest{name}
+	if errs := validator.Validate(req); errs != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	member, err := h.svc.GetMemberByName(ctx.Context(), req.Name)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return response.InternalServerError(ctx)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
+		"member":  member,
+	})
+}
+
+type GetFriendsByMemberIdRequest struct {
+	MemberID string `json:"memberId" validate:"required"`
+}
+
+func (h *LocationHandler) GetFriendsByMemberId(ctx *fiber.Ctx) error {
+	mID := ctx.Params("memberId")
+	if len(mID) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "memberId is missing from the request",
+		})
+	}
+
+	req := GetFriendsByMemberIdRequest{mID}
+	if errs := validator.Validate(req); errs != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	fs, err := h.svc.GetFriendsByMemberId(ctx.Context(), mID)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return response.InternalServerError(ctx)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
+		"friends": fs,
 	})
 }

@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS schedules (
     id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    room_id varchar(36) NOT NULL,
+    room_id uuid NOT NULL,
     CONSTRAINT fk_room_id FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE
 );
 
@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS schedules (
 CREATE TABLE IF NOT EXISTS task_details (
     id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
     name text,
-    owner_id varchar(36),
-    assignee_id varchar(36),
+    owner_id uuid,
+    assignee_id uuid,
     status text,
     CONSTRAINT fk_owner_id FOREIGN KEY(owner_id) REFERENCES members(id) ON DELETE CASCADE,
     CONSTRAINT fk_assignee_id FOREIGN KEY(assignee_id) REFERENCES members(id) ON DELETE CASCADE

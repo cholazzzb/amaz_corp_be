@@ -8,8 +8,6 @@ import (
 
 type UserRepo interface {
 	UserRepository
-	MemberRepository
-	FriendRepository
 }
 
 type UserRepository interface {
@@ -24,29 +22,5 @@ type UserRepository interface {
 	CreateUser(
 		ctx context.Context,
 		params user.User,
-	) error
-}
-
-type MemberRepository interface {
-	GetMemberByName(
-		ctx context.Context,
-		memberName string,
-	) (user.Member, error)
-	CreateMember(
-		ctx context.Context,
-		newMember user.Member,
-		userID string,
-	) (user.Member, error)
-}
-
-type FriendRepository interface {
-	GetFriendsByUserId(
-		ctx context.Context,
-		userId string,
-	) ([]user.Member, error)
-	CreateFriend(
-		ctx context.Context,
-		member1Id,
-		member2Id string,
 	) error
 }

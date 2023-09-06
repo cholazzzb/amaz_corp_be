@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 	"github.com/cholazzzb/amaz_corp_be/pkg/random"
 	"github.com/cholazzzb/amaz_corp_be/pkg/tester"
 )
@@ -89,41 +86,4 @@ func TestUserRouteAfterLogin(t *testing.T) {
 	loginRes := LoginRes{}
 	json.Unmarshal(loginResByte, &loginRes)
 
-	memberName := newUsername + "_name"
-
-	createMemberResByte := tester.NewMockTest().
-		Desc("/members should success create member").
-		POST().
-		Route(BASE_URL+"/members").
-		Body(map[string]interface{}{
-			"name": memberName,
-		}).
-		Expected(200, "", "").
-		BuildRequest().
-		WithBearer(loginRes.Token).
-		Test(testApp, t)
-
-	type CreateMemberRes struct {
-		Member user.Member `json:"member"`
-	}
-	createMemberRes := CreateMemberRes{}
-	json.Unmarshal(createMemberResByte, &createMemberRes)
-	assert.Equalf(t, memberName, createMemberRes.Member.Name, "the respond memnber name should be same with request")
-
-	getMemberByNameByte := tester.NewMockTest().
-		Desc("/members/:name should return the true member").
-		GET().
-		Route(BASE_URL+"/members/"+memberName).
-		Expected(200, "", "").
-		BuildRequest().
-		WithBearer(loginRes.Token).
-		Test(testApp, t)
-
-	type GetMemberByNameRes struct {
-		Message string      `json:"message"`
-		Member  user.Member `json:"member"`
-	}
-	getMemberByNameRes := GetMemberByNameRes{}
-	json.Unmarshal(getMemberByNameByte, &getMemberByNameRes)
-	assert.Equalf(t, memberName, getMemberByNameRes.Member.Name, "the respond memnber name should be same with request")
 }

@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
+	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/location"
+	"github.com/cholazzzb/amaz_corp_be/pkg/random"
 	"github.com/cholazzzb/amaz_corp_be/pkg/tester"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLocationRouteAfterLogin(t *testing.T) {
@@ -14,7 +16,12 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 	}
 
 	testApp := tester.NewMockApp().Setup("../../../.env.test")
-	bearerToken := tester.Login(testApp)
+
+	username := random.RandomString(12)
+	memberName := username + "_member"
+
+	tester.Register(testApp, username)
+	bearerToken := tester.Login(testApp, username)
 
 	tester.NewMockTest().
 		Desc("/buildings should return all buildings of current member").
@@ -53,30 +60,12 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 		WithBearer(bearerToken).
 		Test(testApp, t)
 
-	createMemberResByte := tester.NewMockTest().
-		Desc("/members should success create member").
-		POST().
-		Route(BASE_URL+"/members").
-		Body(map[string]interface{}{
-			"name": "testing1",
-		}).
-		Expected(200, "", "").
-		BuildRequest().
-		WithBearer(bearerToken).
-		Test(testApp, t)
-
-	type CreateMemberRes struct {
-		Member user.Member `json:"member"`
-	}
-	createMemberRes := CreateMemberRes{}
-	json.Unmarshal(createMemberResByte, &createMemberRes)
-
 	// Note: buildingID from the seeder
 	tester.NewMockTest().
 		Desc("/buildings/join should success joining member to a building").
 		POST().
 		Body(map[string]interface{}{
-			"memberId":   createMemberRes.Member.ID,
+			"name":       memberName,
 			"buildingId": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
 		}).
 		Route(BASE_URL+"/buildings/join").
@@ -85,12 +74,29 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 		WithBearer(bearerToken).
 		Test(testApp, t)
 
+	getMemberByNameByte := tester.NewMockTest().
+		Desc("/members/:name should return the true member").
+		GET().
+		Route(BASE_URL+"/members/"+memberName).
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(bearerToken).
+		Test(testApp, t)
+
+	type GetMemberByNameRes struct {
+		Message string          `json:"message"`
+		Member  ent.MemberQuery `json:"member"`
+	}
+	getMemberByNameRes := GetMemberByNameRes{}
+	json.Unmarshal(getMemberByNameByte, &getMemberByNameRes)
+	assert.Equalf(t, memberName, getMemberByNameRes.Member.Name, "the respond memnber name should be same with request")
+
 	tester.NewMockTest().
 		Desc("/buildings/leave should success").
 		DELETE(BASE_URL+"/buildings/leave").
 		Body(map[string]interface{}{
-			"MemberId":   createMemberRes.Member.ID,
-			"BuildingId": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
+			"memberID":   getMemberByNameRes.Member.ID,
+			"buildingID": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
 		}).
 		Expected(200, "", "").
 		BuildRequest().

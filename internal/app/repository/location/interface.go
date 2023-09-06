@@ -8,7 +8,9 @@ import (
 
 type LocationRepo interface {
 	BuildingRepository
+	MemberRepository
 	RoomRepository
+	FriendRepository
 }
 
 type BuildingRepository interface {
@@ -19,7 +21,8 @@ type BuildingRepository interface {
 type BuildingRepoCommand interface {
 	CreateMemberBuilding(
 		ctx context.Context,
-		memberId,
+		memberName,
+		userID,
 		buildingId string,
 	) error
 
@@ -46,6 +49,13 @@ type BuildingRepoQuery interface {
 	) ([]ent.MemberQuery, error)
 }
 
+type MemberRepository interface {
+	GetMemberByName(
+		ctx context.Context,
+		memberName string,
+	) (ent.MemberQuery, error)
+}
+
 type RoomRepository interface {
 	GetMembersByRoomId(
 		ctx context.Context,
@@ -59,4 +69,16 @@ type RoomRepository interface {
 		ctx context.Context,
 		buildingId string,
 	) ([]ent.Room, error)
+}
+
+type FriendRepository interface {
+	GetFriendsByUserId(
+		ctx context.Context,
+		userId string,
+	) ([]ent.MemberQuery, error)
+	CreateFriend(
+		ctx context.Context,
+		member1Id,
+		member2Id string,
+	) error
 }

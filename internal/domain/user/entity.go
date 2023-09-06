@@ -10,14 +10,6 @@ type Friend struct {
 	Member2ID string
 }
 
-type Member struct {
-	ID     string `json:"id"`
-	UserID string
-	Name   string
-	Status string
-	RoomID string
-}
-
 type MembersBuilding struct {
 	MemberID   string
 	BuildingID string
