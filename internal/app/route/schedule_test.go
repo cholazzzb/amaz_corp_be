@@ -46,8 +46,8 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 		Test(testApp, t)
 
 	type GetRoomsRes struct {
-		Message string             `json:"message"`
-		Rooms   []entLocation.Room `json:"rooms"`
+		Message string                  `json:"message"`
+		Rooms   []entLocation.RoomQuery `json:"rooms"`
 	}
 	getRoomRes := GetRoomsRes{}
 	json.Unmarshal(getRoomsResByte, &getRoomRes)

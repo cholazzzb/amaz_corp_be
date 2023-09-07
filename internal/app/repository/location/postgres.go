@@ -290,22 +290,22 @@ func (r *PostgresLocationRepository) GetMembersByRoomId(
 func (r *PostgresLocationRepository) GetRoomsByMemberId(
 	ctx context.Context,
 	memberId string,
-) ([]ent.Room, error) {
+) ([]ent.RoomQuery, error) {
 	memberUUID, err := uuid.Parse(memberId)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Room{}, nil
+		return []ent.RoomQuery{}, nil
 	}
 
 	res, err := r.Postgres.GetRoomsByMemberId(ctx, memberUUID)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Room{}, nil
+		return []ent.RoomQuery{}, nil
 	}
 
-	rs := []ent.Room{}
+	rs := []ent.RoomQuery{}
 	for _, mrs := range res {
-		rs = append(rs, ent.Room{
+		rs = append(rs, ent.RoomQuery{
 			Id:   mrs.ID.String(),
 			Name: mrs.Name,
 		})
@@ -316,22 +316,22 @@ func (r *PostgresLocationRepository) GetRoomsByMemberId(
 func (r *PostgresLocationRepository) GetRoomsByBuildingId(
 	ctx context.Context,
 	buildingId string,
-) ([]ent.Room, error) {
+) ([]ent.RoomQuery, error) {
 	buildingUUID, err := uuid.Parse(buildingId)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Room{}, nil
+		return []ent.RoomQuery{}, nil
 	}
 
 	res, err := r.Postgres.GetRoomsByBuildingId(ctx, buildingUUID)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Room{}, nil
+		return []ent.RoomQuery{}, nil
 	}
 
-	rs := []ent.Room{}
+	rs := []ent.RoomQuery{}
 	for _, mrs := range res {
-		rs = append(rs, ent.Room{
+		rs = append(rs, ent.RoomQuery{
 			Id:   mrs.ID.String(),
 			Name: mrs.Name,
 		})

@@ -153,16 +153,16 @@ func (r *MySQLLocationRepository) GetMembersByRoomId(
 func (r *MySQLLocationRepository) GetRoomsByMemberId(
 	ctx context.Context,
 	memberId string,
-) ([]ent.Room, error) {
+) ([]ent.RoomQuery, error) {
 	res, err := r.Mysql.GetRoomsByMemberId(ctx, memberId)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Room{}, nil
+		return []ent.RoomQuery{}, nil
 	}
 
-	rs := []ent.Room{}
+	rs := []ent.RoomQuery{}
 	for _, mrs := range res {
-		rs = append(rs, ent.Room{
+		rs = append(rs, ent.RoomQuery{
 			Id:   mrs.ID,
 			Name: mrs.Name,
 		})
@@ -173,16 +173,16 @@ func (r *MySQLLocationRepository) GetRoomsByMemberId(
 func (r *MySQLLocationRepository) GetRoomsByBuildingId(
 	ctx context.Context,
 	buildingId string,
-) ([]ent.Room, error) {
+) ([]ent.RoomQuery, error) {
 	res, err := r.Mysql.GetRoomsByBuildingId(ctx, buildingId)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Room{}, nil
+		return []ent.RoomQuery{}, nil
 	}
 
-	rs := []ent.Room{}
+	rs := []ent.RoomQuery{}
 	for _, mrs := range res {
-		rs = append(rs, ent.Room{
+		rs = append(rs, ent.RoomQuery{
 			Id:   mrs.ID,
 			Name: mrs.Name,
 		})

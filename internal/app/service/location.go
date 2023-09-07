@@ -151,7 +151,7 @@ func (svc *LocationService) GetFriendsByMemberId(ctx context.Context, userId str
 func (svc *LocationService) GetRoomsByBuildingId(
 	ctx context.Context,
 	buildingId string,
-) ([]ent.Room, error) {
+) ([]ent.RoomQuery, error) {
 	bs, err := svc.repo.GetRoomsByBuildingId(ctx, buildingId)
 	if err != nil {
 		svc.logger.Error(err.Error())

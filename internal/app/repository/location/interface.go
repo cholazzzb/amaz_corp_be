@@ -70,11 +70,11 @@ type RoomRepository interface {
 	GetRoomsByMemberId(
 		ctx context.Context,
 		memberId string,
-	) ([]ent.Room, error)
+	) ([]ent.RoomQuery, error)
 	GetRoomsByBuildingId(
 		ctx context.Context,
 		buildingId string,
-	) ([]ent.Room, error)
+	) ([]ent.RoomQuery, error)
 }
 
 type FriendRepository interface {

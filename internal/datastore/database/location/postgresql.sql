@@ -3,11 +3,16 @@ SELECT *
 FROM buildings
 LIMIT 10;
 
--- name: GetBuildingsByMemberId :many
+-- name: GetBuildingsByUserID :many
 SELECT b.id, b.name
-FROM buildings b
-JOIN members_buildings mb ON (b.id = mb.building_id)
-WHERE mb.member_id = $1
+FROM members
+INNER JOIN members_buildings
+ON members.id = members_buildings.member_id
+INNER JOIN buildings b
+ON b.id = members_buildings.building_id
+INNER JOIN users
+ON users.id = members.user_id
+WHERE users.id = $1
 LIMIT 10;
 
 -- name: CreateMember :one

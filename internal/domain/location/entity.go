@@ -5,9 +5,9 @@ type BuildingQuery struct {
 	Name string `json:"name"`
 }
 
-type Room struct {
-	Id   string
-	Name string
+type RoomQuery struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type Member struct {
