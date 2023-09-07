@@ -61,37 +61,33 @@ func (h *LocationHandler) DeleteBuilding(ctx *fiber.Ctx) error {
 	return nil
 }
 
-type GetBuildingsByMemberIdRequest struct {
-	MemberId string `json:"memberId" validate:"required"`
+type GetBuildingsByUserIDRequest struct {
+	UserID string `json:"userID" validate:"required"`
 }
 
-func (h *LocationHandler) GetBuildingsByMemberId(ctx *fiber.Ctx) error {
-	memberId, success := ctx.Locals("UserId").(string)
+func (h *LocationHandler) GetBuildingsByUserID(ctx *fiber.Ctx) error {
+	userID, success := ctx.Locals("UserId").(string)
 	if !success {
-		err := errors.New("failed to get userId from JWT")
+		err := errors.New("failed to get userID from JWT")
 		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(
-			err.Error(),
-		)
+		return response.InternalServerError(ctx)
 	}
 
-	if len(memberId) == 0 {
+	if len(userID) == 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "memberId is missing from the request",
+			"message": "userID is missing from the request",
 		})
 	}
 
-	req := GetBuildingsByMemberIdRequest{memberId}
+	req := GetBuildingsByUserIDRequest{userID}
 	if errs := validator.Validate(req); errs != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
 	}
 
-	lbs, err := h.svc.GetBuildingsByMemberId(ctx.Context(), memberId)
+	lbs, err := h.svc.GetBuildingsByUserID(ctx.Context(), userID)
 	if err != nil {
 		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal Server Error",
-		})
+		return response.InternalServerError(ctx)
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{

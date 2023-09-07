@@ -103,16 +103,21 @@ func (q *Queries) GetAllBuildings(ctx context.Context) ([]Building, error) {
 	return items, nil
 }
 
-const getBuildingsByMemberId = `-- name: GetBuildingsByMemberId :many
+const getBuildingsByUserID = `-- name: GetBuildingsByUserID :many
 SELECT b.id, b.name
-FROM buildings b
-JOIN members_buildings mb ON (b.id = mb.building_id)
-WHERE mb.member_id = $1
+FROM members
+INNER JOIN members_buildings
+ON members.id = members_buildings.member_id
+INNER JOIN buildings b
+ON b.id = members_buildings.building_id
+INNER JOIN users
+ON users.id = members.user_id
+WHERE users.id = $1
 LIMIT 10
 `
 
-func (q *Queries) GetBuildingsByMemberId(ctx context.Context, memberID uuid.UUID) ([]Building, error) {
-	rows, err := q.db.QueryContext(ctx, getBuildingsByMemberId, memberID)
+func (q *Queries) GetBuildingsByUserID(ctx context.Context, id string) ([]Building, error) {
+	rows, err := q.db.QueryContext(ctx, getBuildingsByUserID, id)
 	if err != nil {
 		return nil, err
 	}

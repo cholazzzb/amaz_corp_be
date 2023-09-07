@@ -36,7 +36,7 @@ type BuildingRepoCommand interface {
 type BuildingRepoQuery interface {
 	GetAllBuildings(
 		ctx context.Context,
-	) ([]ent.Building, error)
+	) ([]ent.BuildingQuery, error)
 
 	GetMemberBuildingExist(
 		ctx context.Context,
@@ -44,10 +44,10 @@ type BuildingRepoQuery interface {
 		buildingID string,
 	) (bool, error)
 
-	GetBuildingsByMemberId(
+	GetBuildingsByUserID(
 		ctx context.Context,
-		memberId string,
-	) ([]ent.Building, error)
+		userID string,
+	) ([]ent.BuildingQuery, error)
 
 	GetListMemberByBuildingID(
 		ctx context.Context,

@@ -1,8 +1,8 @@
 package location
 
-type Building struct {
-	Id   string
-	Name string
+type BuildingQuery struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type Room struct {

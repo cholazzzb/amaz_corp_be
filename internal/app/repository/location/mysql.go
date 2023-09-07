@@ -33,17 +33,17 @@ func NewMySQLLocationRepository(
 
 func (r *MySQLLocationRepository) GetAllBuildings(
 	ctx context.Context,
-) ([]ent.Building, error) {
+) ([]ent.BuildingQuery, error) {
 	res, err := r.Mysql.GetAllBuildings(ctx)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Building{}, err
+		return []ent.BuildingQuery{}, err
 	}
 
-	bs := []ent.Building{}
+	bs := []ent.BuildingQuery{}
 	for _, mbs := range res {
-		bs = append(bs, ent.Building{
-			Id:   mbs.ID,
+		bs = append(bs, ent.BuildingQuery{
+			ID:   mbs.ID,
 			Name: mbs.Name,
 		})
 	}
@@ -53,17 +53,17 @@ func (r *MySQLLocationRepository) GetAllBuildings(
 func (r *MySQLLocationRepository) GetBuildingsByMemberId(
 	ctx context.Context,
 	memberId string,
-) ([]ent.Building, error) {
+) ([]ent.BuildingQuery, error) {
 	res, err := r.Mysql.GetBuildingsByMemberId(ctx, memberId)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Building{}, err
+		return []ent.BuildingQuery{}, err
 	}
 
-	bs := []ent.Building{}
+	bs := []ent.BuildingQuery{}
 	for _, mbs := range res {
-		bs = append(bs, ent.Building{
-			Id:   mbs.ID,
+		bs = append(bs, ent.BuildingQuery{
+			ID:   mbs.ID,
 			Name: mbs.Name,
 		})
 	}

@@ -61,7 +61,7 @@ func (svc *LocationService) GetListOnlineMembers(
 
 func (svc *LocationService) GetBuildings(
 	ctx context.Context,
-) ([]ent.Building, error) {
+) ([]ent.BuildingQuery, error) {
 	bs, err := svc.repo.GetAllBuildings(ctx)
 	if err != nil {
 		svc.logger.Error(err.Error())
@@ -83,14 +83,14 @@ func (svc *LocationService) DeleteBuilding(
 	return nil
 }
 
-func (svc *LocationService) GetBuildingsByMemberId(
+func (svc *LocationService) GetBuildingsByUserID(
 	ctx context.Context,
-	memberId string,
-) ([]ent.Building, error) {
-	bs, err := svc.repo.GetBuildingsByMemberId(ctx, memberId)
+	userID string,
+) ([]ent.BuildingQuery, error) {
+	bs, err := svc.repo.GetBuildingsByUserID(ctx, userID)
 	if err != nil {
 		svc.logger.Error(err.Error())
-		return nil, fmt.Errorf("cannot get buildings with memberId %s", memberId)
+		return nil, fmt.Errorf("cannot get buildings with userID %s", userID)
 	}
 	return bs, nil
 }

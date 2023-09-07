@@ -34,17 +34,17 @@ func NewPostgresLocationRepository(postgresRepo *database.SqlRepository) *Postgr
 
 func (r *PostgresLocationRepository) GetAllBuildings(
 	ctx context.Context,
-) ([]ent.Building, error) {
+) ([]ent.BuildingQuery, error) {
 	res, err := r.Postgres.GetAllBuildings(ctx)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Building{}, err
+		return []ent.BuildingQuery{}, err
 	}
 
-	bs := []ent.Building{}
+	bs := []ent.BuildingQuery{}
 	for _, mbs := range res {
-		bs = append(bs, ent.Building{
-			Id:   mbs.ID.String(),
+		bs = append(bs, ent.BuildingQuery{
+			ID:   mbs.ID.String(),
 			Name: mbs.Name,
 		})
 	}
@@ -129,27 +129,22 @@ func (r *PostgresLocationRepository) CreateFriend(
 	return errors.New("")
 }
 
-func (r *PostgresLocationRepository) GetBuildingsByMemberId(
+func (r *PostgresLocationRepository) GetBuildingsByUserID(
 	ctx context.Context,
-	memberID string,
-) ([]ent.Building, error) {
-	memberUUID, err := uuid.Parse(memberID)
+	userID string,
+) ([]ent.BuildingQuery, error) {
+	res, err := r.Postgres.GetBuildingsByUserID(ctx, userID)
+
+	bs := []ent.BuildingQuery{}
 	if err != nil {
 		r.logger.Error(err.Error())
-		return []ent.Building{}, err
+		return bs, err
 	}
 
-	res, err := r.Postgres.GetBuildingsByMemberId(ctx, memberUUID)
-	if err != nil {
-		r.logger.Error(err.Error())
-		return []ent.Building{}, err
-	}
-
-	bs := []ent.Building{}
-	for _, mbs := range res {
-		bs = append(bs, ent.Building{
-			Id:   mbs.ID.String(),
-			Name: mbs.Name,
+	for _, ubs := range res {
+		bs = append(bs, ent.BuildingQuery{
+			ID:   ubs.ID.String(),
+			Name: ubs.Name,
 		})
 	}
 	return bs, nil
