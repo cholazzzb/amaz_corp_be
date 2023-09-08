@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -234,8 +233,6 @@ func (r *PostgresLocationRepository) DeleteBuilding(
 		return err
 	}
 	buildingUUID, err := uuid.Parse(buildingId)
-
-	fmt.Println("dbss", memberId, buildingId)
 
 	if err != nil {
 		r.logger.Error(err.Error())

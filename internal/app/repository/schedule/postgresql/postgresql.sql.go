@@ -26,46 +26,42 @@ func (q *Queries) CreateScheduleByRoomID(ctx context.Context, roomID uuid.UUID) 
 }
 
 const createTask = `-- name: CreateTask :execresult
-INSERT INTO tasks(schedule_id, start_time, end_time, task_detail_id)
-VALUES ($1, $2, $3, $4)
+INSERT INTO tasks(name, start_time, end_time, schedule_id, task_detail_id)
+VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateTaskParams struct {
-	ScheduleID   uuid.UUID
+	Name         sql.NullString
 	StartTime    sql.NullTime
 	EndTime      sql.NullTime
+	ScheduleID   uuid.UUID
 	TaskDetailID uuid.UUID
 }
 
 func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, createTask,
-		arg.ScheduleID,
+		arg.Name,
 		arg.StartTime,
 		arg.EndTime,
+		arg.ScheduleID,
 		arg.TaskDetailID,
 	)
 }
 
 const createTaskDetail = `-- name: CreateTaskDetail :one
-INSERT INTO task_details(name, owner_id, assignee_id, status)
-VALUES ($1, $2, $3, $4)
+INSERT INTO task_details(owner_id, assignee_id, status)
+VALUES ($1, $2, $3)
 RETURNING id
 `
 
 type CreateTaskDetailParams struct {
-	Name       sql.NullString
 	OwnerID    uuid.NullUUID
 	AssigneeID uuid.NullUUID
 	Status     sql.NullString
 }
 
 func (q *Queries) CreateTaskDetail(ctx context.Context, arg CreateTaskDetailParams) (uuid.UUID, error) {
-	row := q.db.QueryRowContext(ctx, createTaskDetail,
-		arg.Name,
-		arg.OwnerID,
-		arg.AssigneeID,
-		arg.Status,
-	)
+	row := q.db.QueryRowContext(ctx, createTaskDetail, arg.OwnerID, arg.AssigneeID, arg.Status)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -97,11 +93,11 @@ func (q *Queries) EditTask(ctx context.Context, arg EditTaskParams) (sql.Result,
 
 const getListTaskAndDetailByScheduleID = `-- name: GetListTaskAndDetailByScheduleID :many
 SELECT tasks.id,
-	   tasks.schedule_id,
+	   tasks.name,
 	   tasks.start_time,
 	   tasks.end_time,
+	   tasks.schedule_id,
 	   tasks.task_detail_id,
-	   task_details.name,
 	   task_details.owner_id,
 	   task_details.assignee_id,
 	   task_details.status,
@@ -130,11 +126,11 @@ type GetListTaskAndDetailByScheduleIDParams struct {
 
 type GetListTaskAndDetailByScheduleIDRow struct {
 	ID           uuid.UUID
-	ScheduleID   uuid.UUID
+	Name         sql.NullString
 	StartTime    sql.NullTime
 	EndTime      sql.NullTime
+	ScheduleID   uuid.UUID
 	TaskDetailID uuid.UUID
-	Name         sql.NullString
 	OwnerID      uuid.NullUUID
 	AssigneeID   uuid.NullUUID
 	Status       sql.NullString
@@ -158,11 +154,11 @@ func (q *Queries) GetListTaskAndDetailByScheduleID(ctx context.Context, arg GetL
 		var i GetListTaskAndDetailByScheduleIDRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.ScheduleID,
+			&i.Name,
 			&i.StartTime,
 			&i.EndTime,
+			&i.ScheduleID,
 			&i.TaskDetailID,
-			&i.Name,
 			&i.OwnerID,
 			&i.AssigneeID,
 			&i.Status,
@@ -182,7 +178,7 @@ func (q *Queries) GetListTaskAndDetailByScheduleID(ctx context.Context, arg GetL
 }
 
 const getListTaskByScheduleID = `-- name: GetListTaskByScheduleID :many
-SELECT id, schedule_id, start_time, end_time, task_detail_id
+SELECT id, name, start_time, end_time, schedule_id, task_detail_id
 FROM tasks
 WHERE tasks.schedule_id = $1
 	AND (tasks.start_time >= $2 OR $2 IS NULL) 
@@ -207,9 +203,10 @@ func (q *Queries) GetListTaskByScheduleID(ctx context.Context, arg GetListTaskBy
 		var i Task
 		if err := rows.Scan(
 			&i.ID,
-			&i.ScheduleID,
+			&i.Name,
 			&i.StartTime,
 			&i.EndTime,
+			&i.ScheduleID,
 			&i.TaskDetailID,
 		); err != nil {
 			return nil, err
@@ -240,7 +237,7 @@ func (q *Queries) GetScheduleIdByRoomID(ctx context.Context, roomID uuid.UUID) (
 }
 
 const getTaskDetailByID = `-- name: GetTaskDetailByID :one
-SELECT id, name, owner_id, assignee_id, status
+SELECT id, owner_id, assignee_id, status
 FROM task_details
 WHERE task_details.id = $1
 LIMIT 1
@@ -251,7 +248,6 @@ func (q *Queries) GetTaskDetailByID(ctx context.Context, id uuid.UUID) (TaskDeta
 	var i TaskDetail
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
 		&i.OwnerID,
 		&i.AssigneeID,
 		&i.Status,

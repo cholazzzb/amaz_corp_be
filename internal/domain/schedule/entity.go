@@ -21,10 +21,11 @@ type TaskCommand struct {
 }
 
 type TaskQuery struct {
-	ID           string    `json:"id"`
-	ScheduleID   string    `json:"scheduleID"`
+	ID           string    `json:"ID"`
+	Name         string    `json:"name"`
 	StartTime    time.Time `json:"startTime"`
 	DurationDay  int32     `json:"durationDay"`
+	ScheduleID   string    `json:"scheduleID"`
 	EndTime      time.Time `json:"endTime"`
 	TaskDetailID string    `json:"taskDetailID"`
 }
@@ -48,7 +49,6 @@ type TaskDetailCommand struct {
 
 type TaskDetailQuery struct {
 	ID         string `json:"ID"`
-	Name       string `json:"name"`
 	OwnerID    string `json:"ownerID"`
 	AssigneeID string `json:"assigneeID"`
 	Status     string `json:"status"`

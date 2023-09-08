@@ -92,7 +92,6 @@ func (r *PostgresScheduleRepository) GetTaskDetail(
 
 	return ent.TaskDetailQuery{
 		ID:         res.ID.String(),
-		Name:       res.Name.String,
 		OwnerID:    res.OwnerID.UUID.String(),
 		AssigneeID: res.AssigneeID.UUID.String(),
 		Status:     res.Status.String,
@@ -190,8 +189,6 @@ func (r *PostgresScheduleRepository) CreateTask(
 
 	qtx := r.Postgres.WithTx(tx)
 
-	fmt.Println("pos sch", task, task.OwnerID, task.AssigneeID)
-
 	name := sql.NullString{}
 	name.Scan(task.Name)
 	ownerID := uuid.NullUUID{}
@@ -212,7 +209,6 @@ func (r *PostgresScheduleRepository) CreateTask(
 	status.Scan(task.Status)
 
 	tdUUID, err := qtx.CreateTaskDetail(ctx, schedulepostgres.CreateTaskDetailParams{
-		Name:       name,
 		OwnerID:    ownerID,
 		AssigneeID: assigneeID,
 		Status:     status,

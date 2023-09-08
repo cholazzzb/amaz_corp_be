@@ -53,15 +53,15 @@ type Session struct {
 
 type Task struct {
 	ID           uuid.UUID
-	ScheduleID   uuid.UUID
+	Name         sql.NullString
 	StartTime    sql.NullTime
 	EndTime      sql.NullTime
+	ScheduleID   uuid.UUID
 	TaskDetailID uuid.UUID
 }
 
 type TaskDetail struct {
 	ID         uuid.UUID
-	Name       sql.NullString
 	OwnerID    uuid.NullUUID
 	AssigneeID uuid.NullUUID
 	Status     sql.NullString

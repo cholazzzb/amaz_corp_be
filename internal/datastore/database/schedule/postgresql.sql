@@ -25,11 +25,11 @@ LIMIT 100;
 
 -- name: GetListTaskAndDetailByScheduleID :many
 SELECT tasks.id,
-	   tasks.schedule_id,
+	   tasks.name,
 	   tasks.start_time,
 	   tasks.end_time,
+	   tasks.schedule_id,
 	   tasks.task_detail_id,
-	   task_details.name,
 	   task_details.owner_id,
 	   task_details.assignee_id,
 	   task_details.status,
@@ -48,12 +48,12 @@ GROUP BY tasks.id
 LIMIT 100;
 
 -- name: CreateTask :execresult
-INSERT INTO tasks(schedule_id, start_time, end_time, task_detail_id)
-VALUES ($1, $2, $3, $4);
+INSERT INTO tasks(name, start_time, end_time, schedule_id, task_detail_id)
+VALUES ($1, $2, $3, $4, $5);
 
 -- name: CreateTaskDetail :one
-INSERT INTO task_details(name, owner_id, assignee_id, status)
-VALUES ($1, $2, $3, $4)
+INSERT INTO task_details(owner_id, assignee_id, status)
+VALUES ($1, $2, $3)
 RETURNING id;
 
 -- name: EditTask :execresult
