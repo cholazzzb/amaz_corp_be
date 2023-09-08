@@ -64,6 +64,7 @@ erDiagram
 
     TASK {
         id string
+        name string
         schedule_id string
         start_time Date
         duration int64
@@ -77,7 +78,6 @@ erDiagram
 
     TASK_DETAIL {
         id string
-        name string
         owner_id string
         assignee_id string
         status string
