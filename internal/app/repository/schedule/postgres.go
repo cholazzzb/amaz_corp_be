@@ -132,9 +132,11 @@ func (r *PostgresScheduleRepository) GetListTaskByScheduleID(
 	for _, task := range res {
 		tasks = append(tasks, ent.TaskQuery{
 			ID:           task.ID.String(),
-			ScheduleID:   task.ScheduleID.String(),
+			Name:         task.Name.String,
 			StartTime:    task.StartTime.Time,
 			DurationDay:  calDurationDay(task.EndTime.Time, task.StartTime.Time),
+			EndTime:      task.EndTime.Time,
+			ScheduleID:   task.ScheduleID.String(),
 			TaskDetailID: task.TaskDetailID.String(),
 		})
 	}
@@ -189,8 +191,6 @@ func (r *PostgresScheduleRepository) CreateTask(
 
 	qtx := r.Postgres.WithTx(tx)
 
-	name := sql.NullString{}
-	name.Scan(task.Name)
 	ownerID := uuid.NullUUID{}
 	ownerUUID, err := uuid.Parse(task.OwnerID)
 	if len(task.OwnerID) > 0 && err != nil {
@@ -225,16 +225,18 @@ func (r *PostgresScheduleRepository) CreateTask(
 		return errors.New("ScheduleID is in wrong format")
 	}
 
+	name := sql.NullString{}
+	name.Scan(task.Name)
+	startTime := sql.NullTime{}
+	startTime.Scan(task.StartTime)
+	endTime := sql.NullTime{}
+	endTime.Scan(calEndTime(task.StartTime, task.DurationDay))
+
 	_, err = qtx.CreateTask(ctx, schedulepostgres.CreateTaskParams{
-		ScheduleID: scheduleID,
-		StartTime: sql.NullTime{
-			Time:  task.StartTime,
-			Valid: true,
-		},
-		EndTime: sql.NullTime{
-			Time:  calEndTime(task.StartTime, task.DurationDay),
-			Valid: true,
-		},
+		Name:         name,
+		StartTime:    startTime,
+		EndTime:      endTime,
+		ScheduleID:   scheduleID,
 		TaskDetailID: tdUUID,
 	})
 
