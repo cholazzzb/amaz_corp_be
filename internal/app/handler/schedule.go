@@ -9,6 +9,7 @@ import (
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
 	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+	"github.com/cholazzzb/amaz_corp_be/pkg/response"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
@@ -120,8 +121,16 @@ func (h *ScheduleHandler) GetListTaskByScheduleID(ctx *fiber.Ctx) error {
 		})
 	}
 
-	startTime, err := time.Parse(time.RFC1123, queryFilterParams.StartTime) // ex on javascript: new Date("2023-09-3").toUTCString()
-	endTime, err := time.Parse(time.RFC1123, queryFilterParams.EndTime)
+	var startTime *time.Time
+	startTimeParsed, err := time.Parse(time.RFC1123, queryFilterParams.StartTime) // ex on javascript: new Date("2023-09-3").toUTCString()
+	if err == nil {
+		startTime = &startTimeParsed
+	}
+	var endTime *time.Time
+	endTimeParsed, err := time.Parse(time.RFC1123, queryFilterParams.EndTime)
+	if err == nil {
+		endTime = &endTimeParsed
+	}
 
 	tks, err := h.svc.GetListTaskByScheduleID(ctx.Context(), scheduleID, ent.TaskQueryFilter{
 		StartTime: startTime,
@@ -129,9 +138,7 @@ func (h *ScheduleHandler) GetListTaskByScheduleID(ctx *fiber.Ctx) error {
 	})
 	if err != nil {
 		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal Server Error",
-		})
+		return response.InternalServerError(ctx)
 	}
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "ok",

@@ -111,9 +111,13 @@ func (r *PostgresScheduleRepository) GetListTaskByScheduleID(
 		return tasks, err
 	}
 	startTime := sql.NullTime{}
-	startTime.Scan(queryFilter.StartTime)
+	if queryFilter.StartTime != nil {
+		startTime.Scan(*queryFilter.StartTime)
+	}
 	endTime := sql.NullTime{}
-	endTime.Scan(queryFilter.EndTime)
+	if queryFilter.EndTime != nil {
+		endTime.Scan(*queryFilter.EndTime)
+	}
 
 	arg := schedulepostgres.GetListTaskByScheduleIDParams{
 		ScheduleID: sUUID,

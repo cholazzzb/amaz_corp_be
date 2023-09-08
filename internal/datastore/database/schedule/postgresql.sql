@@ -19,8 +19,8 @@ LIMIT 1;
 SELECT *
 FROM tasks
 WHERE tasks.schedule_id = $1
-	AND tasks.start_time >= $2 AND tasks.start_time <= $2 + interval '1 day'
-	AND tasks.end_time >= $3 AND tasks.end_time <= $3 + interval '1 day'
+	AND (tasks.start_time >= sqlc.narg('start_time') OR sqlc.narg('start_time') IS NULL) 
+	AND (tasks.end_time <= sqlc.narg('end_time') OR tasks.end_time <= sqlc.narg('end_time') + interval '1 day' OR sqlc.narg('end_time') IS NULL)
 LIMIT 100;
 
 -- name: GetListTaskAndDetailByScheduleID :many

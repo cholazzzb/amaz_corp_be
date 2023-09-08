@@ -21,17 +21,17 @@ type TaskCommand struct {
 }
 
 type TaskQuery struct {
-	ID           string
-	ScheduleID   string
-	StartTime    time.Time
-	DurationDay  int32
-	EndTime      time.Time
-	TaskDetailID string
+	ID           string    `json:"id"`
+	ScheduleID   string    `json:"scheduleID"`
+	StartTime    time.Time `json:"startTime"`
+	DurationDay  int32     `json:"durationDay"`
+	EndTime      time.Time `json:"endTime"`
+	TaskDetailID string    `json:"taskDetailID"`
 }
 
 type TaskQueryFilter struct {
-	StartTime time.Time
-	EndTime   time.Time
+	StartTime *time.Time
+	EndTime   *time.Time
 }
 
 type TaskQueryFilterParams struct {
@@ -47,11 +47,11 @@ type TaskDetailCommand struct {
 }
 
 type TaskDetailQuery struct {
-	ID         string
-	Name       string
-	OwnerID    string
-	AssigneeID string
-	Status     string
+	ID         string `json:"ID"`
+	Name       string `json:"name"`
+	OwnerID    string `json:"ownerID"`
+	AssigneeID string `json:"assigneeID"`
+	Status     string `json:"status"`
 }
 
 type TaskWithDetailCommand struct {
@@ -65,13 +65,13 @@ type TaskWithDetailCommand struct {
 }
 
 type TaskWithDetailQuery struct {
-	TaskID       string
-	ScheduleID   string
-	StartTime    time.Time
-	DurationDay  int32
-	TaskDetailID string
-	Name         string
-	OwnerID      string
-	AssigneeID   string
-	Status       string
+	TaskID       string    `json:"taskID"`
+	ScheduleID   string    `json:"scheduleID"`
+	StartTime    time.Time `json:"startTime"`
+	DurationDay  int32     `json:"durationDay"`
+	TaskDetailID string    `json:"taskDetailID"`
+	Name         string    `json:"name"`
+	OwnerID      string    `json:"ownerID"`
+	AssigneeID   string    `json:"assigneeID"`
+	Status       string    `json:"status"`
 }

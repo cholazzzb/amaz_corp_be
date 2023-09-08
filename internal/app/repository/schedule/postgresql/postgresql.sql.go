@@ -185,8 +185,8 @@ const getListTaskByScheduleID = `-- name: GetListTaskByScheduleID :many
 SELECT id, schedule_id, start_time, end_time, task_detail_id
 FROM tasks
 WHERE tasks.schedule_id = $1
-	AND tasks.start_time >= $2 AND tasks.start_time <= $2 + interval '1 day'
-	AND tasks.end_time >= $3 AND tasks.end_time <= $3 + interval '1 day'
+	AND (tasks.start_time >= $2 OR $2 IS NULL) 
+	AND (tasks.end_time <= $3 OR tasks.end_time <= $3 + interval '1 day' OR $3 IS NULL)
 LIMIT 100
 `
 
