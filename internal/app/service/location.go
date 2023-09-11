@@ -139,6 +139,17 @@ func (svc *LocationService) GetMemberByName(ctx context.Context, name string) (e
 	return member, nil
 }
 
+func (svc *LocationService) GetMemberByID(
+	ctx context.Context,
+	memberID string,
+) (ent.MemberQuery, error) {
+	member, err := svc.repo.GetMemberByID(ctx, memberID)
+	if err != nil {
+		return member, fmt.Errorf("svc: getMemberByID: %s. %w", memberID, err)
+	}
+	return member, nil
+}
+
 func (svc *LocationService) GetFriendsByMemberId(ctx context.Context, userId string) ([]ent.MemberQuery, error) {
 	fs, err := svc.repo.GetFriendsByUserId(ctx, userId)
 	if err != nil {

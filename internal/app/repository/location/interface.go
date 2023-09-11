@@ -60,6 +60,11 @@ type MemberRepository interface {
 		ctx context.Context,
 		memberName string,
 	) (ent.MemberQuery, error)
+
+	GetMemberByID(
+		ctx context.Context,
+		memberID string,
+	) (ent.MemberQuery, error)
 }
 
 type RoomRepository interface {

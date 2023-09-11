@@ -92,8 +92,8 @@ func (h *ScheduleHandler) GetTaskDetail(ctx *fiber.Ctx) error {
 		})
 	}
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":      "ok",
-		"task_details": td,
+		"message":    "ok",
+		"taskDetail": td,
 	})
 }
 

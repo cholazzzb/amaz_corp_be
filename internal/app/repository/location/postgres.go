@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -87,6 +88,28 @@ func (r *PostgresLocationRepository) GetMemberByName(
 		r.logger.Error(err.Error())
 		return ent.MemberQuery{}, err
 	}
+	return ent.MemberQuery{
+		ID:     result.ID.String(),
+		UserID: result.UserID,
+		Name:   result.Name,
+		Status: result.Status,
+		RoomID: result.RoomID.UUID.String(),
+	}, nil
+}
+
+func (r *PostgresLocationRepository) GetMemberByID(
+	ctx context.Context,
+	memberID string,
+) (ent.MemberQuery, error) {
+	memberUUID, err := uuid.Parse(memberID)
+	if err != nil {
+		return ent.MemberQuery{}, fmt.Errorf("repo: GetMemberByID. %w", err)
+	}
+	result, err := r.Postgres.GetMemberByID(ctx, memberUUID)
+	if err != nil {
+		return ent.MemberQuery{}, fmt.Errorf("repo: GetMemberByID. %w", err)
+	}
+
 	return ent.MemberQuery{
 		ID:     result.ID.String(),
 		UserID: result.UserID,

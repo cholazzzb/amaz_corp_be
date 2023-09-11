@@ -30,7 +30,8 @@ func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 	buildingApi.Delete("/leave/", r.h.DeleteBuilding)
 
 	memberApi := r.fr.Group("/members", am)
-	memberApi.Get("/:name", r.h.GetMemberByName)
+	memberApi.Get("/name/:name/search", r.h.GetMemberByName)
+	memberApi.Get("/:memberID", r.h.GetMemberByID)
 
 	friendApi := r.fr.Group("/friends", am)
 	friendApi.Get("/:memberId", r.h.GetFriendsByMemberId)

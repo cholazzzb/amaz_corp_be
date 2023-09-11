@@ -235,6 +235,26 @@ func (q *Queries) GetMemberBuildingById(ctx context.Context, arg GetMemberBuildi
 	return exists, err
 }
 
+const getMemberByID = `-- name: GetMemberByID :one
+SELECT id, user_id, name, status, room_id
+FROM members
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetMemberByID(ctx context.Context, id uuid.UUID) (Member, error) {
+	row := q.db.QueryRowContext(ctx, getMemberByID, id)
+	var i Member
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Status,
+		&i.RoomID,
+	)
+	return i, err
+}
+
 const getMemberByName = `-- name: GetMemberByName :one
 SELECT id, user_id, name, status, room_id
 FROM members

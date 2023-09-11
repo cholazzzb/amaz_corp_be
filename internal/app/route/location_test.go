@@ -71,7 +71,7 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 
 	getMemberByNameByte := tester.NewMockTest().
 		Desc("/members/:name should return the true member").
-		GET(BASE_URL+"/members/"+memberName).
+		GET(BASE_URL+"/members/name/"+memberName+"/search").
 		Expected(200, "", "").
 		BuildRequest().
 		WithBearer(bearerToken).

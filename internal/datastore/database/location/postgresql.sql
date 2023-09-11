@@ -26,6 +26,12 @@ FROM members
 WHERE name = $1
 LIMIT 1;
 
+-- name: GetMemberByID :one
+SELECT *
+FROM members
+WHERE id = $1
+LIMIT 1;
+
 -- name: CreateFriend :execresult
 INSERT INTO friends(member1_id, member2_id)
 VALUES ($1, $2);

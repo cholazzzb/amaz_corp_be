@@ -246,6 +246,35 @@ func (h *LocationHandler) GetMemberByName(ctx *fiber.Ctx) error {
 	})
 }
 
+type GetMemberByIDRequest struct {
+	MemberID string `json:"memberID" validate:"required"`
+}
+
+func (h *LocationHandler) GetMemberByID(ctx *fiber.Ctx) error {
+	memberID := ctx.Params("memberID")
+	if len(memberID) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "memberID must be filled",
+		})
+	}
+
+	req := GetMemberByIDRequest{memberID}
+	if errs := validator.Validate(req); errs != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	member, err := h.svc.GetMemberByID(ctx.Context(), req.MemberID)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return response.InternalServerError(ctx)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "ok",
+		"member":  member,
+	})
+}
+
 type GetFriendsByMemberIdRequest struct {
 	MemberID string `json:"memberId" validate:"required"`
 }
