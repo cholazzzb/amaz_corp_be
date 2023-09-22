@@ -189,5 +189,7 @@ func NewMockApp() *MockApp {
 
 func (mc *MockApp) Setup(envPath string) *fiber.App {
 	config.GetEnv(envPath)
-	return app.GetApp()
+
+	dbSql := app.NewSQL()
+	return app.GetApp(dbSql)
 }

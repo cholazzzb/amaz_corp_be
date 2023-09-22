@@ -9,7 +9,8 @@ import (
 func main() {
 	config.GetEnv(".env")
 
-	app := app.GetApp()
+	dbSql := app.NewSQL(app.WithMigration())
+	app := app.GetApp(dbSql)
 
 	logger.Get().Error(app.Listen(":8080").Error())
 }

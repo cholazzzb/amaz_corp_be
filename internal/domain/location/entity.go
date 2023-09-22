@@ -31,6 +31,6 @@ type MemberQuery struct {
 }
 
 type JoinBuildingCommand struct {
-	Name       string `json:"name" validate:"required"`
-	BuildingId string `json:"buildingID" validate:"required"`
+	Name       string `json:"name" validate:"required,min=3,max=32"`
+	BuildingId string `json:"buildingID" validate:"required,min=36,max=36"`
 }

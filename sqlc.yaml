@@ -21,6 +21,13 @@ sql:
       go: 
         package: "schedulepostgres"
         out: "internal/app/repository/schedule/postgresql"
+  - engine: "postgresql"
+    schema: "migration/postgresql"
+    queries: "internal/datastore/database/remoteconfig/postgresql.sql"
+    gen:
+      go: 
+        package: "remoteconfigpostgres"
+        out: "internal/app/repository/remoteconfig/postgresql"
   # Legacy mysql
   - engine: "mysql"
     schema: "migration/mysql"

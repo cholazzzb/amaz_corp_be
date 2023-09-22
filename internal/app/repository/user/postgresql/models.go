@@ -33,6 +33,12 @@ type MembersBuilding struct {
 	BuildingID uuid.UUID
 }
 
+type RemoteConfig struct {
+	ID    int32
+	Key   string
+	Value string
+}
+
 type Room struct {
 	ID         uuid.UUID
 	Name       string

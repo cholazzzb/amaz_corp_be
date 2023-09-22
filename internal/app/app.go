@@ -12,6 +12,7 @@ import (
 	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
 	hbRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/heartbeat"
 	locRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/location"
+	rcRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/remoteconfig"
 	schRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/schedule"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
@@ -22,6 +23,7 @@ import (
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/heartbeat"
 	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware/auth"
+	"github.com/cholazzzb/amaz_corp_be/pkg/migrator"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -31,22 +33,13 @@ var lock = &sync.Mutex{}
 
 var app *fiber.App
 
-func GetApp() *fiber.App {
+func GetApp(dbSql *sql.DB) *fiber.App {
 	if app == nil {
 		lock.Lock()
 		defer lock.Unlock()
 
 		if app == nil {
 			// TODO: Write the log into file
-
-			dbSql, err := sql.Open(config.ENV.DB_TYPE, config.ENV.DB_CON_STRING)
-			if err != nil {
-				logger.Get().Error(err.Error())
-				panic("failed to connect sql database")
-			}
-
-			// TODO: only migrate when not test
-			// migrator.MigrateUp(dbSql)
 
 			opt, err := redis.ParseURL(config.ENV.REDIS_CON_STRING)
 			if err != nil {
@@ -95,8 +88,34 @@ func GetApp() *fiber.App {
 			sh := handler.NewScheduleHandler(ss)
 			sRoute := route.NewScheduleRoute(v1, sh)
 			sRoute.InitRoute(authMiddleware)
+
+			rcr := rcRepo.NewPostgresRemoteConfigRepository(sqlRepo)
+			rcs := service.NewRemoteConfigService(rcr)
+			rch := handler.NewRemoteConfigHandler(rcs)
+			rcRoute := route.NewRemoteConfigRoute(v1, rch)
+			rcRoute.InitRoute(authMiddleware)
 		}
 	}
 
 	return app
+}
+
+func NewSQL(options ...func(*sql.DB)) *sql.DB {
+	dbSql, err := sql.Open(config.ENV.DB_TYPE, config.ENV.DB_CON_STRING)
+	if err != nil {
+		logger.Get().Error(err.Error())
+		panic("failed to connect sql database")
+	}
+
+	for _, opt := range options {
+		opt(dbSql)
+	}
+
+	return dbSql
+}
+
+func WithMigration() func(*sql.DB) {
+	return func(dbSql *sql.DB) {
+		migrator.MigrateUp(dbSql)
+	}
 }
