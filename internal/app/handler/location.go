@@ -97,18 +97,15 @@ func (h *LocationHandler) GetBuildingsByUserID(ctx *fiber.Ctx) error {
 }
 
 func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
-	userID, success := ctx.Locals("UserId").(string)
-	if !success {
-		err := errors.New("failed to get userId from JWT")
-		h.logger.Error(err.Error())
-		return response.InternalServerError(ctx)
+	userID, ok, resFactory := validator.CheckUserIDJWT(ctx, h.logger)
+	if !ok {
+		return resFactory.Create()
 	}
+
 	req := new(ent.JoinBuildingCommand)
-	if err := ctx.BodyParser(req); err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+	ok, resFactory = validator.CheckReqBodySchema(ctx, req)
+	if !ok {
+		return resFactory.Create()
 	}
 
 	exist, err := h.svc.CheckMemberBuildingExist(ctx.Context(), userID, req.BuildingId)
@@ -117,9 +114,7 @@ func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
 		return response.InternalServerError(ctx)
 	}
 	if exist {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "user already joined in the building",
-		})
+		return response.BadRequest(ctx, "user already joined in the building")
 	}
 
 	err = h.svc.JoinBuilding(ctx.Context(), req.Name, userID, req.BuildingId)
@@ -128,9 +123,7 @@ func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
 		return response.InternalServerError(ctx)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "ok",
-	})
+	return response.Ok(ctx, "ok")
 }
 
 type GetRoomsByBuildingIdRequest struct {
@@ -175,9 +168,7 @@ func (h *LocationHandler) GetListMemberByBuildingID(ctx *fiber.Ctx) error {
 	ms, err := h.svc.GetListMemberByBuildingID(ctx.Context(), buildingID)
 	if err != nil {
 		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal Server Error",
-		})
+		return response.InternalServerError(ctx)
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{

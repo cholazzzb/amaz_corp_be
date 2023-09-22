@@ -59,11 +59,9 @@ type LoginRequest struct {
 
 func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 	req := new(LoginRequest)
-	if err := ctx.BodyParser(req); err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+	ok, resFactory := validator.CheckReqBodySchema(ctx, req)
+	if !ok {
+		return resFactory.Create()
 	}
 
 	token, err := h.svc.Login(ctx.Context(), req.Username, req.Password)
@@ -73,6 +71,7 @@ func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
+	// TODO: Handle to give response if user not exist
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"token": token,
