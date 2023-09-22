@@ -1,3 +1,13 @@
+# Install sqlc and sql-migrate
+setup:
+	@go install github.com/rubenv/sql-migrate/...@latest
+
+gen-sql:
+	@sqlc generate
+
+gen-sql-win:
+	@docker run --rm -v ${pwd}:/src -w /src kjconroy/sqlc generate .\sqlc.yaml
+
 dev:
 	@go run main.go
 
