@@ -86,8 +86,8 @@ func (svc *LocationService) DeleteBuilding(
 func (svc *LocationService) GetBuildingsByUserID(
 	ctx context.Context,
 	userID string,
-) ([]ent.BuildingQuery, error) {
-	bs, err := svc.repo.GetBuildingsByUserID(ctx, userID)
+) ([]ent.BuildingMemberQuery, error) {
+	bs, err := svc.repo.GetListBuildingByUserID(ctx, userID)
 	if err != nil {
 		svc.logger.Error(err.Error())
 		return nil, fmt.Errorf("cannot get buildings with userID %s", userID)

@@ -44,10 +44,10 @@ type BuildingRepoQuery interface {
 		buildingID string,
 	) (bool, error)
 
-	GetBuildingsByUserID(
+	GetListBuildingByUserID(
 		ctx context.Context,
 		userID string,
-	) ([]ent.BuildingQuery, error)
+	) ([]ent.BuildingMemberQuery, error)
 
 	GetListMemberByBuildingID(
 		ctx context.Context,

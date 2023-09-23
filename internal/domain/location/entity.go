@@ -5,6 +5,12 @@ type BuildingQuery struct {
 	Name string `json:"name"`
 }
 
+type BuildingMemberQuery struct {
+	BuildingID   string `json:"buildingID"`
+	BuildingName string `json:"buildingName"`
+	MemberID     string `json:"memberID"`
+}
+
 type RoomQuery struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`

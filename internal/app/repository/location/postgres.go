@@ -151,22 +151,23 @@ func (r *PostgresLocationRepository) CreateFriend(
 	return errors.New("")
 }
 
-func (r *PostgresLocationRepository) GetBuildingsByUserID(
+func (r *PostgresLocationRepository) GetListBuildingByUserID(
 	ctx context.Context,
 	userID string,
-) ([]ent.BuildingQuery, error) {
-	res, err := r.Postgres.GetBuildingsByUserID(ctx, userID)
+) ([]ent.BuildingMemberQuery, error) {
+	res, err := r.Postgres.GetListBuildingByUserID(ctx, userID)
 
-	bs := []ent.BuildingQuery{}
+	bs := []ent.BuildingMemberQuery{}
 	if err != nil {
 		r.logger.Error(err.Error())
 		return bs, err
 	}
 
 	for _, ubs := range res {
-		bs = append(bs, ent.BuildingQuery{
-			ID:   ubs.ID.String(),
-			Name: ubs.Name,
+		bs = append(bs, ent.BuildingMemberQuery{
+			BuildingID:   ubs.BuildingID.String(),
+			BuildingName: ubs.BuildingName,
+			MemberID:     ubs.MemberID.String(),
 		})
 	}
 	return bs, nil

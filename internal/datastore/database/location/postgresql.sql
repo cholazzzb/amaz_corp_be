@@ -3,8 +3,8 @@ SELECT *
 FROM buildings
 LIMIT 10;
 
--- name: GetBuildingsByUserID :many
-SELECT b.id, b.name
+-- name: GetListBuildingByUserID :many
+SELECT b.id as building_id, b.name as building_name, members.id as member_id
 FROM members
 INNER JOIN members_buildings
 ON members.id = members_buildings.member_id

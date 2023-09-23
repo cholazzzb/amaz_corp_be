@@ -103,42 +103,6 @@ func (q *Queries) GetAllBuildings(ctx context.Context) ([]Building, error) {
 	return items, nil
 }
 
-const getBuildingsByUserID = `-- name: GetBuildingsByUserID :many
-SELECT b.id, b.name
-FROM members
-INNER JOIN members_buildings
-ON members.id = members_buildings.member_id
-INNER JOIN buildings b
-ON b.id = members_buildings.building_id
-INNER JOIN users
-ON users.id = members.user_id
-WHERE users.id = $1
-LIMIT 10
-`
-
-func (q *Queries) GetBuildingsByUserID(ctx context.Context, id string) ([]Building, error) {
-	rows, err := q.db.QueryContext(ctx, getBuildingsByUserID, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Building
-	for rows.Next() {
-		var i Building
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getFriendsByMemberId = `-- name: GetFriendsByMemberId :many
 SELECT m.id, m.name, m.status
 FROM members m
@@ -163,6 +127,48 @@ func (q *Queries) GetFriendsByMemberId(ctx context.Context, member1ID uuid.UUID)
 	for rows.Next() {
 		var i GetFriendsByMemberIdRow
 		if err := rows.Scan(&i.ID, &i.Name, &i.Status); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getListBuildingByUserID = `-- name: GetListBuildingByUserID :many
+SELECT b.id as building_id, b.name as building_name, members.id as member_id
+FROM members
+INNER JOIN members_buildings
+ON members.id = members_buildings.member_id
+INNER JOIN buildings b
+ON b.id = members_buildings.building_id
+INNER JOIN users
+ON users.id = members.user_id
+WHERE users.id = $1
+LIMIT 10
+`
+
+type GetListBuildingByUserIDRow struct {
+	BuildingID   uuid.UUID
+	BuildingName string
+	MemberID     uuid.UUID
+}
+
+func (q *Queries) GetListBuildingByUserID(ctx context.Context, id string) ([]GetListBuildingByUserIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getListBuildingByUserID, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetListBuildingByUserIDRow
+	for rows.Next() {
+		var i GetListBuildingByUserIDRow
+		if err := rows.Scan(&i.BuildingID, &i.BuildingName, &i.MemberID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
