@@ -33,7 +33,7 @@ func (r *PostgresUserRepository) GetUser(
 		return user.User{}, err
 	}
 	return user.User{
-		ID:       result.ID,
+		ID:       result.ID.String(),
 		Username: result.Username,
 		Password: result.Password,
 		Salt:     result.Salt,
@@ -57,7 +57,6 @@ func (r *PostgresUserRepository) CreateUser(
 	params user.User,
 ) error {
 	_, err := r.Postgres.CreateUser(ctx, userpostgres.CreateUserParams{
-		ID:       params.ID,
 		Username: params.Username,
 		Password: params.Password,
 		Salt:     params.Salt,

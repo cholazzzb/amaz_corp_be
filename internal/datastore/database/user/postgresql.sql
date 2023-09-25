@@ -1,6 +1,6 @@
 -- name: CreateUser :execresult
-INSERT INTO users(id, username, password, salt)
-VALUES ($1, $2, $3, $4);
+INSERT INTO users(username, password, salt)
+VALUES ($1, $2, $3);
 
 -- name: GetUser :one
 SELECT *

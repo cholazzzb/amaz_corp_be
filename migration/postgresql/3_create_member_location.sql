@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS members (
   id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
-  user_id varchar(36) NOT NULL,
+  user_id uuid NOT NULL,
   name varchar(255) NOT NULL,
   status text NOT NULL,
   room_id uuid,
