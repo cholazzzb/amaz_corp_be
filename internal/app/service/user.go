@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
 	repo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
@@ -52,13 +52,7 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 		return errors.New("username already taken")
 	}
 
-	uuidSalt, err := uuid.NewV7()
-	if err != nil {
-		svc.logger.Error(err.Error())
-		return errors.New("failed to generate uuid")
-	}
-
-	userId, err := uuid.NewV7()
+	uuidSalt, err := uuid.NewUUID()
 	if err != nil {
 		svc.logger.Error(err.Error())
 		return errors.New("failed to generate uuid")
@@ -78,15 +72,14 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 		svc.logger.Error(err.Error())
 		return errors.New("failed to hash password")
 	}
-	newUserParams := user.User{
-		ID:       userId.String(),
-		Username: username,
-		Password: string(hashedPassword[:]),
-		Salt:     string(salt[:]),
+	newUserParams := user.UserCommand{
+		Username:  username,
+		Password:  string(hashedPassword[:]),
+		Salt:      string(salt[:]),
+		ProductID: 1, // TODO: Find better way to write this, for now: 1 = is free, the default value
 	}
 
 	if err := svc.repo.CreateUser(ctx, newUserParams); err != nil {
-		svc.logger.Error(err.Error())
 		return errors.New("failed to create user")
 	}
 
@@ -150,4 +143,39 @@ func (svc *UserService) CheckUserExistance(ctx context.Context, username string)
 		return false, err
 	}
 	return exist, nil
+}
+
+func (svc *UserService) GetProductByUserID(
+	ctx context.Context,
+	userID string,
+) (user.ProductQuery, error) {
+	out, err := svc.repo.GetProductByUserID(ctx, userID)
+	if err != nil {
+		return user.ProductQuery{}, err
+	}
+
+	return out, nil
+}
+
+func (svc *UserService) GetListProduct(
+	ctx context.Context,
+) ([]user.ProductQuery, error) {
+	out, err := svc.repo.GetListProduct(ctx)
+	if err != nil {
+		return []user.ProductQuery{}, err
+	}
+
+	return out, nil
+}
+
+func (svc *UserService) GetListFeatureByProductID(
+	ctx context.Context,
+	productID int32,
+) ([]user.FeatureQuery, error) {
+	out, err := svc.repo.GetListFeatureByProductID(ctx, productID)
+	if err != nil {
+		return []user.FeatureQuery{}, err
+	}
+
+	return out, nil
 }

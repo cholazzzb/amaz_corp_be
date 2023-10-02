@@ -31,6 +31,28 @@ func NewPostgresLocationRepository(postgresRepo *database.SqlRepository) *Postgr
 	}
 }
 
+func (r *PostgresLocationRepository) GetBuildingByID(
+	ctx context.Context,
+	buildingID string,
+) (ent.BuildingQuery, error) {
+	buildingUUID, err := uuid.Parse(buildingID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return ent.BuildingQuery{}, err
+	}
+
+	res, err := r.Postgres.GetBuildingByID(ctx, buildingUUID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return ent.BuildingQuery{}, err
+	}
+
+	return ent.BuildingQuery{
+		ID:   res.ID.String(),
+		Name: res.Name,
+	}, nil
+}
+
 func (r *PostgresLocationRepository) GetAllBuildings(
 	ctx context.Context,
 ) ([]ent.BuildingQuery, error) {
@@ -213,6 +235,50 @@ func (r *PostgresLocationRepository) GetListMemberByBuildingID(
 	}
 
 	return ms, nil
+}
+
+func (r *PostgresLocationRepository) GetNumberOfBuildingOwned(
+	ctx context.Context,
+	ownerID string,
+) (int64, error) {
+	ownerUUID := uuid.NullUUID{}
+	err := ownerUUID.Scan(ownerID)
+
+	if err != nil {
+		r.logger.Error(err.Error())
+		return -1, err
+	}
+
+	count, err := r.Postgres.GetNumberOfBuildingOwned(ctx, ownerUUID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return -1, err
+	}
+	return count, nil
+}
+
+func (r *PostgresLocationRepository) CreateBuilding(
+	ctx context.Context,
+	name,
+	ownerID string,
+) error {
+	ownerUUID := uuid.NullUUID{}
+	err := ownerUUID.Scan(ownerID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+
+	_, err = r.Postgres.CreateBuilding(ctx, locationpostgres.CreateBuildingParams{
+		Name:    name,
+		OwnerID: ownerUUID,
+	})
+	if err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (r *PostgresLocationRepository) CreateMemberBuilding(

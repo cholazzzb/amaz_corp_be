@@ -20,8 +20,10 @@ func NewLocationRoute(fr fiber.Router, h *handler.LocationHandler) *LocationRout
 
 func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 	buildingApi := r.fr.Group("/buildings", am)
+	buildingApi.Post("/", r.h.CreateBuilding)
 	buildingApi.Get("/", r.h.GetBuildingsByUserID)
 	buildingApi.Get("/all", r.h.GetBuildings)
+	buildingApi.Get("/:buildingID", r.h.GetBuildingByID)
 	buildingApi.Get("/:buildingId/rooms", r.h.GetRoomsByBuildingId)
 	buildingApi.Get("/:buildingID/members", r.h.GetListMemberByBuildingID)
 

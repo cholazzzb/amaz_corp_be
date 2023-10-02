@@ -1,5 +1,9 @@
 package location
 
+type BuildingCommand struct {
+	Name string `json:"name"`
+}
+
 type BuildingQuery struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`

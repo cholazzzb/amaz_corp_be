@@ -96,4 +96,15 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 		BuildRequest().
 		WithBearer(bearerToken).
 		Test(testApp, t)
+
+	tester.NewMockTest().
+		Desc("/buildings").
+		POST(BASE_URL+"/buildings").
+		Body(map[string]interface{}{
+			"name": "newBuilding" + memberName,
+		}).
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(bearerToken).
+		Test(testApp, t)
 }

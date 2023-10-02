@@ -8,6 +8,7 @@ import (
 
 type UserRepo interface {
 	UserRepository
+	ProductRepoQuery
 }
 
 type UserRepository interface {
@@ -21,6 +22,20 @@ type UserRepository interface {
 	) (bool, error)
 	CreateUser(
 		ctx context.Context,
-		params user.User,
+		params user.UserCommand,
 	) error
+}
+
+type ProductRepoQuery interface {
+	GetProductByUserID(
+		ctx context.Context,
+		userID string,
+	) (user.ProductQuery, error)
+	GetListProduct(
+		ctx context.Context,
+	) ([]user.ProductQuery, error)
+	GetListFeatureByProductID(
+		ctx context.Context,
+		productID int32,
+	) ([]user.FeatureQuery, error)
 }

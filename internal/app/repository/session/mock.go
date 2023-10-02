@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/session"
 )
@@ -66,7 +66,7 @@ func (repo *MockSessionRepo) CreateSession(
 	startTime time.Time,
 	endTime time.Time,
 ) (session.SessionId, error) {
-	uuidRaw, err := uuid.NewV7()
+	uuidRaw, err := uuid.NewUUID()
 	if err != nil {
 		panic(err)
 	}
@@ -140,7 +140,7 @@ func (repo *MockSessionRepo) CreateRoom(
 		return session.RoomId(""), err
 	}
 
-	uuidRaw, err := uuid.NewV7()
+	uuidRaw, err := uuid.NewUUID()
 	if err != nil {
 		panic(err)
 	}

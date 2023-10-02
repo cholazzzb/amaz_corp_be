@@ -83,6 +83,17 @@ func (svc *LocationService) DeleteBuilding(
 	return nil
 }
 
+func (svc *LocationService) GetBuildingByID(
+	ctx context.Context,
+	buildingID string,
+) (ent.BuildingQuery, error) {
+	building, err := svc.repo.GetBuildingByID(ctx, buildingID)
+	if err != nil {
+		return ent.BuildingQuery{}, err
+	}
+	return building, nil
+}
+
 func (svc *LocationService) GetBuildingsByUserID(
 	ctx context.Context,
 	userID string,
@@ -108,12 +119,56 @@ func (svc *LocationService) GetListMemberByBuildingID(
 	return ms, nil
 }
 
+func (svc *LocationService) GetNumberOfBuildingOwned(
+	ctx context.Context,
+	ownerID string,
+) (int64, error) {
+	count, err := svc.repo.GetNumberOfBuildingOwned(ctx, ownerID)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (svc *LocationService) CheckMemberBuildingExist(
 	ctx context.Context,
 	userID,
 	buildingID string,
 ) (bool, error) {
 	return svc.repo.GetMemberBuildingExist(ctx, userID, buildingID)
+}
+
+func (svc *LocationService) CreateBuilding(
+	ctx context.Context,
+	name,
+	userID string,
+) error {
+	product, err := svc.us.GetProductByUserID(ctx, userID)
+	if err != nil {
+		svc.logger.Error(err.Error())
+		return err
+	}
+
+	owned, err := svc.repo.GetNumberOfBuildingOwned(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	memberBuilding, err := svc.repo.GetListBuildingByUserID(ctx, userID)
+
+	if product.ID == 1 && (owned >= 1 || len(memberBuilding) > 0) {
+		err = errors.New("free user already reach limit create building")
+		svc.logger.Error(err.Error())
+		return err
+	}
+
+	err = svc.repo.CreateBuilding(ctx, name, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (svc *LocationService) JoinBuilding(

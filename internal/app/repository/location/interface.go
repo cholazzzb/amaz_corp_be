@@ -19,6 +19,12 @@ type BuildingRepository interface {
 }
 
 type BuildingRepoCommand interface {
+	CreateBuilding(
+		ctx context.Context,
+		name,
+		owner_id string,
+	) error
+
 	CreateMemberBuilding(
 		ctx context.Context,
 		memberName,
@@ -34,6 +40,11 @@ type BuildingRepoCommand interface {
 }
 
 type BuildingRepoQuery interface {
+	GetBuildingByID(
+		ctx context.Context,
+		buildingID string,
+	) (ent.BuildingQuery, error)
+
 	GetAllBuildings(
 		ctx context.Context,
 	) ([]ent.BuildingQuery, error)
@@ -53,6 +64,11 @@ type BuildingRepoQuery interface {
 		ctx context.Context,
 		buildingID string,
 	) ([]ent.MemberQuery, error)
+
+	GetNumberOfBuildingOwned(
+		ctx context.Context,
+		ownerID string,
+	) (int64, error)
 }
 
 type MemberRepository interface {

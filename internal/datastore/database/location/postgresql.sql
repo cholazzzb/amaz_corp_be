@@ -1,6 +1,21 @@
+-- name: CreateBuilding :execresult
+INSERT INTO buildings(name, owner_id)
+VALUES ($1, $2);
+
+-- name: GetNumberOfBuildingOwned :one
+SELECT COUNT(*)
+FROM buildings
+WHERE buildings.owner_id = $1;
+
+-- name: GetBuildingByID :one
+SELECT * 
+FROM buildings
+WHERE buildings.id = $1;
+
 -- name: GetAllBuildings :many
 SELECT *
 FROM buildings
+WHERE buildings.owner_id IS NULL
 LIMIT 10;
 
 -- name: GetListBuildingByUserID :many

@@ -34,3 +34,20 @@ type User struct {
 	Password string
 	Salt     string
 }
+
+type UserCommand struct {
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Salt      string `json:"salt"`
+	ProductID int32  `json:"productID"`
+}
+
+type ProductQuery struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
+
+type FeatureQuery struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}

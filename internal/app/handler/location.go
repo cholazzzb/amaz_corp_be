@@ -24,12 +24,39 @@ func NewLocationHandler(svc *service.LocationService) *LocationHandler {
 	return &LocationHandler{svc: svc, logger: sublogger}
 }
 
+func (h *LocationHandler) CreateBuilding(ctx *fiber.Ctx) error {
+	userID, ok, resFactory := validator.CheckUserIDJWT(ctx, h.logger)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	req := new(ent.BuildingCommand)
+	ok, resFactory = validator.CheckReqBodySchema(ctx, req)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	err := h.svc.CreateBuilding(ctx.Context(), req.Name, userID)
+	if err != nil {
+		response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, nil)
+}
+
+func (h *LocationHandler) GetBuildingByID(ctx *fiber.Ctx) error {
+	buildingID := ctx.Params("buildingID")
+	building, err := h.svc.GetBuildingByID(ctx.Context(), buildingID)
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+	return response.Ok(ctx, building)
+}
+
 func (h *LocationHandler) GetBuildings(ctx *fiber.Ctx) error {
 	bs, err := h.svc.GetBuildings(ctx.Context())
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal Server Error",
-		})
+		return response.InternalServerError(ctx)
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{

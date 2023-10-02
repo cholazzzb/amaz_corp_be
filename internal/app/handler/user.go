@@ -41,7 +41,6 @@ func (h *UserHandler) Register(ctx *fiber.Ctx) error {
 
 	err := h.svc.RegisterUser(ctx.Context(), req.Username, req.Password)
 	if err != nil {
-		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})

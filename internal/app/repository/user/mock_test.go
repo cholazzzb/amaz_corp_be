@@ -12,7 +12,7 @@ import (
 
 func TestCreateUser(t *testing.T) {
 	mur := user.NewMockUserRepo()
-	mur.CreateUser(context.Background(), ent.User{
+	mur.CreateUser(context.Background(), ent.UserCommand{
 		Username: "new",
 		Password: "password",
 		Salt:     "salt",
@@ -27,7 +27,7 @@ func TestCreateUser(t *testing.T) {
 
 	assert.Equal(t, expected1, mur.User.Users["new"], "mock data not same with request")
 
-	mur.CreateUser(context.Background(), ent.User{
+	mur.CreateUser(context.Background(), ent.UserCommand{
 		Username: "new2",
 		Password: "password2",
 		Salt:     "salt2",
@@ -48,7 +48,7 @@ func TestGetUser(t *testing.T) {
 	assert.Error(t, err, "not exist user not return error")
 	assert.Empty(t, user, "not exist user return user")
 
-	mur.CreateUser(context.Background(), ent.User{
+	mur.CreateUser(context.Background(), ent.UserCommand{
 		Username: "test1",
 		Password: "password1",
 		Salt:     "salt",

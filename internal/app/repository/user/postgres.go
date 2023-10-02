@@ -6,6 +6,7 @@ import (
 
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+	"github.com/google/uuid"
 
 	userpostgres "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user/postgresql"
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
@@ -54,16 +55,75 @@ func (r *PostgresUserRepository) GetUserExistance(
 
 func (r *PostgresUserRepository) CreateUser(
 	ctx context.Context,
-	params user.User,
+	params user.UserCommand,
 ) error {
 	_, err := r.Postgres.CreateUser(ctx, userpostgres.CreateUserParams{
-		Username: params.Username,
-		Password: params.Password,
-		Salt:     params.Salt,
+		Username:  params.Username,
+		Password:  params.Password,
+		Salt:      params.Salt,
+		ProductID: params.ProductID,
 	})
+
 	if err != nil {
-		r.logger.Error(err.Error())
 		return err
 	}
 	return nil
+}
+
+func (r *PostgresUserRepository) GetProductByUserID(
+	ctx context.Context,
+	userID string,
+) (user.ProductQuery, error) {
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return user.ProductQuery{}, err
+	}
+
+	product, err := r.Postgres.GetProductByUserID(ctx, userUUID)
+	if err != nil {
+		return user.ProductQuery{}, err
+	}
+	return user.ProductQuery{
+		ID:   product.ID,
+		Name: product.Name,
+	}, nil
+}
+
+func (r *PostgresUserRepository) GetListProduct(
+	ctx context.Context,
+) ([]user.ProductQuery, error) {
+	out := []user.ProductQuery{}
+	products, err := r.Postgres.GetListProduct(ctx)
+	if err != nil {
+		return []user.ProductQuery{}, err
+	}
+
+	for _, prd := range products {
+		out = append(out, user.ProductQuery{
+			ID:   prd.ID,
+			Name: prd.Name,
+		})
+	}
+	return out, nil
+}
+
+func (r *PostgresUserRepository) GetListFeatureByProductID(
+	ctx context.Context,
+	productID int32,
+) ([]user.FeatureQuery, error) {
+	out := []user.FeatureQuery{}
+
+	feats, err := r.Postgres.GetListFeatureByProductID(ctx, productID)
+	if err != nil {
+		return []user.FeatureQuery{}, err
+	}
+
+	for _, feat := range feats {
+		out = append(out, user.FeatureQuery{
+			ID:   feat.ID.String(),
+			Name: feat.Name,
+		})
+	}
+	return out, nil
 }

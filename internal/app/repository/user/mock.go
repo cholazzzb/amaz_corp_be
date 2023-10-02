@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
 )
@@ -53,11 +52,10 @@ func (mur *MockUserRepo) GetUserExistance(
 
 func (mur *MockUserRepo) CreateUser(
 	ctx context.Context,
-	params user.User,
+	params user.UserCommand,
 ) error {
 	id := mur.User.BiggestId + 1
 	newUser := user.User{
-		ID:       strconv.FormatInt(id, 10),
 		Username: params.Username,
 		Password: params.Password,
 		Salt:     params.Salt,
@@ -66,4 +64,25 @@ func (mur *MockUserRepo) CreateUser(
 	mur.User.BiggestId = id
 	mur.User.Users[Username(params.Username)] = newUser
 	return nil
+}
+
+// TODO: Implement this
+func (mur *MockUserRepo) GetProductByUserID(
+	ctx context.Context,
+	userID string,
+) (user.ProductQuery, error) {
+	return user.ProductQuery{}, nil
+}
+
+func (mur *MockUserRepo) GetListProduct(
+	ctx context.Context,
+) ([]user.ProductQuery, error) {
+	return []user.ProductQuery{}, nil
+}
+
+func (mur *MockUserRepo) GetListFeatureByProductID(
+	ctx context.Context,
+	productID int32,
+) ([]user.FeatureQuery, error) {
+	return []user.FeatureQuery{}, nil
 }
