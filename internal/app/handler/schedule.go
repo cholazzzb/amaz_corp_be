@@ -38,7 +38,7 @@ func (h *ScheduleHandler) CreateSchedule(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
 	}
 
-	scheduleID, err := h.svc.CreateSchedule(ctx.Context(), req.RoomID)
+	scheduleID, err := h.svc.CreateSchedule(ctx.Context(), *req)
 	if err != nil {
 		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -54,7 +54,7 @@ func (h *ScheduleHandler) CreateSchedule(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *ScheduleHandler) GetScheduleIDByRoomID(ctx *fiber.Ctx) error {
+func (h *ScheduleHandler) GetListScheduleByRoomID(ctx *fiber.Ctx) error {
 	roomID := ctx.Params("roomID")
 	if len(roomID) == 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -62,7 +62,7 @@ func (h *ScheduleHandler) GetScheduleIDByRoomID(ctx *fiber.Ctx) error {
 		})
 	}
 
-	sid, err := h.svc.GetScheduleIDByRoomID(ctx.Context(), roomID)
+	sid, err := h.svc.GetListScheduleByRoomID(ctx.Context(), roomID)
 	if err != nil {
 		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

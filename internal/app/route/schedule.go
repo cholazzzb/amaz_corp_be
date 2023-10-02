@@ -21,7 +21,7 @@ func NewScheduleRoute(fr fiber.Router, h *handler.ScheduleHandler) *ScheduleRout
 func (r *ScheduleRoute) InitRoute(am middleware.Middleware) {
 	scheduleApi := r.fr.Group("/schedules", am)
 	scheduleApi.Post("/", r.h.CreateSchedule)
-	scheduleApi.Get("/rooms/:roomID", r.h.GetScheduleIDByRoomID)
+	scheduleApi.Get("/rooms/:roomID", r.h.GetListScheduleByRoomID)
 	scheduleApi.Get("/tasks/:taskID", r.h.GetTaskDetail)
 	scheduleApi.Get("/:scheduleID/tasks", r.h.GetListTaskByScheduleID)
 

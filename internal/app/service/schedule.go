@@ -27,9 +27,9 @@ func NewScheduleService(repo repo.ScheduleRepo) *ScheduleService {
 
 func (svc *ScheduleService) CreateSchedule(
 	ctx context.Context,
-	roomID string,
+	sch ent.ScheduleCommand,
 ) (string, error) {
-	res, err := svc.repo.CreateSchedule(ctx, roomID)
+	res, err := svc.repo.CreateSchedule(ctx, sch.Name, sch.RoomID)
 	if err != nil {
 		svc.logger.Error(err.Error())
 		return "", err
@@ -37,11 +37,11 @@ func (svc *ScheduleService) CreateSchedule(
 	return res, nil
 }
 
-func (svc *ScheduleService) GetScheduleIDByRoomID(
+func (svc *ScheduleService) GetListScheduleByRoomID(
 	ctx context.Context,
 	roomID string,
 ) (ent.ScheduleQuery, error) {
-	res, err := svc.repo.GetScheduleIDByRoomID(ctx, roomID)
+	res, err := svc.repo.GetListScheduleByRoomID(ctx, roomID)
 	if err != nil {
 		svc.logger.Error(err.Error())
 		return ent.ScheduleQuery{}, fmt.Errorf("failed to get scheduleID by roomID: %s", roomID)

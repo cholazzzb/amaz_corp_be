@@ -56,6 +56,7 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 		Desc("/schedules should success create new schedule").
 		POST(BASE_URL+"/schedules").
 		Body(ent.ScheduleCommand{
+			Name:   "Mock Schedule",
 			RoomID: getRoomRes.Rooms[0].Id,
 		}).
 		Expected(200, "", "").

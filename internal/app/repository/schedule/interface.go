@@ -14,6 +14,7 @@ type ScheduleRepo interface {
 type ScheduleRepoCommand interface {
 	CreateSchedule(
 		ctx context.Context,
+		name,
 		roomID string,
 	) (string, error)
 
@@ -30,7 +31,7 @@ type ScheduleRepoCommand interface {
 }
 
 type ScheduleRepoQuery interface {
-	GetScheduleIDByRoomID(
+	GetListScheduleByRoomID(
 		ctx context.Context,
 		roomID string,
 	) (ent.ScheduleQuery, error)

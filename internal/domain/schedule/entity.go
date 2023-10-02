@@ -5,6 +5,7 @@ import (
 )
 
 type ScheduleCommand struct {
+	Name   string `json:"name" validate:"required"`
 	RoomID string `json:"roomID" validate:"required"`
 }
 

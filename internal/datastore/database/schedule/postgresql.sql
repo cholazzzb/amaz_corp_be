@@ -1,13 +1,13 @@
 -- name: CreateScheduleByRoomID :one
-INSERT INTO schedules(room_id)
-VALUES($1)
-RETURNING room_id;
+INSERT INTO schedules(name, room_id)
+VALUES($1, $2)
+RETURNING id;
 
--- name: GetScheduleIdByRoomID :one
+-- name: GetListScheduleByRoomID :many
 SELECT * 
 FROM schedules
 WHERE schedules.room_id = $1
-LIMIT 1;
+LIMIT 10;
 
 -- name: GetTaskDetailByID :one
 SELECT *

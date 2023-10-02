@@ -36,6 +36,7 @@ func NewPostgresLocationRepository(postgresRepo *database.SqlRepository) *Postgr
 
 func (r *PostgresScheduleRepository) CreateSchedule(
 	ctx context.Context,
+	name,
 	roomID string,
 ) (string, error) {
 	roomUUID, err := uuid.Parse(roomID)
@@ -43,7 +44,10 @@ func (r *PostgresScheduleRepository) CreateSchedule(
 		r.logger.Error(err.Error())
 		return "", err
 	}
-	res, err := r.Postgres.CreateScheduleByRoomID(ctx, roomUUID)
+	res, err := r.Postgres.CreateScheduleByRoomID(ctx, schedulepostgres.CreateScheduleByRoomIDParams{
+		Name:   name,
+		RoomID: roomUUID,
+	})
 
 	if err != nil {
 		r.logger.Error(err.Error())
@@ -53,7 +57,7 @@ func (r *PostgresScheduleRepository) CreateSchedule(
 	return res.String(), nil
 }
 
-func (r *PostgresScheduleRepository) GetScheduleIDByRoomID(
+func (r *PostgresScheduleRepository) GetListScheduleByRoomID(
 	ctx context.Context,
 	roomID string,
 ) (ent.ScheduleQuery, error) {
