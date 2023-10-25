@@ -60,22 +60,29 @@ func (r *PostgresScheduleRepository) CreateSchedule(
 func (r *PostgresScheduleRepository) GetListScheduleByRoomID(
 	ctx context.Context,
 	roomID string,
-) (ent.ScheduleQuery, error) {
+) ([]ent.ScheduleQuery, error) {
+	schs := []ent.ScheduleQuery{}
 	roomUUID, err := uuid.Parse(roomID)
+
 	if err != nil {
 		r.logger.Error(err.Error())
-		return ent.ScheduleQuery{}, err
+		return schs, err
 	}
-	res, err := r.Postgres.GetScheduleIdByRoomID(ctx, roomUUID)
+	res, err := r.Postgres.GetListScheduleByRoomID(ctx, roomUUID)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return ent.ScheduleQuery{}, err
+		return schs, err
 	}
 
-	return ent.ScheduleQuery{
-		ID:     res.ID.String(),
-		RoomID: res.RoomID.String(),
-	}, nil
+	for _, sch := range res {
+		schs = append(schs, ent.ScheduleQuery{
+			ID:     sch.ID.String(),
+			Name:   sch.Name,
+			RoomID: sch.RoomID.String(),
+		})
+	}
+
+	return schs, nil
 }
 
 func (r *PostgresScheduleRepository) GetTaskDetail(

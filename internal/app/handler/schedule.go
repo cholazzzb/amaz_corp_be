@@ -62,7 +62,7 @@ func (h *ScheduleHandler) GetListScheduleByRoomID(ctx *fiber.Ctx) error {
 		})
 	}
 
-	sid, err := h.svc.GetListScheduleByRoomID(ctx.Context(), roomID)
+	schs, err := h.svc.GetListScheduleByRoomID(ctx.Context(), roomID)
 	if err != nil {
 		h.logger.Error(err.Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -70,10 +70,7 @@ func (h *ScheduleHandler) GetListScheduleByRoomID(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message":     "ok",
-		"schedule_id": sid.ID,
-	})
+	return response.Ok(ctx, schs)
 }
 
 func (h *ScheduleHandler) GetTaskDetail(ctx *fiber.Ctx) error {

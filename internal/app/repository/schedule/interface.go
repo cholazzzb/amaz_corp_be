@@ -34,7 +34,7 @@ type ScheduleRepoQuery interface {
 	GetListScheduleByRoomID(
 		ctx context.Context,
 		roomID string,
-	) (ent.ScheduleQuery, error)
+	) ([]ent.ScheduleQuery, error)
 
 	GetTaskDetail(
 		ctx context.Context,

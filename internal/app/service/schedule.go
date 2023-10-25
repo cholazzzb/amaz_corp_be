@@ -40,11 +40,10 @@ func (svc *ScheduleService) CreateSchedule(
 func (svc *ScheduleService) GetListScheduleByRoomID(
 	ctx context.Context,
 	roomID string,
-) (ent.ScheduleQuery, error) {
+) ([]ent.ScheduleQuery, error) {
 	res, err := svc.repo.GetListScheduleByRoomID(ctx, roomID)
 	if err != nil {
-		svc.logger.Error(err.Error())
-		return ent.ScheduleQuery{}, fmt.Errorf("failed to get scheduleID by roomID: %s", roomID)
+		return res, fmt.Errorf("failed to get scheduleID by roomID: %s", roomID)
 	}
 	return res, nil
 }

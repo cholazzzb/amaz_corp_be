@@ -10,7 +10,8 @@ type ScheduleCommand struct {
 }
 
 type ScheduleQuery struct {
-	ID     string `json:"id"`
+	ID     string `json:"ID"`
+	Name   string `json:"name"`
 	RoomID string `json:"roomID"`
 }
 
