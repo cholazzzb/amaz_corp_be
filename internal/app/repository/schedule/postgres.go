@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,7 +24,7 @@ type PostgresScheduleRepository struct {
 	logger   *slog.Logger
 }
 
-func NewPostgresLocationRepository(postgresRepo *database.SqlRepository) *PostgresScheduleRepository {
+func NewPostgresScheduleRepository(postgresRepo *database.SqlRepository) *PostgresScheduleRepository {
 	sublogger := logger.Get().With(slog.String("domain", "schedule"), slog.String("layer", "repo"))
 	queries := schedulepostgres.New(postgresRepo.Db)
 
@@ -161,18 +162,40 @@ func (r *PostgresScheduleRepository) GetListTaskWithDetailByScheduleID(
 	scUUID, err := uuid.Parse(scheduleID)
 	twds := []ent.TaskWithDetailQuery{}
 	if err != nil {
+		r.logger.Error(err.Error())
 		return twds, err
 	}
 
-	arg := schedulepostgres.GetListTaskAndDetailByScheduleIDParams{
-		ScheduleID: scUUID,
-	}
-	res, err := r.Postgres.GetListTaskAndDetailByScheduleID(ctx, arg)
+	res, err := r.Postgres.GetListTaskAndDetailByScheduleID(ctx, scUUID)
 	if err != nil {
+		r.logger.Error(err.Error())
 		return twds, err
 	}
 
 	for _, twd := range res {
+		ownerID, ok := twd.OwnerID.([]byte)
+		if !ok {
+			r.logger.Error("failed to convert db OwnerID to arr of string")
+			return twds, err
+		}
+		assigneeID, ok := twd.AssigneeID.([]byte)
+		if !ok {
+			r.logger.Error("failed to convert db OwnerID to arr of string")
+			return twds, err
+		}
+		status, ok := twd.Status.([]byte)
+		if !ok {
+			r.logger.Error("failed to convert db OwnerID to arr of string")
+			return twds, err
+		}
+		deps, ok := twd.DependedTaskID.([]byte)
+		if !ok {
+			r.logger.Error("failed to convert db DependedTaskID to arr of string")
+			return twds, err
+		}
+		depsString := string(deps)
+		depsId := strings.Split(depsString, ",")
+
 		twds = append(twds, ent.TaskWithDetailQuery{
 			TaskID:       twd.ID.String(),
 			ScheduleID:   twd.ScheduleID.String(),
@@ -180,9 +203,10 @@ func (r *PostgresScheduleRepository) GetListTaskWithDetailByScheduleID(
 			DurationDay:  calDurationDay(twd.EndTime.Time, twd.StartTime.Time),
 			TaskDetailID: twd.TaskDetailID.String(),
 			Name:         twd.Name.String,
-			OwnerID:      twd.OwnerID.UUID.String(),
-			AssigneeID:   twd.AssigneeID.UUID.String(),
-			Status:       twd.Status.String,
+			OwnerID:      string(ownerID),
+			AssigneeID:   string(assigneeID),
+			Status:       string(status),
+			Dependencies: depsId,
 		})
 	}
 
@@ -227,13 +251,13 @@ func (r *PostgresScheduleRepository) CreateTask(
 
 	if err != nil {
 		r.logger.Error(err.Error())
-		return errors.New("Failed to create task detail")
+		return fmt.Errorf("Failed to create task detail %w", err)
 	}
 
 	scheduleID, err := uuid.Parse(task.ScheduleID)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return errors.New("ScheduleID is in wrong format")
+		return fmt.Errorf("ScheduleID is in wrong format %w", err)
 	}
 
 	name := sql.NullString{}
@@ -252,8 +276,7 @@ func (r *PostgresScheduleRepository) CreateTask(
 	})
 
 	if err != nil {
-		r.logger.Error(err.Error())
-		return errors.New("Failed to create task")
+		return fmt.Errorf("can't retrieve taskID %w", err)
 	}
 
 	return tx.Commit()

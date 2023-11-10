@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"log/slog"
 	"time"
 
@@ -137,62 +138,29 @@ func (h *ScheduleHandler) GetListTaskByScheduleID(ctx *fiber.Ctx) error {
 		h.logger.Error(err.Error())
 		return response.InternalServerError(ctx)
 	}
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "ok",
-		"tasks":   tks,
-	})
+	return response.Ok(ctx, tks)
 }
 
-func (h *ScheduleHandler) PostAddTask(ctx *fiber.Ctx) error {
-	req := new(ent.TaskWithDetailCommand)
-	if err := ctx.BodyParser(req); err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+func (h *ScheduleHandler) AutoSchedulePreview(ctx *fiber.Ctx) error {
+	ok, scheduleID, resFactory := validator.CheckPathParams(ctx, "scheduleID")
+	if !ok {
+		return resFactory.Create()
 	}
 
-	if errs := validator.Validate(req); errs != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	queryParams := new(ent.AutoSchedulePreviewQueryParams)
+	ok, resFactory = validator.CheckQueryParams(ctx, queryParams)
+	if !ok {
+		return resFactory.Create()
 	}
 
-	err := h.svc.AddTask(ctx.Context(), *req)
+	_, err := h.svc.AutoSchedulePreview(ctx.Context(), scheduleID)
 	if err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return response.InternalServerError(ctx)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "ok",
-	})
+	return errors.New("not implemented")
 }
 
-func (h *ScheduleHandler) PutEditTask(ctx *fiber.Ctx) error {
-	taskID := ctx.Params("taskID")
-	req := new(ent.TaskWithDetailCommand)
-
-	if err := ctx.BodyParser(req); err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-	}
-
-	if errs := validator.Validate(req); errs != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
-	}
-
-	err := h.svc.EditTask(ctx.Context(), taskID, *req)
-	if err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-	}
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "ok",
-	})
+func (h *ScheduleHandler) AutoScheduleSave(ctx *fiber.Ctx) error {
+	return errors.New("not implemented")
 }

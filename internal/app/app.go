@@ -46,7 +46,8 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 				logger.Get().Error(err.Error())
 				panic("failed to connect redis database")
 			}
-			redis.NewClient(opt)
+			rds := redis.NewClient(opt)
+			defer rds.Close()
 
 			app = fiber.New()
 
@@ -62,6 +63,8 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 			authMiddleware := auth.CreateAuthMiddleware()
 
 			sqlRepo := database.NewSqlRepository(dbSql)
+			redisRepo := database.NewRedisRepository(rds)
+
 			ur := user.NewPostgresUserRepository(sqlRepo)
 			us := service.NewUserService(ur)
 			uh := handler.NewUserHandler(us)
@@ -83,8 +86,9 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 			lRoute := route.NewLocationRoute(v1, lh)
 			lRoute.InitRoute(authMiddleware)
 
-			sr := schRepo.NewPostgresLocationRepository(sqlRepo)
-			ss := service.NewScheduleService(sr)
+			sr := schRepo.NewPostgresScheduleRepository(sqlRepo)
+			scr := schRepo.NewRedisScheduleRepository(redisRepo)
+			ss := service.NewScheduleService(sr, scr)
 			sh := handler.NewScheduleHandler(ss)
 			sRoute := route.NewScheduleRoute(v1, sh)
 			sRoute.InitRoute(authMiddleware)

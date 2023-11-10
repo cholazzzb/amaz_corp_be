@@ -9,6 +9,7 @@ import (
 type ScheduleRepo interface {
 	ScheduleRepoCommand
 	ScheduleRepoQuery
+	TaskDependencyRepoCommand
 }
 
 type ScheduleRepoCommand interface {
@@ -51,4 +52,21 @@ type ScheduleRepoQuery interface {
 		ctx context.Context,
 		scheduleID string,
 	) ([]ent.TaskWithDetailQuery, error)
+}
+
+type TaskDependencyRepoCommand interface {
+	CreateTaskDependency(
+		ctx context.Context,
+		taskDep ent.TaskDependencyCommand,
+	) error
+
+	EditTaskDependency(
+		ctx context.Context,
+		taskDep ent.TaskDependencyCommand,
+	) error
+
+	DeleteTaskDependeny(
+		ctx context.Context,
+		taskDep ent.TaskDependencyCommand,
+	) error
 }

@@ -24,8 +24,13 @@ func (r *ScheduleRoute) InitRoute(am middleware.Middleware) {
 	scheduleApi.Get("/rooms/:roomID", r.h.GetListScheduleByRoomID)
 	scheduleApi.Get("/tasks/:taskID", r.h.GetTaskDetail)
 	scheduleApi.Get("/:scheduleID/tasks", r.h.GetListTaskByScheduleID)
+	scheduleApi.Get("/:scheduleID/auto/preview", r.h.AutoSchedulePreview)
+	scheduleApi.Post("/:scheduleID/auto/save", r.h.AutoScheduleSave)
 
 	taskApi := r.fr.Group("/tasks", am)
 	taskApi.Post("/", r.h.PostAddTask)
 	taskApi.Put("/:taskID", r.h.PutEditTask)
+	taskApi.Post("/dependency", r.h.CreateTaskDependency)
+	taskApi.Put("/dependency", r.h.EditTaskDependency)
+	taskApi.Delete("/dependency", r.h.DeleteTaskDependency)
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// body request / query params / path params is in wrong format
 func RequestNotValid(ctx *fiber.Ctx, validationError interface{}) error {
 	return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 		"message":          "Request Not Valid",
@@ -11,6 +12,7 @@ func RequestNotValid(ctx *fiber.Ctx, validationError interface{}) error {
 	})
 }
 
+// cannot parse body request / query params / path params
 func BadRequest(ctx *fiber.Ctx, message interface{}) error {
 	return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 		"message": message,

@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS tasks (
 
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS tasks_dependencies (
-    task_id uuid,
-    depended_task_id uuid,
+    task_id uuid NOT NULL,
+    depended_task_id uuid NOT NULL,
     CONSTRAINT fk_task_id FOREIGN KEY(task_id) REFERENCES tasks(id),
     CONSTRAINT fk_depended_task_id FOREIGN KEY(depended_task_id) REFERENCES tasks(id)
 );

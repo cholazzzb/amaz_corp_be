@@ -3,35 +3,38 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 
 	repo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/schedule"
-	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
+	domain "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
 	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 type ScheduleService struct {
 	repo   repo.ScheduleRepo
+	cache  repo.ScheduleCacheRepo
 	logger *slog.Logger
 }
 
-func NewScheduleService(repo repo.ScheduleRepo) *ScheduleService {
+func NewScheduleService(
+	repo repo.ScheduleRepo,
+	cache repo.ScheduleCacheRepo,
+) *ScheduleService {
 	sublogger := logger.Get().With(slog.String("domain", "schedule"), slog.String("layer", "svc"))
 
 	return &ScheduleService{
 		repo:   repo,
+		cache:  cache,
 		logger: sublogger,
 	}
 }
 
 func (svc *ScheduleService) CreateSchedule(
 	ctx context.Context,
-	sch ent.ScheduleCommand,
+	sch domain.ScheduleCommand,
 ) (string, error) {
 	res, err := svc.repo.CreateSchedule(ctx, sch.Name, sch.RoomID)
 	if err != nil {
-		svc.logger.Error(err.Error())
 		return "", err
 	}
 	return res, nil
@@ -40,10 +43,10 @@ func (svc *ScheduleService) CreateSchedule(
 func (svc *ScheduleService) GetListScheduleByRoomID(
 	ctx context.Context,
 	roomID string,
-) ([]ent.ScheduleQuery, error) {
+) ([]domain.ScheduleQuery, error) {
 	res, err := svc.repo.GetListScheduleByRoomID(ctx, roomID)
 	if err != nil {
-		return res, fmt.Errorf("failed to get scheduleID by roomID: %s", roomID)
+		return res, err
 	}
 	return res, nil
 }
@@ -51,11 +54,10 @@ func (svc *ScheduleService) GetListScheduleByRoomID(
 func (svc *ScheduleService) GetTaskDetail(
 	ctx context.Context,
 	taskID string,
-) (ent.TaskDetailQuery, error) {
+) (domain.TaskDetailQuery, error) {
 	res, err := svc.repo.GetTaskDetail(ctx, taskID)
 	if err != nil {
-		svc.logger.Error(err.Error())
-		return ent.TaskDetailQuery{}, fmt.Errorf("failed to get task detail with taskID: %s", taskID)
+		return domain.TaskDetailQuery{}, err
 	}
 	return res, nil
 }
@@ -63,25 +65,23 @@ func (svc *ScheduleService) GetTaskDetail(
 func (svc *ScheduleService) GetListTaskByScheduleID(
 	ctx context.Context,
 	scheduleID string,
-	queryFilter ent.TaskQueryFilter,
-) ([]ent.TaskQuery, error) {
+	queryFilter domain.TaskQueryFilter,
+) ([]domain.TaskQuery, error) {
 	res, err := svc.repo.GetListTaskByScheduleID(ctx, scheduleID, queryFilter)
 	if err != nil {
-		svc.logger.Error(err.Error())
-		return []ent.TaskQuery{}, fmt.Errorf("failed to get list task with scheduleID: %s", scheduleID)
+		return []domain.TaskQuery{}, err
 	}
 	return res, nil
 }
 
 func (svc *ScheduleService) AddTask(
 	ctx context.Context,
-	task ent.TaskWithDetailCommand,
+	task domain.TaskWithDetailCommand,
 ) error {
 	err := svc.repo.CreateTask(ctx, task)
 
 	if err != nil {
-		svc.logger.Error(err.Error())
-		return errors.New("failed to add task")
+		return err
 	}
 
 	return nil
@@ -90,25 +90,40 @@ func (svc *ScheduleService) AddTask(
 func (svc *ScheduleService) EditTask(
 	ctx context.Context,
 	taskID string,
-	task ent.TaskWithDetailCommand,
+	task domain.TaskWithDetailCommand,
 ) error {
 	err := svc.repo.EditTask(ctx, taskID, task)
 
 	if err != nil {
-		svc.logger.Error(err.Error())
-		return errors.New("failed to edit task")
+		return err
 	}
 
 	return nil
 }
 
-// func (svc *ScheduleService) AutoSchedule(
-// 	ctx context.Context,
-// 	scheduleID string,
-// ) []ent.TaskWithDetail {
-// 	tasks, err := svc.repo.GetListTaskAndDetailByScheduleID(ctx, scheduleID)
-// 	if err != nil {
-// 		return []ent.Task{}, nil
-// 	}
-// 	return tasks, nil
-// }
+func (svc *ScheduleService) AutoSchedulePreview(
+	ctx context.Context,
+	scheduleID string,
+) ([]domain.TaskWithDetailQuery, error) {
+	twds, err := svc.repo.GetListTaskWithDetailByScheduleID(ctx, scheduleID)
+	graph := domain.CreateGraph(twds)
+	sorted := domain.TopologicalSort(graph)
+
+	if err != nil {
+		return []domain.TaskWithDetailQuery{}, err
+	}
+	return sorted, nil
+}
+
+func (svc *ScheduleService) AutoScheduleSave(
+	ctx context.Context,
+	scheduleID string,
+) error {
+	_, err := svc.cache.GetAutoSchedule(ctx, scheduleID)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Bulk Update
+	return errors.New("Not Implemented")
+}

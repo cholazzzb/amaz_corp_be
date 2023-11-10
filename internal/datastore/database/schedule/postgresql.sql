@@ -30,20 +30,21 @@ SELECT tasks.id,
 	   tasks.end_time,
 	   tasks.schedule_id,
 	   tasks.task_detail_id,
-	   task_details.owner_id,
-	   task_details.assignee_id,
-	   task_details.status,
-	   ARRAY_AGG (TD.depended_task_id)
+	   ARRAY_AGG (DISTINCT task_details.owner_id) AS owner_id,
+	   ARRAY_AGG (DISTINCT task_details.assignee_id) AS assignee_id,
+       ARRAY_AGG (DISTINCT task_details.status) AS status,
+	   ARRAY_AGG (TD.depended_task_id) AS depended_task_id
 FROM tasks
 INNER JOIN task_details 
 ON tasks.task_detail_id = task_details.id
 FULL OUTER JOIN tasks_dependencies TD
 ON TD.task_id = tasks.id
 WHERE tasks.schedule_id = $1
-	AND tasks.start_time = $2
-	AND tasks.end_time = $3
-	AND task_details.owner_id = $4
-	AND task_details.assignee_id = $5
+	-- TODO: Add Filter
+	-- AND tasks.start_time = $2
+	-- AND tasks.end_time = $3
+	-- AND task_details.owner_id = $4
+	-- AND task_details.assignee_id = $5
 GROUP BY tasks.id
 LIMIT 100;
 
@@ -62,3 +63,17 @@ SET start_time = $2,
     end_time = $3,
     task_detail_id = $4
 WHERE id = $1;
+
+-- name: CreateTaskDependency :one
+INSERT INTO tasks_dependencies(task_id, depended_task_id)
+VALUES ($1, $2)
+RETURNING task_id;
+
+-- name: EditTaskDependency :execresult
+UPDATE tasks_dependencies
+SET depended_task_id = $2
+WHERE task_id = $1;
+
+-- name: DeleteTaskDependency :exec
+DELETE FROM tasks_dependencies
+WHERE task_id = $1 AND depended_task_id = $2;

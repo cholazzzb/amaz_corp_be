@@ -56,10 +56,20 @@ type TaskDetailQuery struct {
 	Status     string `json:"status"`
 }
 
+type TaskWithDetailCommandRequest struct {
+	ScheduleID  string `json:"scheduleID" validate:"required"`
+	StartTime   string `json:"startTime"`
+	DurationDay int32  `json:"durationDay"`
+	Name        string `json:"name" validate:"required"`
+	OwnerID     string `json:"ownerID"`
+	AssigneeID  string `json:"assigneeID"`
+	Status      string `json:"status"`
+}
+
 type TaskWithDetailCommand struct {
 	ScheduleID  string    `json:"scheduleID" validate:"required"`
-	StartTime   time.Time `json:"startTime" validate:"required"`
-	DurationDay int32     `json:"durationDay" validate:"required,gte=0,lte=14"`
+	StartTime   time.Time `json:"startTime"`
+	DurationDay int32     `json:"durationDay"`
 	Name        string    `json:"name" validate:"required"`
 	OwnerID     string    `json:"ownerID"`
 	AssigneeID  string    `json:"assigneeID"`
@@ -76,4 +86,43 @@ type TaskWithDetailQuery struct {
 	OwnerID      string    `json:"ownerID"`
 	AssigneeID   string    `json:"assigneeID"`
 	Status       string    `json:"status"`
+	Dependencies []string  `json:"dependencies"`
 }
+
+type TaskWithDetailDependencyQuery struct {
+	TaskWithDetailQuery
+	Dependencies []string
+}
+
+type TaskDependencyCommand struct {
+	TaskID       string `json:"taskID"`
+	DependencyID string `json:"dependencyID"`
+}
+
+type TaskDependencyQuery struct {
+	TaskID       string `json:"taskID"`
+	DependencyID string `json:"dependencyID"`
+}
+
+type TasksDependency map[string][]string
+
+// Interesting case to use redis
+// Save this params as a key in redis
+type AutoSchedulePreviewQueryParams struct {
+	// ScheduleID string `json:scheduleID` params
+	StartTime      string   `query:"start-time"` // mandatory
+	ExcludeUsersID []string `query:"exclude-users-id"`
+	ExcludeTasksID []string `query:"exclude-tasks-id"`
+}
+type AutoSchedulePreviewQuery struct {
+	ScheduleID     string                `json:"scheduleID"`
+	TasksPreview   []TaskWithDetailQuery `json:"tasksPreview"`
+	AutoScheduleID string                `json:"autoScheduleID"`
+}
+
+// Interesting if use SSE....
+type AutoScheduleCommand struct {
+	AutoScheduleID string `json:"autoScheduleID"`
+}
+
+// this will implement bulk update to database!
