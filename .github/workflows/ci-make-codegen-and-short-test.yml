@@ -1,4 +1,4 @@
-name: ci - make codegen and short test
+name: CI - make codegen and short test
 
 on:
   push:
