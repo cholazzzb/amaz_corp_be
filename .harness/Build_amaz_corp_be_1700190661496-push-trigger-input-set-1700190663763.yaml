@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_amaz_corp_be_1700190661496-push-trigger-input-set
+  identifier: Build_amaz_corp_be_1700190661496pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_amaz_corp_be_1700190661496
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
