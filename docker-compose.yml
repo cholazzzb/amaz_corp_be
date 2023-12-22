@@ -1,0 +1,23 @@
+version: '3'
+services:
+  db:
+    container_name: app_mysql
+    restart: always
+    image: mysql:latest
+      - "3305:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ''
+      MYSQL_USER: 'root'
+      MYSQL_PASS: ''
+    volumes:
+      - mysql-volume:/var/lib/mysql
+  go-app: 
+    build: .
+    ports: 
+      - "8080:5000"
+    depends_on:
+      - db
+    links:
+      - "db:database"
+volumes:
+  mysql-volume:

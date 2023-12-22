@@ -136,10 +136,21 @@ func (svc *UserService) Login(ctx context.Context, username, password string) (T
 	return Token(signedToken), nil
 }
 
+func (svc *UserService) GetListUserByUsername(
+	ctx context.Context,
+	username string,
+) ([]user.UserQuery, error) {
+	res, err := svc.repo.GetListUserByUsername(ctx, username)
+	if err != nil {
+		return []user.UserQuery{}, err
+	}
+
+	return res, nil
+}
+
 func (svc *UserService) CheckUserExistance(ctx context.Context, username string) (bool, error) {
 	exist, err := svc.repo.GetUserExistance(ctx, username)
 	if err != nil {
-		svc.logger.Error(err.Error())
 		return false, err
 	}
 	return exist, nil

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
@@ -39,6 +40,27 @@ func (r *PostgresUserRepository) GetUser(
 		Password: result.Password,
 		Salt:     result.Salt,
 	}, nil
+}
+
+func (r *PostgresUserRepository) GetListUserByUsername(
+	ctx context.Context,
+	username string,
+) ([]user.UserQuery, error) {
+	out := []user.UserQuery{}
+	res, err := r.Postgres.GetListUserByUsername(ctx, fmt.Sprint("%", username, "%"))
+	if err != nil {
+		r.logger.Error(err.Error())
+		return out, err
+	}
+
+	for _, usr := range res {
+		out = append(out, user.UserQuery{
+			ID:       usr.ID.String(),
+			Username: usr.Username,
+		})
+	}
+
+	return out, nil
 }
 
 func (r *PostgresUserRepository) GetUserExistance(

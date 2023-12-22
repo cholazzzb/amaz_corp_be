@@ -72,6 +72,34 @@ func (r *PostgresLocationRepository) GetAllBuildings(
 	return bs, nil
 }
 
+func (r *PostgresLocationRepository) GetInvitationByUserID(
+	ctx context.Context,
+	userID string,
+) ([]ent.BuildingMemberQuery, error) {
+	res := []ent.BuildingMemberQuery{}
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return res, err
+	}
+
+	bldngs, err := r.Postgres.GetInvitationByUserID(ctx, userUUID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return res, err
+	}
+
+	for _, bldng := range bldngs {
+		res = append(res, ent.BuildingMemberQuery{
+			BuildingID:   bldng.ID.String(),
+			BuildingName: bldng.Name,
+			MemberID:     bldng.MemberID.String(),
+		})
+	}
+
+	return res, nil
+}
+
 func (r *PostgresLocationRepository) GetMemberBuildingExist(
 	ctx context.Context,
 	userID,
@@ -104,49 +132,6 @@ func (r *PostgresLocationRepository) GetMemberBuildingExist(
 	}
 
 	return false, nil
-}
-
-func (r *PostgresLocationRepository) GetMemberByName(
-	ctx context.Context,
-	memberName string,
-) (ent.MemberQuery, error) {
-	result, err := r.Postgres.GetMemberByName(ctx, memberName)
-	if err != nil {
-		r.logger.Error(err.Error())
-		return ent.MemberQuery{}, err
-	}
-
-	return ent.MemberQuery{
-		ID:     result.ID.String(),
-		UserID: result.UserID.String(),
-		Name:   result.Name,
-		Status: result.Status,
-		RoomID: result.RoomID.UUID.String(),
-	}, nil
-}
-
-func (r *PostgresLocationRepository) GetMemberByID(
-	ctx context.Context,
-	memberID string,
-) (ent.MemberQuery, error) {
-	memberUUID, err := uuid.Parse(memberID)
-	if err != nil {
-		r.logger.Error(err.Error())
-		return ent.MemberQuery{}, err
-	}
-	result, err := r.Postgres.GetMemberByID(ctx, memberUUID)
-	if err != nil {
-		r.logger.Error(err.Error())
-		return ent.MemberQuery{}, err
-	}
-
-	return ent.MemberQuery{
-		ID:     result.ID.String(),
-		UserID: result.UserID.String(),
-		Name:   result.Name,
-		Status: result.Status,
-		RoomID: result.RoomID.UUID.String(),
-	}, nil
 }
 
 func (r *PostgresLocationRepository) GetFriendsByUserId(
@@ -207,6 +192,36 @@ func (r *PostgresLocationRepository) GetListBuildingByUserID(
 		})
 	}
 	return bs, nil
+}
+
+func (r *PostgresLocationRepository) GetListMyOwnedBuilding(
+	ctx context.Context,
+	userID string,
+) ([]ent.BuildingQuery, error) {
+	res := []ent.BuildingQuery{}
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return res, err
+	}
+	ownerUUID := uuid.NullUUID{
+		UUID:  userUUID,
+		Valid: true,
+	}
+
+	bs, err := r.Postgres.GetListMyOwnedBuilding(ctx, ownerUUID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return res, err
+	}
+
+	for _, bldng := range bs {
+		res = append(res, ent.BuildingQuery{
+			ID:   bldng.ID.String(),
+			Name: bldng.Name,
+		})
+	}
+	return res, nil
 }
 
 func (r *PostgresLocationRepository) GetListMemberByBuildingID(
@@ -328,6 +343,36 @@ func (r *PostgresLocationRepository) CreateMemberBuilding(
 	}
 
 	return tx.Commit()
+}
+
+func (r *PostgresLocationRepository) EditMemberBuilding(
+	ctx context.Context,
+	memberID,
+	buildingID string,
+) error {
+	memberUUID, err := uuid.Parse(memberID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+
+	buildingUUID, err := uuid.Parse(buildingID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+
+	_, err = r.Postgres.EditMemberBuildingStatus(ctx, locationpostgres.EditMemberBuildingStatusParams{
+		MemberID:   memberUUID,
+		BuildingID: buildingUUID,
+		Status:     "joined",
+	})
+	if err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (r *PostgresLocationRepository) DeleteBuilding(

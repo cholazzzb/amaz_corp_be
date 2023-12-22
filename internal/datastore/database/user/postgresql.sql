@@ -8,6 +8,12 @@ FROM users
 WHERE username = $1
 LIMIT 1;
 
+-- name: GetListUserByUsername :many
+SELECT *
+FROM users
+WHERE username LIKE $1
+LIMIT 10;
+
 -- name: GetUserExistance :one
 SELECT EXISTS(
     SELECT *

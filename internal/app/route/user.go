@@ -24,4 +24,5 @@ func (r *UserRoute) InitRoute(am middleware.Middleware) {
 
 	userApi := r.fr.Group("/users", am)
 	userApi.Get("/:userId/exist", r.h.CheckUserExistance)
+	userApi.Get("/username/:username", r.h.GetListUserByUsername)
 }

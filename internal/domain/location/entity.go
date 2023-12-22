@@ -40,7 +40,17 @@ type MemberQuery struct {
 	RoomID string `json:"roomID"`
 }
 
+type InviteMemberToBuildingCommand struct {
+	UserID     string `json:"userID" validate:"required,min=36,max=36"`
+	BuildingID string `json:"buildingID" validate:"required,min=36,max=36"`
+}
+
 type JoinBuildingCommand struct {
-	Name       string `json:"name" validate:"required,min=3,max=32"`
-	BuildingId string `json:"buildingID" validate:"required,min=36,max=36"`
+	MemberID   string `json:"memberID" validate:"required"`
+	BuildingID string `json:"buildingID" validate:"required,min=36,max=36"`
+}
+
+type RenameMemberCommand struct {
+	MemberID string `json:"memberID" validate:"required"`
+	Name     string `json:"name" validate:"required"`
 }

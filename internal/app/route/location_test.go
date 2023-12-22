@@ -58,8 +58,32 @@ func TestLocationRouteAfterLogin(t *testing.T) {
 
 	// Note: buildingID from the seeder
 	tester.NewMockTest().
+		Desc("/buildings/invite should success inviting member to a building").
+		POST(BASE_URL+"/buildings/invite").
+		Body(map[string]interface{}{
+			"userID":     memberName, // other userID
+			"buildingID": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
+		}).
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(bearerToken).
+		Test(testApp, t)
+
+	tester.NewMockTest().
 		Desc("/buildings/join should success joining member to a building").
 		POST(BASE_URL+"/buildings/join").
+		Body(map[string]interface{}{
+			"memberID":   memberName,
+			"buildingID": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
+		}).
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(bearerToken).
+		Test(testApp, t)
+
+	tester.NewMockTest().
+		Desc("/members should success edit member name").
+		PUT(BASE_URL+"/members").
 		Body(map[string]interface{}{
 			"name":       memberName,
 			"buildingId": "bc133e57-df08-407e-b1e5-8e10c653ad3c",

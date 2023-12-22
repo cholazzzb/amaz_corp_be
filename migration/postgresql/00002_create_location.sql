@@ -5,6 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS buildings (
     id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
     name text NOT NULL,
+    is_public boolean NOT NULL DEFAULT false,
     owner_id uuid,
     CONSTRAINT fk_owner_id FOREIGN KEY(owner_id) REFERENCES users(id)
 );

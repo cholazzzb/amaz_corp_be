@@ -153,12 +153,12 @@ func (h *ScheduleHandler) AutoSchedulePreview(ctx *fiber.Ctx) error {
 		return resFactory.Create()
 	}
 
-	_, err := h.svc.AutoSchedulePreview(ctx.Context(), scheduleID)
+	sorted, err := h.svc.AutoSchedulePreview(ctx.Context(), scheduleID)
 	if err != nil {
 		return response.InternalServerError(ctx)
 	}
 
-	return errors.New("not implemented")
+	return response.Ok(ctx, sorted)
 }
 
 func (h *ScheduleHandler) AutoScheduleSave(ctx *fiber.Ctx) error {

@@ -16,6 +16,10 @@ type UserRepository interface {
 		ctx context.Context,
 		params string,
 	) (user.User, error)
+	GetListUserByUsername(
+		ctx context.Context,
+		username string,
+	) ([]user.UserQuery, error)
 	GetUserExistance(
 		ctx context.Context,
 		username string,

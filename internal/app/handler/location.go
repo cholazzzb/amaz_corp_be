@@ -38,7 +38,7 @@ func (h *LocationHandler) CreateBuilding(ctx *fiber.Ctx) error {
 
 	err := h.svc.CreateBuilding(ctx.Context(), req.Name, userID)
 	if err != nil {
-		response.InternalServerError(ctx)
+		return response.InternalServerError(ctx)
 	}
 
 	return response.Ok(ctx, nil)
@@ -88,6 +88,34 @@ func (h *LocationHandler) DeleteBuilding(ctx *fiber.Ctx) error {
 	return nil
 }
 
+func (h *LocationHandler) GetMyInvitation(ctx *fiber.Ctx) error {
+	userID, ok, resFactory := validator.CheckUserIDJWT(ctx, h.logger)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	bldngs, err := h.svc.GetMyInvitation(ctx.Context(), userID)
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, bldngs)
+}
+
+func (h *LocationHandler) GetListMyOwnedBuilding(ctx *fiber.Ctx) error {
+	userID, ok, resFactory := validator.CheckUserIDJWT(ctx, h.logger)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	bldngs, err := h.svc.GetListMyOwnedBuilding(ctx.Context(), userID)
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, bldngs)
+}
+
 type GetBuildingsByUserIDRequest struct {
 	UserID string `json:"userID" validate:"required"`
 }
@@ -123,30 +151,40 @@ func (h *LocationHandler) GetBuildingsByUserID(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
-	userID, ok, resFactory := validator.CheckUserIDJWT(ctx, h.logger)
+func (h *LocationHandler) InviteMemberToBuilding(
+	ctx *fiber.Ctx,
+) error {
+	req := new(ent.InviteMemberToBuildingCommand)
+	ok, resFactory := validator.CheckReqBodySchema(ctx, req)
 	if !ok {
 		return resFactory.Create()
 	}
 
-	req := new(ent.JoinBuildingCommand)
-	ok, resFactory = validator.CheckReqBodySchema(ctx, req)
-	if !ok {
-		return resFactory.Create()
-	}
-
-	exist, err := h.svc.CheckMemberBuildingExist(ctx.Context(), userID, req.BuildingId)
+	exist, err := h.svc.CheckMemberBuildingExist(ctx.Context(), req.UserID, req.BuildingID)
 	if err != nil {
-		h.logger.Error(err.Error())
 		return response.InternalServerError(ctx)
 	}
 	if exist {
 		return response.BadRequest(ctx, "user already joined in the building")
 	}
 
-	err = h.svc.JoinBuilding(ctx.Context(), req.Name, userID, req.BuildingId)
+	err = h.svc.InviteMemberToBuilding(ctx.Context(), "new member", req.UserID, req.BuildingID)
 	if err != nil {
-		h.logger.Error(err.Error())
+		return response.InternalServerError(ctx)
+	}
+
+	return nil
+}
+
+func (h *LocationHandler) JoinBuildingById(ctx *fiber.Ctx) error {
+	req := new(ent.JoinBuildingCommand)
+	ok, resFactory := validator.CheckReqBodySchema(ctx, req)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	err := h.svc.JoinBuilding(ctx.Context(), req.MemberID, req.BuildingID)
+	if err != nil {
 		return response.InternalServerError(ctx)
 	}
 
@@ -235,33 +273,38 @@ func (h *LocationHandler) GetListOnlineMembers(ctx *fiber.Ctx) error {
 	})
 }
 
-type GetMemberByNameRequest struct {
-	Name string `json:"name" validate:"required"`
-}
-
-func (h *LocationHandler) GetMemberByName(ctx *fiber.Ctx) error {
-	name := ctx.Params("name")
-	if len(name) == 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "name must be filled",
-		})
+func (h *LocationHandler) EditMemberName(ctx *fiber.Ctx) error {
+	req := ent.RenameMemberCommand{}
+	ok, resFactory := validator.CheckReqBodySchema(ctx, req)
+	if !ok {
+		return resFactory.Create()
 	}
 
-	req := GetMemberByNameRequest{name}
-	if errs := validator.Validate(req); errs != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
-	}
-
-	member, err := h.svc.GetMemberByName(ctx.Context(), req.Name)
+	err := h.svc.EditMemberName(ctx.Context(), req.MemberID, req.Name)
 	if err != nil {
-		h.logger.Error(err.Error())
 		return response.InternalServerError(ctx)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "ok",
-		"member":  member,
-	})
+	return response.Ok(ctx, nil)
+}
+
+type GetMemberByNameRequest struct {
+	Name string `query:"name"`
+}
+
+func (h *LocationHandler) GetMemberByName(ctx *fiber.Ctx) error {
+	queryParams := new(GetMemberByNameRequest)
+	ok, resFactory := validator.CheckQueryParams(ctx, queryParams)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	member, err := h.svc.GetMemberByName(ctx.Context(), queryParams.Name)
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, member)
 }
 
 type GetMemberByIDRequest struct {
