@@ -5,7 +5,28 @@ erDiagram
         username string
         password string
         salt string
+        product_id string
     }
+
+    PRODUCT {
+        id string
+        name name
+    }
+
+    FEATURE {
+        id string
+        name string
+    }
+
+    PRODUCT_FEATURE {
+        product_id
+        feature_id
+    }
+
+    PRODUCT_FEATURE ||--|| PRODUCT: PF-PRODUCT
+    PRODUCT_FEATURE ||--|| FEATURE: PF-FEATURE
+
+    USER }|--|| PRODUCT: USER-PRODUCT
 
     MEMBER {
         id string
@@ -28,7 +49,10 @@ erDiagram
     BUILDING {
         id string
         name string
+        owner_id string
     }
+
+    BUILDING ||--|| USER: BUILDING-OWNER
 
     ROOM {
         id string
