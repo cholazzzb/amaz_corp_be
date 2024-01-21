@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Google Auth
         id: auth
@@ -61,6 +61,14 @@ jobs:
           username: "oauth2accesstoken"
           password: "${{ steps.auth.outputs.access_token }}"
           registry: "${{ env.GAR_LOCATION }}-docker.pkg.dev"
+      
+      - name: Setup up sqlc
+        uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: "1.19.1"
+
+      - name: Codegen sqlc
+        run: make gen-sql
 
       - name: Build and Push Container
         run: |-
