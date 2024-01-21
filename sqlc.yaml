@@ -1,4 +1,4 @@
-version: 2
+version: "2"
 sql:
   - engine: "postgresql"
     schema: "migration/postgresql"
@@ -29,17 +29,17 @@ sql:
         package: "remoteconfigpostgres"
         out: "internal/app/repository/remoteconfig/postgresql"
   # Legacy mysql
-  - engine: "mysql"
-    schema: "migration/mysql"
-    queries: "internal/datastore/database/user/mysql.sql"
-    gen:
-      go:
-        package: "usermysql"
-        out: "internal/app/repository/user/mysql"
-  - engine: "mysql"
-    schema: "migration/mysql"
-    queries: "internal/datastore/database/location/mysql.sql"
-    gen:
-      go: 
-        package: "locationmysql"
-        out: "internal/app/repository/location/mysql"
+  # - engine: "mysql"
+  #   schema: "migration/mysql"
+  #   queries: "internal/datastore/database/user/mysql.sql"
+  #   gen:
+  #     go:
+  #       package: "usermysql"
+  #       out: "internal/app/repository/user/mysql"
+  # - engine: "mysql"
+  #   schema: "migration/mysql"
+  #   queries: "internal/datastore/database/location/mysql.sql"
+  #   gen:
+  #     go: 
+  #       package: "locationmysql"
+  #       out: "internal/app/repository/location/mysql"
