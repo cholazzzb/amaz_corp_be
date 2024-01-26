@@ -128,14 +128,6 @@ ON members.id = members_buildings.member_id
 WHERE members_buildings.building_id = $1
 LIMIT 20;
 
--- name: GetInvitationByUserID :many
-SELECT *
-FROM members
-INNER JOIN members_buildings
-ON members.id = members_buildings.member_id
-WHERE members.user_id = $1
-LIMIT 10;
-
 -- name: CreateMemberBuilding :execresult
 INSERT INTO members_buildings(member_id, building_id, status_id)
 VALUES ($1, $2, 1);
