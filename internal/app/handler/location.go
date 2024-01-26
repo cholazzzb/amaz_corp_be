@@ -274,7 +274,7 @@ func (h *LocationHandler) GetListOnlineMembers(ctx *fiber.Ctx) error {
 }
 
 func (h *LocationHandler) EditMemberName(ctx *fiber.Ctx) error {
-	req := ent.RenameMemberCommand{}
+	req := new(ent.RenameMemberCommand)
 	ok, resFactory := validator.CheckReqBodySchema(ctx, req)
 	if !ok {
 		return resFactory.Create()

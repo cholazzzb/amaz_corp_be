@@ -21,9 +21,10 @@ func NewLocationRoute(fr fiber.Router, h *handler.LocationHandler) *LocationRout
 func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 	buildingApi := r.fr.Group("/buildings", am)
 	buildingApi.Post("/", r.h.CreateBuilding)
-	buildingApi.Get("/", r.h.GetBuildingsByUserID)
+	buildingApi.Get("/joined", r.h.GetBuildingsByUserID)
 	buildingApi.Get("/owned", r.h.GetListMyOwnedBuilding)
-	buildingApi.Get("/all", r.h.GetBuildings)
+	buildingApi.Get("/invitation", r.h.GetMyInvitation)
+	buildingApi.Get("/all", r.h.GetBuildings) // Including public
 	buildingApi.Get("/:buildingID", r.h.GetBuildingByID)
 	buildingApi.Get("/:buildingId/rooms", r.h.GetRoomsByBuildingId)
 	buildingApi.Get("/:buildingID/members", r.h.GetListMemberByBuildingID)
@@ -36,7 +37,6 @@ func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 	memberApi := r.fr.Group("/members", am)
 	memberApi.Put("/", r.h.EditMemberName)
 	memberApi.Get("/", r.h.GetMemberByName) // (required)queryParams=name
-	memberApi.Get("/invitation", r.h.GetMyInvitation)
 	memberApi.Get("/:memberID", r.h.GetMemberByID)
 
 	friendApi := r.fr.Group("/friends", am)

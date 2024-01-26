@@ -33,7 +33,19 @@ INNER JOIN buildings b
 ON b.id = members_buildings.building_id
 INNER JOIN users
 ON users.id = members.user_id
-WHERE users.id = $1
+WHERE users.id = $1 AND members_buildings.status='joined'
+LIMIT 10;
+
+-- name: GetInvitationByUserID :many
+SELECT b.id as building_id, b.name as building_name, members.id as member_id
+FROM members
+INNER JOIN members_buildings
+ON members.id = members_buildings.member_id
+INNER JOIN buildings b
+ON b.id = members_buildings.building_id
+INNER JOIN users
+ON users.id = members.user_id
+WHERE users.id = $1 AND members_buildings.status = 'invited'
 LIMIT 10;
 
 -- name: CreateMember :one
@@ -115,14 +127,6 @@ INNER JOIN members_buildings
 ON members.id = members_buildings.member_id
 WHERE members_buildings.building_id = $1
 LIMIT 20;
-
--- name: GetInvitationByUserID :many
-SELECT *
-FROM members
-INNER JOIN members_buildings
-ON members.id = members_buildings.member_id
-WHERE members.user_id = $1
-LIMIT 10;
 
 -- name: CreateMemberBuilding :execresult
 INSERT INTO members_buildings(member_id, building_id, status)

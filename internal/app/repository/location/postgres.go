@@ -91,8 +91,8 @@ func (r *PostgresLocationRepository) GetInvitationByUserID(
 
 	for _, bldng := range bldngs {
 		res = append(res, ent.BuildingMemberQuery{
-			BuildingID:   bldng.ID.String(),
-			BuildingName: bldng.Name,
+			BuildingID:   bldng.BuildingID.String(),
+			BuildingName: bldng.BuildingName,
 			MemberID:     bldng.MemberID.String(),
 		})
 	}
