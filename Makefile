@@ -22,7 +22,17 @@ REGION := asia-southeast1
 IMAGE_NAME := amaz-corp/ac-be/ac-be
 TAG_VERSION := 0.0.5
 
-build-docker:
+CREATE_CONTAINER_NAME := angry_goodall
+
+docker-create:
+	#[[create container]]
+	@docker create --name=${CREATE_CONTAINER_NAME} ${REGION}-docker.pkg.dev/${IMAGE_NAME}:${TAG_VERSION}
+
+docker-tar:
+	#[[export docker container to tar file]]
+	@docker export ${CREATE_CONTAINER_NAME} > ${CREATE_CONTAINER_NAME}.tar
+
+docker-build:
 	#[[--platform linux/amd64 required for cloud run]]
 	@docker build --platform linux/amd64 -t ${REGION}-docker.pkg.dev/${IMAGE_NAME} .
 
