@@ -3,8 +3,6 @@ name: ci
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 env:
   PROJECT_ID: "${{ secrets.PROJECT_ID }}"
@@ -71,6 +69,10 @@ jobs:
       - name: Create env file
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
+      
+      - name: Create env file
+        run: |
+          echo "${{ secrets.ENV_FILE_TEST }}" > .env.test
 
       - name: Setup up sqlc
         uses: sqlc-dev/setup-sqlc@v4

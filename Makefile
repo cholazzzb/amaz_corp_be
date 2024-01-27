@@ -20,7 +20,7 @@ build:
 #Docker Related
 REGION := asia-southeast1
 IMAGE_NAME := amaz-corp/ac-be/ac-be
-TAG_VERSION := 0.0.3
+TAG_VERSION := 0.0.5
 
 build-docker:
 	#[[--platform linux/amd64 required for cloud run]]
