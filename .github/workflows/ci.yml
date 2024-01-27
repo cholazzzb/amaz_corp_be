@@ -70,7 +70,7 @@ jobs:
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
       
-      - name: Create env file
+      - name: Create env test file
         run: |
           echo "${{ secrets.ENV_FILE_TEST }}" > .env.test
 

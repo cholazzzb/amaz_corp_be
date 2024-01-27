@@ -17,6 +17,7 @@ WORKDIR /app
 
 COPY --from=build-stage /ac-be /app
 COPY --from=build-stage /.env /app
+COPY --from=build-stage /.env.test /app
 COPY --from=build-stage /migration /app/migration
 
 EXPOSE 8080
