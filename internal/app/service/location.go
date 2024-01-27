@@ -106,6 +106,29 @@ func (svc *LocationService) GetBuildingsByUserID(
 	return bs, nil
 }
 
+func (svc *LocationService) GetMyInvitation(
+	ctx context.Context,
+	userID string,
+) ([]ent.BuildingMemberQuery, error) {
+	bldngs, err := svc.repo.GetInvitationByUserID(ctx, userID)
+	if err != nil {
+		return []ent.BuildingMemberQuery{}, err
+	}
+	return bldngs, err
+}
+
+func (svc *LocationService) GetListMyOwnedBuilding(
+	ctx context.Context,
+	userID string,
+) ([]ent.BuildingQuery, error) {
+	bldngs, err := svc.repo.GetListMyOwnedBuilding(ctx, userID)
+	if err != nil {
+		return []ent.BuildingQuery{}, err
+	}
+
+	return bldngs, nil
+}
+
 func (svc *LocationService) GetListMemberByBuildingID(
 	ctx context.Context,
 	buildingID string,
@@ -171,7 +194,7 @@ func (svc *LocationService) CreateBuilding(
 	return nil
 }
 
-func (svc *LocationService) JoinBuilding(
+func (svc *LocationService) InviteMemberToBuilding(
 	ctx context.Context,
 	memberName,
 	userID,
@@ -185,11 +208,34 @@ func (svc *LocationService) JoinBuilding(
 	return nil
 }
 
+func (svc *LocationService) JoinBuilding(
+	ctx context.Context,
+	memberID,
+	buildingID string,
+) error {
+	err := svc.repo.EditMemberBuilding(ctx, memberID, buildingID)
+	if err != nil {
+		return fmt.Errorf("join building err:%w", err)
+	}
+	return nil
+}
+
+func (svc *LocationService) EditMemberName(
+	ctx context.Context,
+	memberID,
+	name string,
+) error {
+	err := svc.repo.EditMemberName(ctx, memberID, name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (svc *LocationService) GetMemberByName(ctx context.Context, name string) (ent.MemberQuery, error) {
 	member, err := svc.repo.GetMemberByName(ctx, name)
 	if err != nil {
-		svc.logger.Error(err.Error())
-		return member, fmt.Errorf("cannot find member with name %s", name)
+		return member, err
 	}
 	return member, nil
 }
@@ -200,7 +246,7 @@ func (svc *LocationService) GetMemberByID(
 ) (ent.MemberQuery, error) {
 	member, err := svc.repo.GetMemberByID(ctx, memberID)
 	if err != nil {
-		return member, fmt.Errorf("svc: getMemberByID: %s. %w", memberID, err)
+		return member, err
 	}
 	return member, nil
 }

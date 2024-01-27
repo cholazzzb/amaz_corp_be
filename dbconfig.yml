@@ -1,0 +1,4 @@
+dev:
+    dialect: postgres
+    datasource: user=postgres password=password dbname=amaz-corp sslmode=disable
+    dir: migration/postgresql

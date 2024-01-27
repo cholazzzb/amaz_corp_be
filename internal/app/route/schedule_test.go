@@ -15,6 +15,128 @@ import (
 	"github.com/cholazzzb/amaz_corp_be/pkg/tester"
 )
 
+type ScheduleTester struct {
+	scheduleID  string
+	roomID      string
+	bearerToken string
+	testApp     *fiber.App
+	t           *testing.T
+}
+
+func (st ScheduleTester) testTaskDependencyAfterLogin() {
+	tester.NewMockTest().
+		Desc("/schedules should success create new schedule").
+		POST(BASE_URL+"/schedules").
+		Body(ent.ScheduleCommand{
+			Name:   "Mock Schedule",
+			RoomID: st.roomID,
+		}).
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(st.bearerToken).
+		Test(st.testApp, st.t)
+
+	getListScheduleResByte := tester.NewMockTest().
+		Desc("/schedules/rooms/:roomID should success return the scheduleID").
+		GET(BASE_URL+"/schedules/rooms/"+st.roomID).
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(st.bearerToken).
+		Test(st.testApp, st.t)
+	type GetListScheduleRes struct {
+		Message string              `json:"message"`
+		Data    []ent.ScheduleQuery `json:"data"`
+	}
+	getListScheduleRes := GetListScheduleRes{}
+	json.Unmarshal(getListScheduleResByte, &getListScheduleRes)
+
+	schs := getListScheduleRes.Data
+	scheduleID := schs[len(schs)-1].ID
+
+	// Need to create at least many tasks first
+	// struct is currently not supported in tester module
+	newTasks := []map[string]interface{}{
+		{"ScheduleID": scheduleID, "Name": "Task 1"},
+		{"ScheduleID": scheduleID, "Name": "Task 2"},
+		{"ScheduleID": scheduleID, "Name": "Task 3"},
+		{"ScheduleID": scheduleID, "Name": "Task 4"},
+	}
+
+	for _, task := range newTasks {
+		type CreateTaskRes struct {
+			Message string   `json:"message"`
+			Data    []string `json:"data"`
+		}
+		tester.NewMockTest().
+			Desc("/schedules/tasks should success create new task").
+			POST(BASE_URL+"/tasks").
+			Body(task).
+			Expected(200, "", "").
+			BuildRequest().
+			WithBearer(st.bearerToken).
+			Test(st.testApp, st.t)
+	}
+
+	getListTaskResByte := tester.NewMockTest().
+		Desc("").
+		GET(BASE_URL+"/schedules/"+scheduleID+"/tasks").
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(st.bearerToken).
+		Test(st.testApp, st.t)
+	type GetListTaskRes struct {
+		Message string          `json:"message"`
+		Data    []ent.TaskQuery `json:"data"`
+	}
+
+	getListTaskRes := GetListTaskRes{}
+	json.Unmarshal(getListTaskResByte, &getListTaskRes)
+	assert.Equal(st.t, 4, len(getListTaskRes.Data), "all tasks should save on DB")
+
+	for taskIdx := 1; taskIdx < 4; taskIdx++ {
+		task := getListTaskRes.Data[taskIdx]
+		prevTask := getListTaskRes.Data[taskIdx-1]
+
+		tester.NewMockTest().
+			Desc("/tasks/dependency/ should success connect task dependency").
+			POST(BASE_URL+"/tasks/dependency").
+			Body(map[string]interface{}{
+				"taskID":       task.ID,
+				"dependencyID": prevTask.ID,
+			}).
+			Expected(200, "", "").
+			BuildRequest().
+			WithBearer(st.bearerToken).
+			Test(st.testApp, st.t)
+	}
+}
+
+func (st ScheduleTester) testAutoSchedule() {
+	autoScheduleResByte := tester.NewMockTest().
+		Desc("/schedules/:scheduleID/auto/preview show the right schedule").
+		GET(BASE_URL+fmt.Sprintf("/schedules/%s/auto/preview", st.scheduleID)).
+		Expected(200, "", "").
+		BuildRequest().
+		WithBearer(st.bearerToken).
+		Test(st.testApp, st.t)
+	type AutoScheduleRes struct {
+		Message string                    `json:"message"`
+		Data    []ent.TaskWithDetailQuery `json:"data"`
+	}
+	autoScheduleRes := AutoScheduleRes{}
+	json.Unmarshal(autoScheduleResByte, &autoScheduleRes)
+	expected := []ent.TaskWithDetailQuery{}
+
+	for idx := 1; idx < 5; idx++ {
+		expected = append(expected, ent.TaskWithDetailQuery{
+			ScheduleID: st.scheduleID,
+			Name:       fmt.Sprintf("Task %d", idx),
+		})
+	}
+
+	assert.Equal(st.t, expected, autoScheduleRes.Data, "task should sorted")
+}
+
 func TestSheduleRouteAfterLogin(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping schedule route test in short mode.")
@@ -108,103 +230,14 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 		WithBearer(bearerToken).
 		Test(testApp, t)
 
-	testTaskDependencyAfterLogin(
-		roomID,
-		bearerToken,
-		testApp,
-		t,
-	)
-}
-
-func testTaskDependencyAfterLogin(
-	roomID string,
-	bearerToken string,
-	testApp *fiber.App,
-	t *testing.T,
-) {
-	tester.NewMockTest().
-		Desc("/schedules should success create new schedule").
-		POST(BASE_URL+"/schedules").
-		Body(ent.ScheduleCommand{
-			Name:   "Mock Schedule",
-			RoomID: roomID,
-		}).
-		Expected(200, "", "").
-		BuildRequest().
-		WithBearer(bearerToken).
-		Test(testApp, t)
-
-	getListScheduleResByte := tester.NewMockTest().
-		Desc("/schedules/rooms/:roomID should success return the scheduleID").
-		GET(BASE_URL+"/schedules/rooms/"+roomID).
-		Expected(200, "", "").
-		BuildRequest().
-		WithBearer(bearerToken).
-		Test(testApp, t)
-	type GetListScheduleRes struct {
-		Message string              `json:"message"`
-		Data    []ent.ScheduleQuery `json:"data"`
-	}
-	getListScheduleRes := GetListScheduleRes{}
-	json.Unmarshal(getListScheduleResByte, &getListScheduleRes)
-
-	schs := getListScheduleRes.Data
-	scheduleID := schs[len(schs)-1].ID
-
-	// Need to create at least many tasks first
-	// struct is currently not supported in tester module
-	newTasks := []map[string]interface{}{
-		{"ScheduleID": scheduleID, "Name": "Task 1"},
-		{"ScheduleID": scheduleID, "Name": "Task 2"},
-		{"ScheduleID": scheduleID, "Name": "Task 3"},
-		{"ScheduleID": scheduleID, "Name": "Task 4"},
+	st := ScheduleTester{
+		scheduleID:  scheduleID,
+		roomID:      roomID,
+		bearerToken: bearerToken,
+		testApp:     testApp,
+		t:           t,
 	}
 
-	for _, task := range newTasks {
-		type CreateTaskRes struct {
-			Message string   `json:"message"`
-			Data    []string `json:"data"`
-		}
-		tester.NewMockTest().
-			Desc("/schedules/tasks should success create new task").
-			POST(BASE_URL+"/tasks").
-			Body(task).
-			Expected(200, "", "").
-			BuildRequest().
-			WithBearer(bearerToken).
-			Test(testApp, t)
-	}
-
-	getListTaskResByte := tester.NewMockTest().
-		Desc("").
-		GET(BASE_URL+"/schedules/"+scheduleID+"/tasks").
-		Expected(200, "", "").
-		BuildRequest().
-		WithBearer(bearerToken).
-		Test(testApp, t)
-	type GetListTaskRes struct {
-		Message string          `json:"message"`
-		Data    []ent.TaskQuery `json:"data"`
-	}
-
-	getListTaskRes := GetListTaskRes{}
-	json.Unmarshal(getListTaskResByte, &getListTaskRes)
-	assert.Equal(t, 4, len(getListTaskRes.Data), "all tasks should save on DB")
-
-	for taskIdx := 1; taskIdx < 4; taskIdx++ {
-		task := getListTaskRes.Data[taskIdx]
-		prevTask := getListTaskRes.Data[taskIdx-1]
-
-		tester.NewMockTest().
-			Desc("/tasks/dependency/ should success connect task dependency").
-			POST(BASE_URL+"/tasks/dependency").
-			Body(map[string]interface{}{
-				"taskID":       task.ID,
-				"dependencyID": prevTask.ID,
-			}).
-			Expected(200, "", "").
-			BuildRequest().
-			WithBearer(bearerToken).
-			Test(testApp, t)
-	}
+	st.testTaskDependencyAfterLogin()
+	st.testAutoSchedule()
 }

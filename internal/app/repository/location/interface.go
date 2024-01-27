@@ -32,6 +32,12 @@ type BuildingRepoCommand interface {
 		buildingId string,
 	) error
 
+	EditMemberBuilding(
+		ctx context.Context,
+		memberID,
+		buildingID string,
+	) error
+
 	DeleteBuilding(
 		ctx context.Context,
 		buildingId,
@@ -55,6 +61,16 @@ type BuildingRepoQuery interface {
 		buildingID string,
 	) (bool, error)
 
+	GetInvitationByUserID(
+		ctx context.Context,
+		userID string,
+	) ([]ent.BuildingMemberQuery, error)
+
+	GetListMyOwnedBuilding(
+		ctx context.Context,
+		userID string,
+	) ([]ent.BuildingQuery, error)
+
 	GetListBuildingByUserID(
 		ctx context.Context,
 		userID string,
@@ -72,6 +88,19 @@ type BuildingRepoQuery interface {
 }
 
 type MemberRepository interface {
+	MemberRepositoryCommand
+	MemberRepositoryQuery
+}
+
+type MemberRepositoryCommand interface {
+	EditMemberName(
+		ctx context.Context,
+		memberID,
+		memberName string,
+	) error
+}
+
+type MemberRepositoryQuery interface {
 	GetMemberByName(
 		ctx context.Context,
 		memberName string,

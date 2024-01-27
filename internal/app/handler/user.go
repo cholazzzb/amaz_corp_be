@@ -7,6 +7,7 @@ import (
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+	"github.com/cholazzzb/amaz_corp_be/pkg/response"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
 
@@ -97,4 +98,23 @@ func (h *UserHandler) CheckUserExistance(ctx *fiber.Ctx) error {
 		"message": "ok",
 		"exist":   exist,
 	})
+}
+
+type GetUserByNameReq struct {
+	username string `query:"username"`
+}
+
+func (h *UserHandler) GetListUserByUsername(ctx *fiber.Ctx) error {
+	queryParams := new(GetUserByNameReq)
+	ok, resFactory := validator.CheckQueryParams(ctx, queryParams)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	res, err := h.svc.GetListUserByUsername(ctx.Context(), queryParams.username)
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, res)
 }

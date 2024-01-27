@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	config.GetEnv(".env")
+	config.GetEnv(".env.test")
 
 	dbSql := app.NewSQL(app.WithMigration())
 	app := app.GetApp(dbSql)

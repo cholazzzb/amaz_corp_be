@@ -18,6 +18,12 @@ FROM buildings
 WHERE buildings.owner_id IS NULL
 LIMIT 10;
 
+-- name: GetListMyOwnedBuilding :many
+SELECT * 
+FROM buildings
+WHERE owner_id = $1
+LIMIT 10;
+
 -- name: GetListBuildingByUserID :many
 SELECT b.id as building_id, b.name as building_name, members.id as member_id
 FROM members
@@ -27,13 +33,30 @@ INNER JOIN buildings b
 ON b.id = members_buildings.building_id
 INNER JOIN users
 ON users.id = members.user_id
-WHERE users.id = $1
+WHERE users.id = $1 AND members_buildings.status='joined'
+LIMIT 10;
+
+-- name: GetInvitationByUserID :many
+SELECT b.id as building_id, b.name as building_name, members.id as member_id
+FROM members
+INNER JOIN members_buildings
+ON members.id = members_buildings.member_id
+INNER JOIN buildings b
+ON b.id = members_buildings.building_id
+INNER JOIN users
+ON users.id = members.user_id
+WHERE users.id = $1 AND members_buildings.status = 'invited'
 LIMIT 10;
 
 -- name: CreateMember :one
 INSERT INTO members(name, status, user_id)
 VALUES ($1, $2, $3)
 RETURNING id;
+
+-- name: EditMemberName :execresult
+UPDATE members
+SET name = $2
+WHERE id = $1;
 
 -- name: GetMemberByName :one
 SELECT *
@@ -106,8 +129,13 @@ WHERE members_buildings.building_id = $1
 LIMIT 20;
 
 -- name: CreateMemberBuilding :execresult
-INSERT INTO members_buildings(member_id, building_id)
-VALUES ($1, $2);
+INSERT INTO members_buildings(member_id, building_id, status)
+VALUES ($1, $2, "invited");
+
+-- name: EditMemberBuildingStatus :execresult
+UPDATE members_buildings
+SET status = $3
+WHERE member_id = $1 AND building_id = $2;
 
 -- name: DeleteMemberBuilding :exec
 DELETE FROM members_buildings

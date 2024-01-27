@@ -20,10 +20,12 @@ CREATE TABLE IF NOT EXISTS friends (
   CONSTRAINT fk_member2_id FOREIGN KEY(member2_id) REFERENCES members(id)
 );
 
+CREATE TYPE mb_status AS ENUM ('invited', 'joined');
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS members_buildings (
     member_id uuid NOT NULL,
     building_id uuid NOT NULL,
+    status mb_status NOT NULL,
     CONSTRAINT fk_mb_member_id FOREIGN KEY(member_id) REFERENCES members(id),
     CONSTRAINT fk_mb_building_id FOREIGN KEY(building_id) REFERENCES buildings(id)
 );

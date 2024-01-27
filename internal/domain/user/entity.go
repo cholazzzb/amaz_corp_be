@@ -35,6 +35,11 @@ type User struct {
 	Salt     string
 }
 
+type UserQuery struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+}
+
 type UserCommand struct {
 	Username  string `json:"username"`
 	Password  string `json:"password"`

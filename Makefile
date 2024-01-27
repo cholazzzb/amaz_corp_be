@@ -1,5 +1,8 @@
 # Install sqlc and sql-migrate
 setup:
+	@go get
+	@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	@$(MAKE) gen-sql
 	@go install github.com/rubenv/sql-migrate/...@latest
 
 gen-sql:

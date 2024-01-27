@@ -42,6 +42,13 @@ func (mur *MockUserRepo) GetUser(
 	return res, nil
 }
 
+func (mur *MockUserRepo) GetListUserByUsername(
+	ctx context.Context,
+	username string,
+) ([]user.UserQuery, error) {
+	return []user.UserQuery{}, nil
+}
+
 func (mur *MockUserRepo) GetUserExistance(
 	ctx context.Context,
 	username string,
