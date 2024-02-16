@@ -5,11 +5,17 @@ setup:
 	@$(MAKE) gen-sql
 	@go install github.com/rubenv/sql-migrate/...@latest
 
-gen-sql:
+sql-gen:
 	@sqlc generate
 
-gen-sql-win:
+sql-gen-win:
 	@docker run --rm -v ${pwd}:/src -w /src kjconroy/sqlc generate .\sqlc.yaml
+
+sql-verify:
+	@sqlc verify
+
+sql-vet:
+	@sqlc vet
 
 dev:
 	@go run main.go
