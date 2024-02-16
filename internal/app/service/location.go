@@ -202,7 +202,6 @@ func (svc *LocationService) InviteMemberToBuilding(
 ) error {
 	err := svc.repo.CreateMemberBuilding(ctx, memberName, userID, buildingId)
 	if err != nil {
-		svc.logger.Error(err.Error())
 		return fmt.Errorf("cannot join member with userID %s to building id %s", userID, buildingId)
 	}
 	return nil

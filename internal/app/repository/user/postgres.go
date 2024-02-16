@@ -47,7 +47,9 @@ func (r *PostgresUserRepository) GetListUserByUsername(
 	username string,
 ) ([]user.UserQuery, error) {
 	out := []user.UserQuery{}
-	res, err := r.Postgres.GetListUserByUsername(ctx, fmt.Sprint("%", username, "%"))
+
+	likeParams := fmt.Sprint("%", username, "%")
+	res, err := r.Postgres.GetListUserByUsername(ctx, likeParams)
 	if err != nil {
 		r.logger.Error(err.Error())
 		return out, err

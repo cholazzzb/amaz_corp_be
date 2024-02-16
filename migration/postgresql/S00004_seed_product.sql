@@ -1,6 +1,6 @@
 -- +migrate Up
 INSERT INTO products(name)
-VALUES ('Free');
+VALUES ('free');
 
 -- +migrate Up
 INSERT INTO features(name, max_limit)

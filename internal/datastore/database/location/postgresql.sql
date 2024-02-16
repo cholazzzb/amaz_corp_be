@@ -33,7 +33,7 @@ INNER JOIN buildings b
 ON b.id = members_buildings.building_id
 INNER JOIN users
 ON users.id = members.user_id
-WHERE users.id = $1 AND members_buildings.status='joined'
+WHERE users.id = $1 AND members_buildings.status_id = 2
 LIMIT 10;
 
 -- name: GetInvitationByUserID :many
@@ -45,7 +45,7 @@ INNER JOIN buildings b
 ON b.id = members_buildings.building_id
 INNER JOIN users
 ON users.id = members.user_id
-WHERE users.id = $1 AND members_buildings.status = 'invited'
+WHERE users.id = $1 AND members_buildings.status_id = 1
 LIMIT 10;
 
 -- name: CreateMember :one
@@ -129,12 +129,12 @@ WHERE members_buildings.building_id = $1
 LIMIT 20;
 
 -- name: CreateMemberBuilding :execresult
-INSERT INTO members_buildings(member_id, building_id, status)
-VALUES ($1, $2, "invited");
+INSERT INTO members_buildings(member_id, building_id, status_id)
+VALUES ($1, $2, 1);
 
 -- name: EditMemberBuildingStatus :execresult
 UPDATE members_buildings
-SET status = $3
+SET status_id = $3
 WHERE member_id = $1 AND building_id = $2;
 
 -- name: DeleteMemberBuilding :exec

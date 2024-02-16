@@ -3,13 +3,13 @@ INSERT INTO users(username, password, salt, product_id)
 VALUES ($1, $2, $3, $4);
 
 -- name: GetUser :one
-SELECT *
+SELECT * 
 FROM users
 WHERE username = $1
 LIMIT 1;
 
 -- name: GetListUserByUsername :many
-SELECT *
+SELECT id, username
 FROM users
 WHERE username LIKE $1
 LIMIT 10;
