@@ -101,7 +101,7 @@ func (h *UserHandler) CheckUserExistance(ctx *fiber.Ctx) error {
 }
 
 type GetUserByNameReq struct {
-	Username string `query:"username"`
+	username string `query:"username"`
 }
 
 func (h *UserHandler) GetListUserByUsername(ctx *fiber.Ctx) error {
@@ -111,7 +111,7 @@ func (h *UserHandler) GetListUserByUsername(ctx *fiber.Ctx) error {
 		return resFactory.Create()
 	}
 
-	res, err := h.svc.GetListUserByUsername(ctx.Context(), queryParams.Username)
+	res, err := h.svc.GetListUserByUsername(ctx.Context(), queryParams.username)
 	if err != nil {
 		return response.InternalServerError(ctx)
 	}

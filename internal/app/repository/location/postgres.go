@@ -91,8 +91,8 @@ func (r *PostgresLocationRepository) GetInvitationByUserID(
 
 	for _, bldng := range bldngs {
 		res = append(res, ent.BuildingMemberQuery{
-			BuildingID:   bldng.BuildingID.String(),
-			BuildingName: bldng.BuildingName,
+			BuildingID:   bldng.ID.String(),
+			BuildingName: bldng.Name,
 			MemberID:     bldng.MemberID.String(),
 		})
 	}
@@ -365,7 +365,7 @@ func (r *PostgresLocationRepository) EditMemberBuilding(
 	_, err = r.Postgres.EditMemberBuildingStatus(ctx, locationpostgres.EditMemberBuildingStatusParams{
 		MemberID:   memberUUID,
 		BuildingID: buildingUUID,
-		StatusID:     2,
+		StatusID:   2,
 	})
 	if err != nil {
 		r.logger.Error(err.Error())
