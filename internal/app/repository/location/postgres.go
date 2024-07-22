@@ -365,7 +365,7 @@ func (r *PostgresLocationRepository) EditMemberBuilding(
 	_, err = r.Postgres.EditMemberBuildingStatus(ctx, locationpostgres.EditMemberBuildingStatusParams{
 		MemberID:   memberUUID,
 		BuildingID: buildingUUID,
-		StatusID:     2,
+		StatusID:   2,
 	})
 	if err != nil {
 		r.logger.Error(err.Error())

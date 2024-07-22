@@ -168,7 +168,7 @@ func (h *LocationHandler) InviteMemberToBuilding(
 		return response.BadRequest(ctx, "user already joined in the building")
 	}
 
-	err = h.svc.InviteMemberToBuilding(ctx.Context(), "New Member", req.UserID, req.BuildingID)
+	err = h.svc.InviteMemberToBuilding(ctx.Context(), "new member", req.UserID, req.BuildingID)
 	if err != nil {
 		return response.InternalServerError(ctx)
 	}

@@ -25,6 +25,11 @@ CREATE TABLE IF NOT EXISTS members_buildings_status(
     name varchar(255) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS members_buildings_status(
+    id serial UNIQUE NOT NULL PRIMARY KEY,
+    name varchar(255) NOT NULL
+);
+
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS members_buildings (
     member_id uuid NOT NULL,
