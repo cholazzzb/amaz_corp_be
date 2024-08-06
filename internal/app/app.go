@@ -61,6 +61,7 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 			v1 := api.Group("/v1")
 
 			authMiddleware := auth.CreateAuthMiddleware()
+			authAdminMiddleware := auth.CreateAuthAdminMiddleware()
 
 			sqlRepo := database.NewSqlRepository(dbSql)
 			redisRepo := database.NewRedisRepository(rds)
@@ -69,7 +70,7 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 			us := service.NewUserService(ur)
 			uh := handler.NewUserHandler(us)
 			uRoute := route.NewUserRoute(v1, uh)
-			uRoute.InitRoute(authMiddleware)
+			uRoute.InitRoute(authMiddleware, authAdminMiddleware)
 
 			hbr := hbRepo.NewInMemoryHeartbeatRepo()
 			go heartbeat.NewHeartBeatScheduler(hbr).Schedule(

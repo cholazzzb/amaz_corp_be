@@ -105,9 +105,15 @@ func (svc *ScheduleService) AutoSchedulePreview(
 	ctx context.Context,
 	scheduleID string,
 ) ([]domain.TaskWithDetailQuery, error) {
+
 	twds, err := svc.repo.GetListTaskWithDetailByScheduleID(ctx, scheduleID)
-	graph := domain.CreateGraph(twds)
-	sorted := domain.TopologicalSort(graph)
+
+	if err != nil {
+		return []domain.TaskWithDetailQuery{}, errors.New("failed to get list task detail by scheduleID")
+	}
+
+	scheduler := domain.NewScheduler(twds)
+	sorted, err := scheduler.GetScheduledTask()
 
 	if err != nil {
 		return []domain.TaskWithDetailQuery{}, err
@@ -125,5 +131,5 @@ func (svc *ScheduleService) AutoScheduleSave(
 	}
 
 	// TODO: Bulk Update
-	return errors.New("Not Implemented")
+	return errors.New("not implemented")
 }

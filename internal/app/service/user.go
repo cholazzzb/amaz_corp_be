@@ -19,7 +19,8 @@ import (
 type UserClaims struct {
 	jwt.RegisteredClaims
 	Username string
-	UserId   string
+	UserID   string
+	RoleID   int32
 }
 
 type UserService struct {
@@ -40,22 +41,25 @@ func NewUserService(
 	}
 }
 
-func (svc *UserService) RegisterUser(ctx context.Context, username, password string) error {
+func (svc *UserService) RegisterUser(
+	ctx context.Context, username, password string,
+	roleID int32,
+) (string, error) {
 	exist, err := svc.CheckUserExistance(ctx, username)
 
 	if err != nil {
 		svc.logger.Error(err.Error())
-		return errors.New("failed to check username existence")
+		return "", errors.New("failed to check username existence")
 	}
 
 	if exist {
-		return errors.New("username already taken")
+		return "", errors.New("username already taken")
 	}
 
 	uuidSalt, err := uuid.NewUUID()
 	if err != nil {
 		svc.logger.Error(err.Error())
-		return errors.New("failed to generate uuid")
+		return "", errors.New("failed to generate uuid")
 	}
 
 	salt := uuidSalt.String()
@@ -70,20 +74,23 @@ func (svc *UserService) RegisterUser(ctx context.Context, username, password str
 	)
 	if err != nil {
 		svc.logger.Error(err.Error())
-		return errors.New("failed to hash password")
+		return "", errors.New("failed to hash password")
 	}
 	newUserParams := user.UserCommand{
 		Username:  username,
 		Password:  string(hashedPassword[:]),
 		Salt:      string(salt[:]),
 		ProductID: 1, // TODO: Find better way to write this, for now: 1 = is free, the default value
+		RoleID:    roleID,
 	}
 
-	if err := svc.repo.CreateUser(ctx, newUserParams); err != nil {
-		return errors.New("failed to create user")
+	userID, err := svc.repo.CreateUser(ctx, newUserParams)
+
+	if err != nil {
+		return "", errors.New("failed to create user")
 	}
 
-	return nil
+	return userID, nil
 }
 
 func (svc *UserService) authenticateUser(ctx context.Context, username, password string) (bool, string, error) {
@@ -110,10 +117,9 @@ func (svc *UserService) authenticateUser(ctx context.Context, username, password
 	return true, result.ID, nil
 }
 
-func (svc *UserService) Login(ctx context.Context, username, password string) (Token, error) {
-	isAuthentic, userId, err := svc.authenticateUser(ctx, username, password)
+func (svc *UserService) Login(ctx context.Context, username, password string, roleID int32) (Token, error) {
+	isAuthentic, userID, err := svc.authenticateUser(ctx, username, password)
 	if !isAuthentic || err != nil {
-		svc.logger.Error(err.Error())
 		return "", errors.New("failed to authenticate user")
 	}
 
@@ -123,7 +129,8 @@ func (svc *UserService) Login(ctx context.Context, username, password string) (T
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.UserConfig.LOGIN_EXPIRATION_DURATION)),
 		},
 		Username: username,
-		UserId:   userId,
+		UserID:   userID,
+		RoleID:   roleID,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

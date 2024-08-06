@@ -1,11 +1,10 @@
 package handler
 
 import (
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
+	"github.com/cholazzzb/amaz_corp_be/pkg/parser"
 	"github.com/cholazzzb/amaz_corp_be/pkg/response"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
@@ -17,10 +16,9 @@ func (h *ScheduleHandler) PostAddTask(ctx *fiber.Ctx) error {
 		return resFactory.Create()
 	}
 
-	var startTime *time.Time
-	startTimeParsed, err := time.Parse(time.RFC1123, req.StartTime)
-	if err == nil {
-		startTime = &startTimeParsed
+	startTime, err := parser.ParseTime(req.StartTime)
+	if err != nil {
+		return response.BadRequest(ctx, err.Error())
 	}
 
 	formattedReq := ent.TaskWithDetailCommand{

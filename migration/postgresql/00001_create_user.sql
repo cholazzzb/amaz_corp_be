@@ -8,13 +8,21 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 -- +migrate Up
+CREATE TABLE IF NOT EXISTS roles (
+  id serial UNIQUE NOT NULL PRIMARY KEY,
+  name text NOT NULL
+);
+
+-- +migrate Up
 CREATE TABLE IF NOT EXISTS users (
   id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
   username text UNIQUE NOT NULL,
   password text NOT NULL,
   salt text NOT NULL,
   product_id integer NOT NULL,
-  CONSTRAINT fk_product_id FOREIGN KEY(product_id) REFERENCES products(id)
+  role_id integer NOT NULL,
+  CONSTRAINT fk_product_id FOREIGN KEY(product_id) REFERENCES products(id),
+  CONSTRAINT fk_role_id FOREIGN KEY(role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
 -- +migrate Up

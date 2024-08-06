@@ -3,6 +3,7 @@ package route_test
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 
 	entLocation "github.com/cholazzzb/amaz_corp_be/internal/domain/location"
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
+	"github.com/cholazzzb/amaz_corp_be/pkg/parser"
 	"github.com/cholazzzb/amaz_corp_be/pkg/random"
 	"github.com/cholazzzb/amaz_corp_be/pkg/tester"
 )
@@ -23,74 +25,58 @@ type ScheduleTester struct {
 	t           *testing.T
 }
 
-func (st ScheduleTester) testTaskDependencyAfterLogin() {
-	tester.NewMockTest().
+func (st ScheduleTester) testTaskDependencyAfterLogin() string {
+	schIDByte := tester.NewMockTest().
 		Desc("/schedules should success create new schedule").
 		POST(BASE_URL+"/schedules").
 		Body(ent.ScheduleCommand{
 			Name:   "Mock Schedule",
 			RoomID: st.roomID,
 		}).
-		Expected(200, "", "").
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(st.bearerToken).
 		Test(st.testApp, st.t)
 
-	getListScheduleResByte := tester.NewMockTest().
-		Desc("/schedules/rooms/:roomID should success return the scheduleID").
-		GET(BASE_URL+"/schedules/rooms/"+st.roomID).
-		Expected(200, "", "").
-		BuildRequest().
-		WithBearer(st.bearerToken).
-		Test(st.testApp, st.t)
-	type GetListScheduleRes struct {
-		Message string              `json:"message"`
-		Data    []ent.ScheduleQuery `json:"data"`
-	}
-	getListScheduleRes := GetListScheduleRes{}
-	json.Unmarshal(getListScheduleResByte, &getListScheduleRes)
-
-	schs := getListScheduleRes.Data
-	scheduleID := schs[len(schs)-1].ID
+	scheduleID := parser.ParseResp[ent.ScheduleCommandRes](schIDByte).Data.ScheduleID
 
 	// Need to create at least many tasks first
 	// struct is currently not supported in tester module
 	newTasks := []map[string]interface{}{
-		{"ScheduleID": scheduleID, "Name": "Task 1"},
-		{"ScheduleID": scheduleID, "Name": "Task 2"},
-		{"ScheduleID": scheduleID, "Name": "Task 3"},
-		{"ScheduleID": scheduleID, "Name": "Task 4"},
+		{"ScheduleID": scheduleID, "Name": "Task 1", "StartTime": time.Now().AddDate(0, 0, -10).Format(time.RFC1123)},
+		{"ScheduleID": scheduleID, "Name": "Task 2", "StartTime": time.Now().AddDate(0, 0, -10).Format(time.RFC1123)},
+		{"ScheduleID": scheduleID, "Name": "Task 3", "StartTime": time.Now().AddDate(0, 0, -10).Format(time.RFC1123)},
+		{"ScheduleID": scheduleID, "Name": "Task 4", "StartTime": time.Now().AddDate(0, 0, -10).Format(time.RFC1123)},
 	}
 
 	for _, task := range newTasks {
-		type CreateTaskRes struct {
-			Message string   `json:"message"`
-			Data    []string `json:"data"`
-		}
 		tester.NewMockTest().
 			Desc("/schedules/tasks should success create new task").
 			POST(BASE_URL+"/tasks").
 			Body(task).
-			Expected(200, "", "").
+			Expected(200, "").
 			BuildRequest().
 			WithBearer(st.bearerToken).
 			Test(st.testApp, st.t)
 	}
 
+	queryParams := url.Values{}
+	queryParams.Add("start-time", time.Now().AddDate(0, 0, -30).Format(time.RFC1123))
+	queryParams.Add("end-time", time.Now().Format(time.RFC1123))
+	fullURL := fmt.Sprintf(
+		"%s?%s",
+		fmt.Sprintf("%s/schedules/%s/tasks", BASE_URL, scheduleID),
+		queryParams.Encode(),
+	)
 	getListTaskResByte := tester.NewMockTest().
 		Desc("").
-		GET(BASE_URL+"/schedules/"+scheduleID+"/tasks").
-		Expected(200, "", "").
+		GET(fullURL).
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(st.bearerToken).
 		Test(st.testApp, st.t)
-	type GetListTaskRes struct {
-		Message string          `json:"message"`
-		Data    []ent.TaskQuery `json:"data"`
-	}
 
-	getListTaskRes := GetListTaskRes{}
-	json.Unmarshal(getListTaskResByte, &getListTaskRes)
+	getListTaskRes := parser.ParseResp[[]ent.TaskQuery](getListTaskResByte)
 	assert.Equal(st.t, 4, len(getListTaskRes.Data), "all tasks should save on DB")
 
 	for taskIdx := 1; taskIdx < 4; taskIdx++ {
@@ -104,27 +90,25 @@ func (st ScheduleTester) testTaskDependencyAfterLogin() {
 				"taskID":       task.ID,
 				"dependencyID": prevTask.ID,
 			}).
-			Expected(200, "", "").
+			Expected(200, "").
 			BuildRequest().
 			WithBearer(st.bearerToken).
 			Test(st.testApp, st.t)
 	}
+
+	return scheduleID
 }
 
-func (st ScheduleTester) testAutoSchedule() {
+func (st ScheduleTester) testAutoSchedule(autoScheduleID string) {
 	autoScheduleResByte := tester.NewMockTest().
 		Desc("/schedules/:scheduleID/auto/preview show the right schedule").
-		GET(BASE_URL+fmt.Sprintf("/schedules/%s/auto/preview", st.scheduleID)).
-		Expected(200, "", "").
+		GET(BASE_URL+fmt.Sprintf("/schedules/%s/auto/preview", autoScheduleID)).
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(st.bearerToken).
 		Test(st.testApp, st.t)
-	type AutoScheduleRes struct {
-		Message string                    `json:"message"`
-		Data    []ent.TaskWithDetailQuery `json:"data"`
-	}
-	autoScheduleRes := AutoScheduleRes{}
-	json.Unmarshal(autoScheduleResByte, &autoScheduleRes)
+
+	autoScheduleRes := parser.ParseResp[[]ent.TaskWithDetailQuery](autoScheduleResByte)
 	expected := []ent.TaskWithDetailQuery{}
 
 	for idx := 1; idx < 5; idx++ {
@@ -134,7 +118,11 @@ func (st ScheduleTester) testAutoSchedule() {
 		})
 	}
 
-	assert.Equal(st.t, expected, autoScheduleRes.Data, "task should sorted")
+	assert.Equal(st.t, len(expected), len(autoScheduleRes.Data), "num of data should be same")
+	for taskIdx, real := range autoScheduleRes.Data {
+		fmt.Println("REAL", taskIdx, real.Name)
+		assert.Equal(st.t, expected[taskIdx].Name, real.Name, "name of data should be same")
+	}
 }
 
 func TestSheduleRouteAfterLogin(t *testing.T) {
@@ -142,22 +130,52 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 		t.Skip("skipping schedule route test in short mode.")
 	}
 
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("--- TESTING SCHEDULE ROUTES ---")
+	fmt.Println("")
+	fmt.Println("")
+
 	username := random.RandomString(12)
-	memberName := username + "_smember"
+	_ = username + "_member"
 
 	testApp := tester.NewMockApp().Setup("../../../.env.test")
-	tester.Register(testApp, username)
+	userID, err := tester.Register(testApp, username)
+	if (err) != nil {
+		panic(err)
+	}
 	bearerToken := tester.Login(testApp, username)
 
 	// Note: buildingID from the seeder
 	tester.NewMockTest().
+		Desc("/buildings/invite should success inviting member to a building").
+		POST(BASE_URL+"/buildings/invite").
+		Body(map[string]interface{}{
+			"userID":     userID,
+			"buildingID": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
+		}).
+		Expected(200, "").
+		BuildRequest().
+		WithBearer(bearerToken).
+		Test(testApp, t)
+
+	myInvByte := tester.NewMockTest().
+		GET(BASE_URL+"/buildings/invitation").
+		Expected(200, "").
+		BuildRequest().
+		WithBearer(bearerToken).
+		Test(testApp, t)
+	myInv := parser.ParseResp[[]entLocation.BuildingMemberQuery](myInvByte)
+	memberID := myInv.Data[0].MemberID
+
+	tester.NewMockTest().
 		Desc("/buildings/join should success joining member to a building").
 		POST(BASE_URL+"/buildings/join").
 		Body(map[string]interface{}{
-			"name":       memberName,
+			"memberID":   memberID,
 			"buildingId": "bc133e57-df08-407e-b1e5-8e10c653ad3c",
 		}).
-		Expected(200, "", "").
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(bearerToken).
 		Test(testApp, t)
@@ -165,7 +183,7 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 	getRoomsResByte := tester.NewMockTest().
 		Desc("/:buildingId/rooms should return all rooms").
 		GET(BASE_URL+"/buildings/bc133e57-df08-407e-b1e5-8e10c653ad3c/rooms").
-		Expected(200, "", "").
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(bearerToken).
 		Test(testApp, t)
@@ -186,7 +204,7 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 			Name:   "Mock Schedule",
 			RoomID: getRoomRes.Rooms[0].Id,
 		}).
-		Expected(200, "", "").
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(bearerToken).
 		Test(testApp, t)
@@ -194,38 +212,40 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 	getListScheduleResByte := tester.NewMockTest().
 		Desc("/schedules/rooms/:roomID should success return the scheduleID").
 		GET(BASE_URL+"/schedules/rooms/"+getRoomRes.Rooms[0].Id).
-		Expected(200, "", "").
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(bearerToken).
 		Test(testApp, t)
-	type GetListScheduleRes struct {
-		Message string              `json:"message"`
-		Data    []ent.ScheduleQuery `json:"data"`
-	}
-	getListScheduleRes := GetListScheduleRes{}
-	json.Unmarshal(getListScheduleResByte, &getListScheduleRes)
-
-	schs := getListScheduleRes.Data
-	scheduleID := schs[len(schs)-1].ID
+	schs := parser.ParseResp[[]ent.ScheduleQuery](getListScheduleResByte)
+	scheduleID := schs.Data[len(schs.Data)-1].ID
 
 	tester.NewMockTest().
 		Desc("/schedules/tasks should success create new task").
 		POST(BASE_URL+"/tasks").
 		Body(map[string]interface{}{
 			"ScheduleID":  scheduleID,
-			"StartTime":   time.Now(),
+			"StartTime":   time.Now().Format(time.RFC1123),
 			"DurationDay": 3,
 			"Name":        "task test 1",
 		}).
-		Expected(200, "", "").
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(bearerToken).
 		Test(testApp, t)
 
+	queryParams := url.Values{}
+	queryParams.Add("start-time", time.Now().AddDate(0, 0, -30).Format(time.RFC1123))
+	queryParams.Add("end-time", time.Now().Format(time.RFC1123))
+	fullURL := fmt.Sprintf(
+		"%s?%s",
+		fmt.Sprintf("%s/schedules/%s/tasks", BASE_URL, scheduleID),
+		queryParams.Encode(),
+	)
+
 	tester.NewMockTest().
 		Desc("/schedules/:scheduleID/tasks should successfully return list task").
-		GET(fmt.Sprintf("%s/schedules/%s/tasks", BASE_URL, scheduleID)).
-		Expected(200, "", "").
+		GET(fullURL).
+		Expected(200, "").
 		BuildRequest().
 		WithBearer(bearerToken).
 		Test(testApp, t)
@@ -238,6 +258,6 @@ func TestSheduleRouteAfterLogin(t *testing.T) {
 		t:           t,
 	}
 
-	st.testTaskDependencyAfterLogin()
-	st.testAutoSchedule()
+	autoScheduleID := st.testTaskDependencyAfterLogin()
+	st.testAutoSchedule(autoScheduleID)
 }

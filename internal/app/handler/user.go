@@ -27,29 +27,44 @@ type RegisterRequest struct {
 	Password string `json:"password" validate:"required,min=8,max=32"`
 }
 
+type RegisterResponse struct {
+	UserID string `json:"userID"`
+}
+
 func (h *UserHandler) Register(ctx *fiber.Ctx) error {
 	req := new(RegisterRequest)
 	if err := ctx.BodyParser(req); err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return response.BadRequest(ctx, err.Error())
 	}
 
 	if errs := validator.Validate(req); errs != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
 	}
 
-	err := h.svc.RegisterUser(ctx.Context(), req.Username, req.Password)
+	userID, err := h.svc.RegisterUser(ctx.Context(), req.Username, req.Password, 2)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return response.InternalServerError(ctx)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "ok",
-	})
+	return response.Ok(ctx, RegisterResponse{userID})
+}
+
+func (h *UserHandler) RegisterAdmin(ctx *fiber.Ctx) error {
+	req := new(RegisterRequest)
+	if err := ctx.BodyParser(req); err != nil {
+		return response.BadRequest(ctx, err.Error())
+	}
+
+	if errs := validator.Validate(req); errs != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	userID, err := h.svc.RegisterUser(ctx.Context(), req.Username, req.Password, 1)
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, RegisterResponse{userID})
 }
 
 type LoginRequest struct {
@@ -64,12 +79,28 @@ func (h *UserHandler) Login(ctx *fiber.Ctx) error {
 		return resFactory.Create()
 	}
 
-	token, err := h.svc.Login(ctx.Context(), req.Username, req.Password)
+	token, err := h.svc.Login(ctx.Context(), req.Username, req.Password, 2)
 	if err != nil {
 		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return response.InternalServerError(ctx)
+	}
+	// TODO: Handle to give response if user not exist
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+		"token": token,
+	})
+}
+
+func (h *UserHandler) LoginAdmin(ctx *fiber.Ctx) error {
+	req := new(LoginRequest)
+	ok, resFactory := validator.CheckReqBodySchema(ctx, req)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	token, err := h.svc.Login(ctx.Context(), req.Username, req.Password, 1)
+	if err != nil {
+		return response.InternalServerError(ctx)
 	}
 	// TODO: Handle to give response if user not exist
 

@@ -16,6 +16,7 @@ import (
 	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
 	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+	"github.com/cholazzzb/amaz_corp_be/pkg/parser"
 )
 
 type PostgresScheduleRepository struct {
@@ -173,28 +174,12 @@ func (r *PostgresScheduleRepository) GetListTaskWithDetailByScheduleID(
 	}
 
 	for _, twd := range res {
-		ownerID, ok := twd.OwnerID.([]byte)
-		if !ok {
-			r.logger.Error("failed to convert db OwnerID to arr of string")
-			return twds, err
-		}
-		assigneeID, ok := twd.AssigneeID.([]byte)
-		if !ok {
-			r.logger.Error("failed to convert db OwnerID to arr of string")
-			return twds, err
-		}
-		status, ok := twd.Status.([]byte)
-		if !ok {
-			r.logger.Error("failed to convert db OwnerID to arr of string")
-			return twds, err
-		}
-		deps, ok := twd.DependedTaskID.([]byte)
-		if !ok {
-			r.logger.Error("failed to convert db DependedTaskID to arr of string")
-			return twds, err
-		}
-		depsString := string(deps)
-		depsId := strings.Split(depsString, ",")
+		ownerID := parser.PostgresInterfaceToString(twd.OwnerID)
+		assigneeID := parser.PostgresInterfaceToString(twd.AssigneeID)
+		status := parser.PostgresInterfaceToString(twd.Status)
+		deps := parser.PostgresInterfaceToString(twd.DependedTaskID)
+
+		depsId := strings.Split(strings.Trim(deps, "{}"), ",")
 
 		twds = append(twds, ent.TaskWithDetailQuery{
 			TaskID:       twd.ID.String(),
@@ -251,13 +236,13 @@ func (r *PostgresScheduleRepository) CreateTask(
 
 	if err != nil {
 		r.logger.Error(err.Error())
-		return fmt.Errorf("Failed to create task detail %w", err)
+		return fmt.Errorf("failed to create task detail %w", err)
 	}
 
 	scheduleID, err := uuid.Parse(task.ScheduleID)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return fmt.Errorf("ScheduleID is in wrong format %w", err)
+		return fmt.Errorf("scheduleID is in wrong format %w", err)
 	}
 
 	name := sql.NullString{}
@@ -298,13 +283,13 @@ func (r *PostgresScheduleRepository) EditTask(
 	tUUID, err := uuid.Parse(taskID)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return errors.New("Failed to parse task uuid")
+		return errors.New("failed to parse task uuid")
 	}
 
 	td, err := qtx.GetTaskDetailByID(ctx, tUUID)
 	if err != nil {
 		r.logger.Error(err.Error())
-		return errors.New("Failed to get task detail")
+		return errors.New("failed to get task detail")
 	}
 
 	_, err = r.Postgres.EditTask(ctx, schedulepostgres.EditTaskParams{
@@ -322,7 +307,7 @@ func (r *PostgresScheduleRepository) EditTask(
 
 	if err != nil {
 		r.logger.Error(err.Error())
-		return errors.New("Failed to edit task")
+		return errors.New("failed to edit task")
 	}
 
 	return tx.Commit()

@@ -72,18 +72,13 @@ type DeleteBuildingRequest struct {
 
 func (h *LocationHandler) DeleteBuilding(ctx *fiber.Ctx) error {
 	req := new(DeleteBuildingRequest)
-	if err := ctx.BodyParser(req); err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+	ok, resFactory := validator.CheckReqBodySchema(ctx, req)
+	if !ok {
+		return resFactory.Create()
 	}
 	err := h.svc.DeleteBuilding(ctx.Context(), req.BuildingId, req.MemberId)
 	if err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal Server Error",
-		})
+		return response.InternalServerError(ctx)
 	}
 	return nil
 }
@@ -121,7 +116,7 @@ type GetBuildingsByUserIDRequest struct {
 }
 
 func (h *LocationHandler) GetBuildingsByUserID(ctx *fiber.Ctx) error {
-	userID, success := ctx.Locals("UserId").(string)
+	userID, success := ctx.Locals("UserID").(string)
 	if !success {
 		err := errors.New("failed to get userID from JWT")
 		h.logger.Error(err.Error())

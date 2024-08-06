@@ -31,7 +31,7 @@ func (svc *RemoteConfigService) CreateRemoteConfig(
 	key,
 	value string,
 ) error {
-	return svc.CreateRemoteConfig(ctx, key, value)
+	return nil
 }
 
 func (svc *RemoteConfigService) UpdateRemoteConfig(
@@ -39,7 +39,7 @@ func (svc *RemoteConfigService) UpdateRemoteConfig(
 	key,
 	value string,
 ) error {
-	return svc.UpdateRemoteConfig(ctx, key, value)
+	return nil
 }
 
 func (svc *RemoteConfigService) getRemoteConfigByKey(

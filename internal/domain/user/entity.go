@@ -45,6 +45,7 @@ type UserCommand struct {
 	Password  string `json:"password"`
 	Salt      string `json:"salt"`
 	ProductID int32  `json:"productID"`
+	RoleID    int32  `json:"roleID"`
 }
 
 type ProductQuery struct {
@@ -55,4 +56,8 @@ type ProductQuery struct {
 type FeatureQuery struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type RegisterQuery struct {
+	UserID string `json:"userID"`
 }

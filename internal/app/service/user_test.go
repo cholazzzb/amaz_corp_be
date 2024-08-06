@@ -17,20 +17,20 @@ func CreateMockService() *svc.UserService {
 
 func TestRegisterUser(t *testing.T) {
 	s := CreateMockService()
-	err := s.RegisterUser(context.Background(), "username", "password")
+	_, err := s.RegisterUser(context.Background(), "username", "password", 2)
 
 	assert.Empty(t, err, "failed to register user")
 }
 
 func TestLoginUser(t *testing.T) {
 	s := CreateMockService()
-	t1, err := s.Login(context.Background(), "not exist", "not exist")
+	t1, err := s.Login(context.Background(), "not exist", "not exist", 2)
 	assert.Empty(t, t1, "not exist user when login return not empty token")
 	assert.Error(t, err, "not exist user when login return empty error")
 
-	err = s.RegisterUser(context.Background(), "user1", "password1")
+	_, err = s.RegisterUser(context.Background(), "user1", "password1", 2)
 	assert.Empty(t, err)
-	t2, err := s.Login(context.Background(), "user1", "password1")
+	t2, err := s.Login(context.Background(), "user1", "password1", 2)
 	assert.Empty(t, err, "successful login return error")
 	assert.NotEmpty(t, t2, "successful login return empty token")
 }
