@@ -80,18 +80,19 @@ func (r *PostgresUserRepository) GetUserExistance(
 func (r *PostgresUserRepository) CreateUser(
 	ctx context.Context,
 	params user.UserCommand,
-) error {
-	_, err := r.Postgres.CreateUser(ctx, userpostgres.CreateUserParams{
+) (string, error) {
+	res, err := r.Postgres.CreateUser(ctx, userpostgres.CreateUserParams{
 		Username:  params.Username,
 		Password:  params.Password,
 		Salt:      params.Salt,
 		ProductID: params.ProductID,
+		RoleID:    params.RoleID,
 	})
 
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return res.String(), nil
 }
 
 func (r *PostgresUserRepository) GetProductByUserID(

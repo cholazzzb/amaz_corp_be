@@ -18,7 +18,7 @@ func NewUserRoute(fr fiber.Router, h *handler.UserHandler) *UserRoute {
 	}
 }
 
-func (r *UserRoute) InitRoute(am middleware.Middleware) {
+func (r *UserRoute) InitRoute(am, adminMiddleware middleware.Middleware) {
 	r.fr.Post("/register", r.h.Register)
 	r.fr.Post("/login", r.h.Login)
 
@@ -26,4 +26,9 @@ func (r *UserRoute) InitRoute(am middleware.Middleware) {
 	userApi.Get("/", r.h.GetListUserByUsername)
 	userApi.Get("/:userId/exist", r.h.CheckUserExistance)
 	userApi.Get("/username/:username", r.h.GetListUserByUsername)
+
+	r.fr.Post("/admin/register", r.h.RegisterAdmin)
+	r.fr.Post("/admin/login", r.h.LoginAdmin)
+
+	r.fr.Group("/admin/users", adminMiddleware)
 }

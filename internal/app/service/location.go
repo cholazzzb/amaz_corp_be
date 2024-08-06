@@ -178,7 +178,7 @@ func (svc *LocationService) CreateBuilding(
 		return err
 	}
 
-	memberBuilding, err := svc.repo.GetListBuildingByUserID(ctx, userID)
+	memberBuilding, _ := svc.repo.GetListBuildingByUserID(ctx, userID)
 
 	if product.ID == 1 && (owned >= 1 || len(memberBuilding) > 0) {
 		err = errors.New("free user already reach limit create building")

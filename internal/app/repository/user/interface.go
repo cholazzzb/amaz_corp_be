@@ -27,7 +27,7 @@ type UserRepository interface {
 	CreateUser(
 		ctx context.Context,
 		params user.UserCommand,
-	) error
+	) (string, error)
 }
 
 type ProductRepoQuery interface {

@@ -13,7 +13,7 @@ import (
 type ok bool
 
 func CheckUserIDJWT(ctx *fiber.Ctx, logger *slog.Logger) (string, ok, response.ResponseFactory) {
-	uID, success := ctx.Locals("UserId").(string)
+	uID, success := ctx.Locals("UserID").(string)
 	if !success {
 		err := errors.New("failed to get userId from JWT")
 		logger.Error(err.Error())

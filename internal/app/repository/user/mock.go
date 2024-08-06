@@ -60,7 +60,7 @@ func (mur *MockUserRepo) GetUserExistance(
 func (mur *MockUserRepo) CreateUser(
 	ctx context.Context,
 	params user.UserCommand,
-) error {
+) (string, error) {
 	id := mur.User.BiggestId + 1
 	newUser := user.User{
 		Username: params.Username,
@@ -70,7 +70,7 @@ func (mur *MockUserRepo) CreateUser(
 
 	mur.User.BiggestId = id
 	mur.User.Users[Username(params.Username)] = newUser
-	return nil
+	return fmt.Sprintf("%d", id), nil
 }
 
 // TODO: Implement this

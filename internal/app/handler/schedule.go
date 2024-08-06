@@ -3,13 +3,13 @@ package handler
 import (
 	"errors"
 	"log/slog"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
 	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+	"github.com/cholazzzb/amaz_corp_be/pkg/parser"
 	"github.com/cholazzzb/amaz_corp_be/pkg/response"
 	"github.com/cholazzzb/amaz_corp_be/pkg/validator"
 )
@@ -41,34 +41,23 @@ func (h *ScheduleHandler) CreateSchedule(ctx *fiber.Ctx) error {
 
 	scheduleID, err := h.svc.CreateSchedule(ctx.Context(), *req)
 	if err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return response.InternalServerError(ctx)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "ok",
-		"data": map[string]string{
-			"scheduleID": scheduleID,
-		},
+	return response.Ok(ctx, ent.ScheduleCommandRes{
+		ScheduleID: scheduleID,
 	})
 }
 
 func (h *ScheduleHandler) GetListScheduleByRoomID(ctx *fiber.Ctx) error {
 	roomID := ctx.Params("roomID")
 	if len(roomID) == 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "roomID is missing from the request",
-		})
+		return response.BadRequest(ctx, "roomID is missing from the request")
 	}
 
 	schs, err := h.svc.GetListScheduleByRoomID(ctx.Context(), roomID)
 	if err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal Server Error",
-		})
+		return response.InternalServerError(ctx)
 	}
 
 	return response.Ok(ctx, schs)
@@ -105,29 +94,23 @@ func (h *ScheduleHandler) GetTaskDetail(ctx *fiber.Ctx) error {
 func (h *ScheduleHandler) GetListTaskByScheduleID(ctx *fiber.Ctx) error {
 	scheduleID := ctx.Params("scheduleID")
 	if len(scheduleID) == 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "scheduleID is missing from the request",
-		})
+		return response.BadRequest(ctx, "scheduleID is missing from the request")
 	}
 
 	queryFilterParams := new(ent.TaskQueryFilterParams)
 
 	if err := ctx.QueryParser(queryFilterParams); err != nil {
-		h.logger.Error(err.Error())
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "query params is in wrong format",
-		})
+		return response.BadRequest(ctx, "query params is in wrong format")
 	}
 
-	var startTime *time.Time
-	startTimeParsed, err := time.Parse(time.RFC1123, queryFilterParams.StartTime) // ex on javascript: new Date("2023-09-3").toUTCString()
-	if err == nil {
-		startTime = &startTimeParsed
+	startTime, err := parser.ParseTime(queryFilterParams.StartTime)
+	if err != nil {
+		return response.BadRequest(ctx, err.Error())
 	}
-	var endTime *time.Time
-	endTimeParsed, err := time.Parse(time.RFC1123, queryFilterParams.EndTime)
-	if err == nil {
-		endTime = &endTimeParsed
+
+	endTime, err := parser.ParseTime(queryFilterParams.EndTime)
+	if err != nil {
+		return response.BadRequest(ctx, err.Error())
 	}
 
 	tks, err := h.svc.GetListTaskByScheduleID(ctx.Context(), scheduleID, ent.TaskQueryFilter{
@@ -135,7 +118,6 @@ func (h *ScheduleHandler) GetListTaskByScheduleID(ctx *fiber.Ctx) error {
 		EndTime:   endTime,
 	})
 	if err != nil {
-		h.logger.Error(err.Error())
 		return response.InternalServerError(ctx)
 	}
 	return response.Ok(ctx, tks)

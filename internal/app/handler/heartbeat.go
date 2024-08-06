@@ -23,7 +23,7 @@ func NewHeartBeatHandler(svc *service.HeartbeatService) *HeartbeatHandler {
 }
 
 func (h *HeartbeatHandler) Pulse(ctx *fiber.Ctx) error {
-	userId, success := ctx.Locals("UserId").(string)
+	userId, success := ctx.Locals("UserID").(string)
 
 	if !success {
 		err := errors.New("failed to get userId from JWT")

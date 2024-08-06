@@ -10,10 +10,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cholazzzb/amaz_corp_be/internal/app"
-	"github.com/cholazzzb/amaz_corp_be/internal/config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/cholazzzb/amaz_corp_be/internal/app"
+	"github.com/cholazzzb/amaz_corp_be/internal/config"
+	"github.com/cholazzzb/amaz_corp_be/internal/domain/user"
+	"github.com/cholazzzb/amaz_corp_be/pkg/parser"
 )
 
 type MockTest struct {
@@ -23,7 +26,6 @@ type MockTest struct {
 	body            interface{}
 	ExpectedCode    int
 	ExpectedMessage string
-	ExpectedData    interface{}
 	request         *http.Request
 }
 
@@ -68,11 +70,9 @@ func (b *MockTest) Body(body interface{}) *MockTest {
 func (b *MockTest) Expected(
 	expectedCode int,
 	expectedMessage string,
-	expectedData interface{},
 ) *MockTest {
 	b.ExpectedCode = expectedCode
 	b.ExpectedMessage = expectedMessage
-	b.ExpectedData = expectedData
 	return b
 }
 
@@ -119,7 +119,7 @@ func (b *MockTest) Test(app *fiber.App, t *testing.T) []byte {
 	return bodyBytes
 }
 
-func Register(app *fiber.App, username string) {
+func Register(app *fiber.App, username string) (string, error) {
 	body, err := json.Marshal(map[string]interface{}{
 		"username": username,
 		"password": username,
@@ -140,10 +140,14 @@ func Register(app *fiber.App, username string) {
 		log.Fatal(err)
 	}
 	bodyString := string(bodyBytes)
+
 	if resp.StatusCode >= 300 {
 		fmt.Println("respond body:", bodyString)
 		fmt.Println()
 	}
+
+	out := parser.ParseResp[user.RegisterQuery](bodyBytes)
+	return out.Data.UserID, nil
 }
 
 func Login(app *fiber.App, username string) string {

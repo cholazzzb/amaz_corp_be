@@ -9,6 +9,10 @@ type ScheduleCommand struct {
 	RoomID string `json:"roomID" validate:"required"`
 }
 
+type ScheduleCommandRes struct {
+	ScheduleID string `json:"scheduleID"`
+}
+
 type ScheduleQuery struct {
 	ID     string `json:"ID"`
 	Name   string `json:"name"`

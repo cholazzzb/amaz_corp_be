@@ -20,14 +20,14 @@ func TestUserRoute(t *testing.T) {
 	tester.NewMockTest().
 		Desc("unauthorized get api").
 		GET(BASE_URL+"/users").
-		Expected(401, "", "").
+		Expected(401, "").
 		BuildRequest().
 		Test(testApp, t)
 
 	tester.NewMockTest().
 		Desc("get HTTP status 404, when route is not exists").
 		GET(BASE_URL+"/not-found").
-		Expected(404, "", "").
+		Expected(404, "").
 		BuildRequest().
 		Test(testApp, t)
 
@@ -61,7 +61,7 @@ func TestUserRouteAfterLogin(t *testing.T) {
 			"username": newUsername,
 			"password": newUsername,
 		}).
-		Expected(200, "", "").
+		Expected(200, "").
 		BuildRequest().
 		Test(testApp, t)
 
@@ -72,7 +72,7 @@ func TestUserRouteAfterLogin(t *testing.T) {
 			"username": newUsername,
 			"password": newUsername,
 		}).
-		Expected(200, "", "").
+		Expected(200, "").
 		BuildRequest().
 		Test(testApp, t)
 
