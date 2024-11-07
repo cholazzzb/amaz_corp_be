@@ -270,3 +270,27 @@ func (svc *LocationService) GetRoomsByBuildingId(
 	}
 	return bs, nil
 }
+
+func (svc *LocationService) CreateRoom(
+	ctx context.Context,
+	name, buildingID, userID string,
+) error {
+	myBuildings, _ := svc.repo.GetListMyOwnedBuilding(ctx, userID)
+
+	owned := false
+	for _, bld := range myBuildings {
+		if bld.ID == buildingID {
+			owned = true
+		}
+	}
+
+	if !owned {
+		return errors.New("cannot create room for the building not owned")
+	}
+
+	err := svc.repo.CreateRoom(ctx, name, buildingID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

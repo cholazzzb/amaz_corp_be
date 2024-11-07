@@ -15,6 +15,10 @@ type BuildingMemberQuery struct {
 	MemberID     string `json:"memberID"`
 }
 
+type RoomCommand struct {
+	Name       string `json:"name" validate:"required"`
+	BuildingID string `json:"buildingID" validate:"required"`
+}
 type RoomQuery struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`

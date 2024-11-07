@@ -113,6 +113,11 @@ type MemberRepositoryQuery interface {
 }
 
 type RoomRepository interface {
+	RoomRepoQuery
+	RoomRepoCommand
+}
+
+type RoomRepoQuery interface {
 	GetMembersByRoomId(
 		ctx context.Context,
 		roomId string,
@@ -125,6 +130,13 @@ type RoomRepository interface {
 		ctx context.Context,
 		buildingId string,
 	) ([]ent.RoomQuery, error)
+}
+
+type RoomRepoCommand interface {
+	CreateRoom(
+		ctx context.Context,
+		name, buildingID string,
+	) error
 }
 
 type FriendRepository interface {
