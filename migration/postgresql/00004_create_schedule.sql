@@ -10,13 +10,20 @@ CREATE TABLE IF NOT EXISTS schedules (
 );
 
 -- +migrate Up
+CREATE TABLE IF NOT EXISTS task_status (
+    id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    status text NOT NULL
+);
+
+-- +migrate Up
 CREATE TABLE IF NOT EXISTS task_details (
     id uuid UNIQUE NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4 (),
     owner_id uuid,
     assignee_id uuid,
-    status text,
+    status_id uuid,
     CONSTRAINT fk_owner_id FOREIGN KEY(owner_id) REFERENCES members(id) ON DELETE CASCADE,
-    CONSTRAINT fk_assignee_id FOREIGN KEY(assignee_id) REFERENCES members(id) ON DELETE CASCADE
+    CONSTRAINT fk_assignee_id FOREIGN KEY(assignee_id) REFERENCES members(id) ON DELETE CASCADE,
+    CONSTRAINT fk_status_id FOREIGN KEY(status_id) REFERENCES task_status(id) ON DELETE CASCADE
 );
 
 -- +migrate Up

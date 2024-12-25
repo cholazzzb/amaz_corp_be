@@ -107,7 +107,7 @@ func (r *PostgresScheduleRepository) GetTaskDetail(
 		ID:         res.ID.String(),
 		OwnerID:    res.OwnerID.UUID.String(),
 		AssigneeID: res.AssigneeID.UUID.String(),
-		Status:     res.Status.String,
+		StatusID:   res.StatusID.UUID.String(),
 	}, nil
 }
 
@@ -176,7 +176,7 @@ func (r *PostgresScheduleRepository) GetListTaskWithDetailByScheduleID(
 	for _, twd := range res {
 		ownerID := parser.PostgresInterfaceToString(twd.OwnerID)
 		assigneeID := parser.PostgresInterfaceToString(twd.AssigneeID)
-		status := parser.PostgresInterfaceToString(twd.Status)
+		statusID := parser.PostgresInterfaceToString(twd.StatusID)
 		deps := parser.PostgresInterfaceToString(twd.DependedTaskID)
 
 		depsId := strings.Split(strings.Trim(deps, "{}"), ",")
@@ -188,9 +188,9 @@ func (r *PostgresScheduleRepository) GetListTaskWithDetailByScheduleID(
 			DurationDay:  calDurationDay(twd.EndTime.Time, twd.StartTime.Time),
 			TaskDetailID: twd.TaskDetailID.String(),
 			Name:         twd.Name.String,
-			OwnerID:      string(ownerID),
-			AssigneeID:   string(assigneeID),
-			Status:       string(status),
+			OwnerID:      ownerID,
+			AssigneeID:   assigneeID,
+			StatusID:     statusID,
 			Dependencies: depsId,
 		})
 	}
@@ -218,6 +218,7 @@ func (r *PostgresScheduleRepository) CreateTask(
 		return err
 	}
 	ownerID.Scan(ownerUUID)
+
 	assigneeID := uuid.NullUUID{}
 	assigneeUUID, err := uuid.Parse(task.AssigneeID)
 	if len(task.AssigneeID) > 0 && err != nil {
@@ -225,13 +226,19 @@ func (r *PostgresScheduleRepository) CreateTask(
 		return err
 	}
 	assigneeID.Scan(assigneeUUID)
-	status := sql.NullString{}
-	status.Scan(task.Status)
+
+	statusID := uuid.NullUUID{}
+	statusUUIID, err := uuid.Parse(task.StatusID)
+	if len(task.AssigneeID) > 0 && err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+	statusID.Scan((statusUUIID))
 
 	tdUUID, err := qtx.CreateTaskDetail(ctx, schedulepostgres.CreateTaskDetailParams{
 		OwnerID:    ownerID,
 		AssigneeID: assigneeID,
-		Status:     status,
+		StatusID:   statusID,
 	})
 
 	if err != nil {

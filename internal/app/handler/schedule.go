@@ -123,6 +123,27 @@ func (h *ScheduleHandler) GetListTaskByScheduleID(ctx *fiber.Ctx) error {
 	return response.Ok(ctx, tks)
 }
 
+func (h *ScheduleHandler) GetListTaskWithDetailByScheduleID(ctx *fiber.Ctx) error {
+	ok, scheduleID, resFactory := validator.CheckPathParams(ctx, "scheduleID")
+	if !ok {
+		return resFactory.Create()
+	}
+
+	queryParams := new(ent.AutoSchedulePreviewQueryParams)
+	ok, resFactory = validator.CheckQueryParams(ctx, queryParams)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	twds, err := h.svc.GetListTaskWithDetailByScheduleID(ctx.Context(), scheduleID)
+
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, twds)
+}
+
 func (h *ScheduleHandler) AutoSchedulePreview(ctx *fiber.Ctx) error {
 	ok, scheduleID, resFactory := validator.CheckPathParams(ctx, "scheduleID")
 	if !ok {

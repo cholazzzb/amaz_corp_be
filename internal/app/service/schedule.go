@@ -101,6 +101,20 @@ func (svc *ScheduleService) EditTask(
 	return nil
 }
 
+func (svc *ScheduleService) GetListTaskWithDetailByScheduleID(
+	ctx context.Context,
+	scheduleID string,
+) ([]domain.TaskWithDetailQuery, error) {
+
+	twds, err := svc.repo.GetListTaskWithDetailByScheduleID(ctx, scheduleID)
+
+	if err != nil {
+		return []domain.TaskWithDetailQuery{}, errors.New("failed to get list task detail by scheduleID")
+	}
+
+	return twds, nil
+}
+
 func (svc *ScheduleService) AutoSchedulePreview(
 	ctx context.Context,
 	scheduleID string,
