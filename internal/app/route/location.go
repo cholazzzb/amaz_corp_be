@@ -42,5 +42,7 @@ func (r *LocationRoute) InitRoute(am middleware.Middleware) {
 	friendApi := r.fr.Group("/friends", am)
 	friendApi.Get("/:memberId", r.h.GetFriendsByMemberId)
 
-	r.fr.Get("/rooms/:roomId/online", am, r.h.GetListOnlineMembers)
+	roomApi := r.fr.Group("/rooms", am)
+	roomApi.Post("/", r.h.CreateRoom)
+	roomApi.Get("/rooms/:roomId/online", am, r.h.GetListOnlineMembers)
 }

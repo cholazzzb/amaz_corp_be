@@ -36,6 +36,11 @@ type TaskQuery struct {
 	TaskDetailID string    `json:"taskDetailID"`
 }
 
+type TaskStatusQuery struct {
+	ID   string `json:"ID"`
+	Name string `json:"name"`
+}
+
 type TaskQueryFilter struct {
 	StartTime *time.Time
 	EndTime   *time.Time
@@ -57,7 +62,7 @@ type TaskDetailQuery struct {
 	ID         string `json:"ID"`
 	OwnerID    string `json:"ownerID"`
 	AssigneeID string `json:"assigneeID"`
-	Status     string `json:"status"`
+	StatusID   string `json:"statusID"`
 }
 
 type TaskWithDetailCommandRequest struct {
@@ -67,7 +72,7 @@ type TaskWithDetailCommandRequest struct {
 	Name        string `json:"name" validate:"required"`
 	OwnerID     string `json:"ownerID"`
 	AssigneeID  string `json:"assigneeID"`
-	Status      string `json:"status"`
+	StatusID    string `json:"statusID"`
 }
 
 type TaskWithDetailCommand struct {
@@ -77,7 +82,7 @@ type TaskWithDetailCommand struct {
 	Name        string    `json:"name" validate:"required"`
 	OwnerID     string    `json:"ownerID"`
 	AssigneeID  string    `json:"assigneeID"`
-	Status      string    `json:"status"`
+	StatusID    string    `json:"statusID"`
 }
 
 type TaskWithDetailQuery struct {
@@ -89,7 +94,7 @@ type TaskWithDetailQuery struct {
 	Name         string    `json:"name"`
 	OwnerID      string    `json:"ownerID"`
 	AssigneeID   string    `json:"assigneeID"`
-	Status       string    `json:"status"`
+	StatusID     string    `json:"statusID"`
 	Dependencies []string  `json:"dependencies"`
 }
 
@@ -130,3 +135,16 @@ type AutoScheduleCommand struct {
 }
 
 // this will implement bulk update to database!
+//
+
+type TaskByRoomIDQuery struct {
+	ID           string `json:"id"`
+	TaskName     string `json:"taskName"`
+	StartTime    string `json:"startTime"`
+	EndTime      string `json:"endTime"`
+	StatusID     string `json:"statusID"`
+	AssigneeID   string `json:"assigneeID"`
+	OwnerID      string `json:"ownerID"`
+	ScheduleName string `json:"scheduleName"`
+	RoomName     string `json:"roomName"`
+}

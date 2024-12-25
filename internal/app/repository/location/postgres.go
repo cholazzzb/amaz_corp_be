@@ -489,3 +489,27 @@ func (r *PostgresLocationRepository) GetRoomsByBuildingId(
 	}
 	return rs, nil
 }
+
+func (r *PostgresLocationRepository) CreateRoom(
+	ctx context.Context,
+	name,
+	buildingID string,
+) error {
+	buildingUUID := uuid.NullUUID{}
+	err := buildingUUID.Scan(buildingID)
+	if err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+
+	_, err = r.Postgres.CreateRoom(ctx, locationpostgres.CreateRoomParams{
+		Name:       name,
+		BuildingID: buildingUUID.UUID,
+	})
+	if err != nil {
+		r.logger.Error(err.Error())
+		return err
+	}
+
+	return nil
+}

@@ -1,3 +1,5 @@
+.DS_Store
+
 # sqlc generated
 internal/app/repository/**/mysql/
 internal/app/repository/**/postgresql/

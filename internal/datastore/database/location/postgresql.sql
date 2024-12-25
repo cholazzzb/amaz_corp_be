@@ -81,6 +81,11 @@ JOIN friends f ON (m.id = f.member1_id OR m.id = f.member2_id)
 WHERE (f.member1_id = $1 OR f.member2_id = $1) AND m.id != $1
 LIMIT 10;
 
+-- name: CreateRoom :one
+INSERT INTO rooms(name, building_id)
+VALUES ($1, $2)
+RETURNING id;
+
 -- name: GetMembersByRoomId :many
 SELECT m.name, m.status, m.user_id
 FROM members m

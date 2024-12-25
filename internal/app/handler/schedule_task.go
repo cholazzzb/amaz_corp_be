@@ -28,7 +28,7 @@ func (h *ScheduleHandler) PostAddTask(ctx *fiber.Ctx) error {
 		Name:        req.Name,
 		OwnerID:     req.OwnerID,
 		AssigneeID:  req.AssigneeID,
-		Status:      req.Status,
+		StatusID:    req.StatusID,
 	}
 
 	err = h.svc.AddTask(ctx.Context(), formattedReq)
@@ -37,6 +37,14 @@ func (h *ScheduleHandler) PostAddTask(ctx *fiber.Ctx) error {
 	}
 
 	return response.Ok(ctx, nil)
+}
+
+func (h *ScheduleHandler) GetListTaskStatus(ctx *fiber.Ctx) error {
+	out, err := h.svc.GetListTaskStatus(ctx.Context())
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+	return response.Ok(ctx, out)
 }
 
 func (h *ScheduleHandler) PutEditTask(ctx *fiber.Ctx) error {
@@ -111,4 +119,46 @@ func (h *ScheduleHandler) DeleteTaskDependency(
 	}
 
 	return response.Ok(ctx, nil)
+}
+
+type GetTasksByRoomIDQueryParams struct {
+	StartTime string `query:"start-time"`
+	EndTime   string `query:"end-time"`
+	Page      int32  `query:"page"`
+	PageSize  int32  `query:"page-size"`
+}
+
+func (h *ScheduleHandler) GetTasksByRoomID(
+	ctx *fiber.Ctx,
+) error {
+	roomID := ctx.Params("roomID")
+	queryParams := new(GetTasksByRoomIDQueryParams)
+	ok, resFactory := validator.CheckQueryParams(ctx, queryParams)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	startTime, err := parser.ParseTime(queryParams.StartTime)
+	if err != nil {
+		return response.BadRequest(ctx, err.Error())
+	}
+	endTime, err := parser.ParseTime((queryParams.EndTime))
+	if err != nil {
+		return response.BadRequest(ctx, err.Error())
+	}
+
+	tasks, err := h.svc.GetTasksByRoomID(
+		ctx.Context(),
+		roomID,
+		queryParams.Page,
+		queryParams.PageSize,
+		startTime,
+		endTime,
+	)
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, tasks)
+
 }

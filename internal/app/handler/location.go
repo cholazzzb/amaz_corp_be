@@ -359,3 +359,23 @@ func (h *LocationHandler) GetFriendsByMemberId(ctx *fiber.Ctx) error {
 		"friends": fs,
 	})
 }
+
+func (h *LocationHandler) CreateRoom(ctx *fiber.Ctx) error {
+	userID, ok, resFactory := validator.CheckUserIDJWT(ctx, h.logger)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	req := new(ent.RoomCommand)
+	ok, resFactory = validator.CheckReqBodySchema(ctx, req)
+	if !ok {
+		return resFactory.Create()
+	}
+
+	err := h.svc.CreateRoom(ctx.Context(), req.Name, req.BuildingID, userID)
+	if err != nil {
+		return response.InternalServerError(ctx)
+	}
+
+	return response.Ok(ctx, nil)
+}

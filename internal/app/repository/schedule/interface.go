@@ -10,6 +10,7 @@ type ScheduleRepo interface {
 	ScheduleRepoCommand
 	ScheduleRepoQuery
 	TaskDependencyRepoCommand
+	TaskRepoQuery
 }
 
 type ScheduleRepoCommand interface {

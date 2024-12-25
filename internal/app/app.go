@@ -94,6 +94,11 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 			sRoute := route.NewScheduleRoute(v1, sh)
 			sRoute.InitRoute(authMiddleware)
 
+			rs := service.NewReportService(ss)
+			rh := handler.NewReportHandler(rs)
+			rRoute := route.NewReportRoute(v1, rh)
+			rRoute.InitRoute(authMiddleware)
+
 			rcr := rcRepo.NewPostgresRemoteConfigRepository(sqlRepo)
 			rcs := service.NewRemoteConfigService(rcr)
 			rch := handler.NewRemoteConfigHandler(rcs)

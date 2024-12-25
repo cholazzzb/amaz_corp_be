@@ -11,6 +11,25 @@ import (
 	ent "github.com/cholazzzb/amaz_corp_be/internal/domain/schedule"
 )
 
+func (r *PostgresScheduleRepository) GetListTaskStatus(ctx context.Context) ([]ent.TaskStatusQuery, error) {
+	listStatus, err := r.Postgres.GetListTaskStatus(ctx)
+
+	out := []ent.TaskStatusQuery{}
+	if err != nil {
+		r.logger.Error(err.Error())
+		return out, err
+	}
+
+	for _, ls := range listStatus {
+		out = append(out, ent.TaskStatusQuery{
+			ID:   ls.ID.String(),
+			Name: ls.Status,
+		})
+	}
+
+	return out, nil
+}
+
 func (r *PostgresScheduleRepository) CreateTaskDependency(
 	ctx context.Context,
 	taskDep ent.TaskDependencyCommand,
@@ -99,5 +118,5 @@ func (r *PostgresScheduleRepository) DeleteTaskDependeny(
 		return fmt.Errorf("failed to delete task dependency with id: %s", taskDep.TaskID)
 	}
 
-	return errors.New("Not Implemented!")
+	return errors.New("not implemented")
 }
