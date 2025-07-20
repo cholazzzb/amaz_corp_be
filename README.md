@@ -1,12 +1,8 @@
 # amaz_corp_be
 
-# 1. Generate SQLC
-
-```
-sqlc generate
-```
-
 ## NOTES:
+
+- github .env can not be updated with VS Code plugin so update it on the github page
 
 For Windows Only, sqlc postgres engine are not supported on windows, 
 1. so install sqlc on docker 

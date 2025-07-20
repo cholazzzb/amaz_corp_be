@@ -2,44 +2,77 @@ version: "2"
 sql:
   - engine: "postgresql"
     schema: "migration/postgresql"
-    queries: "internal/datastore/database/user/postgresql.sql"
+    queries: ["internal/datastore/analytics/pg_query.sql"]
     gen:
       go:
-        package: "userpostgres"
-        out: "internal/app/repository/user/postgresql"
+        package: "repository_analytics"
+        out: "internal/app/repository/analytics/postgresql"
   - engine: "postgresql"
     schema: "migration/postgresql"
-    queries: "internal/datastore/database/location/postgresql.sql"
+    queries: ["internal/datastore/api_usage/pg_query.sql"]
     gen:
-      go: 
-        package: "locationpostgres"
-        out: "internal/app/repository/location/postgresql"
+      go:
+        package: "repository_api_usage"
+        out: "internal/app/repository/api_usage/postgresql"
   - engine: "postgresql"
     schema: "migration/postgresql"
-    queries: "internal/datastore/database/schedule/postgresql.sql"
+    queries:
+      [
+        "internal/datastore/energy_pattern/pg_command.sql",
+        "internal/datastore/energy_pattern/pg_query.sql",
+      ]
     gen:
-      go: 
-        package: "schedulepostgres"
+      go:
+        package: "repository_energy_pattern"
+        out: "internal/app/repository/energy_pattern/postgresql"
+  - engine: "postgresql"
+    schema: "migration/postgresql"
+    queries: ["internal/datastore/reference_data/pg_query.sql"]
+    gen:
+      go:
+        package: "repository_reference_data"
+        out: "internal/app/repository/reference_data/postgresql"
+  - engine: "postgresql"
+    schema: "migration/postgresql"
+    queries:
+      [
+        "internal/datastore/schedule/pg_command.sql",
+        "internal/datastore/schedule/pg_query.sql",
+      ]
+    gen:
+      go:
+        package: "repository_schedule"
         out: "internal/app/repository/schedule/postgresql"
   - engine: "postgresql"
     schema: "migration/postgresql"
-    queries: "internal/datastore/database/remoteconfig/postgresql.sql"
-    gen:
-      go: 
-        package: "remoteconfigpostgres"
-        out: "internal/app/repository/remoteconfig/postgresql"
-  # Legacy mysql
-  - engine: "mysql"
-    schema: "migration/mysql"
-    queries: "internal/datastore/database/user/mysql.sql"
+    queries:
+      [
+        "internal/datastore/task/pg_command.sql",
+        "internal/datastore/task/pg_query.sql",
+      ]
     gen:
       go:
-        package: "usermysql"
-        out: "internal/app/repository/user/mysql"
-  - engine: "mysql"
-    schema: "migration/mysql"
-    queries: "internal/datastore/database/location/mysql.sql"
+        package: "repository_task"
+        out: "internal/app/repository/task/postgresql"
+  - engine: "postgresql"
+    schema: "migration/postgresql"
+    queries:
+      [
+        "internal/datastore/user/pg_command.sql",
+        "internal/datastore/user/pg_query.sql",
+      ]
     gen:
-      go: 
-        package: "locationmysql"
-        out: "internal/app/repository/location/mysql"
+      go:
+        package: "repository_user"
+        out: "internal/app/repository/user/postgresql"
+  - engine: "postgresql"
+    schema: "migration/postgresql"
+    queries:
+      [
+        "internal/datastore/user_preferences/pg_command.sql",
+        "internal/datastore/user_preferences/pg_query.sql",
+      ]
+    gen:
+      go:
+        package: "repository_user_preferences"
+        out: "internal/app/repository/user_preferences/postgresql"

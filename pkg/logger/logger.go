@@ -1,4 +1,4 @@
-package logger
+package custom_logger
 
 import (
 	"log/slog"

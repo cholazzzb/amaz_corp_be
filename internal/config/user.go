@@ -4,8 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
 	"github.com/golang-jwt/jwt/v5"
+
+	custom_logger "github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 type userConfig struct {
@@ -21,13 +22,13 @@ func CreateUserConfig(env map[string]string) {
 
 	APPLICATION_NAME, ok := env["APPLICATION_NAME"]
 	if !ok {
-		logger.Get().Error("failed to parse APPLICATION_NAME from .env")
+		custom_logger.Get().Error("failed to parse APPLICATION_NAME from .env")
 		panic("failed to parse APPLICATION_NAME from .env")
 	}
 
 	LOGIN_EXPIRATION_DURATION_HOUR, err := strconv.ParseInt(env["LOGIN_EXPIRATION_DURATION_HOUR"], 10, 64)
 	if err != nil {
-		logger.Get().Error("failed to parse LOGIN_EXPIRATION_DURATION_HOUR from .env")
+		custom_logger.Get().Error("failed to parse LOGIN_EXPIRATION_DURATION_HOUR from .env")
 		panic("failed to parse LOGIN_EXPIRATION_DURATION_HOUR from .env")
 	}
 	LOGIN_EXPIRATION_DURATION := time.Duration(LOGIN_EXPIRATION_DURATION_HOUR) * time.Hour

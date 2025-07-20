@@ -6,22 +6,17 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/app/handler"
-	hbRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/heartbeat"
-	locRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/location"
-	rcRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/remoteconfig"
-	schRepo "github.com/cholazzzb/amaz_corp_be/internal/app/repository/schedule"
-
-	"github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
+	repo_user "github.com/cholazzzb/amaz_corp_be/internal/app/repository/user"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/route"
 	"github.com/cholazzzb/amaz_corp_be/internal/app/service"
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
-	"github.com/cholazzzb/amaz_corp_be/internal/datastore/database"
-	"github.com/cholazzzb/amaz_corp_be/internal/domain/heartbeat"
-	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+	database "github.com/cholazzzb/amaz_corp_be/internal/datastore"
+
+	custom_logger "github.com/cholazzzb/amaz_corp_be/pkg/logger"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware/auth"
 	"github.com/cholazzzb/amaz_corp_be/pkg/migrator"
 
@@ -43,7 +38,7 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 
 			opt, err := redis.ParseURL(config.ENV.REDIS_CON_STRING)
 			if err != nil {
-				logger.Get().Error(err.Error())
+				custom_logger.Get().Error(err.Error())
 				panic("failed to connect redis database")
 			}
 			rds := redis.NewClient(opt)
@@ -51,59 +46,24 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 
 			app = fiber.New()
 
-			app.Use(fiberLogger.New(fiberLogger.Config{
+			app.Use(logger.New(logger.Config{
 				TimeFormat: "2006-01-02T15:04:05-0700",
 			}))
 
 			app.Use(cors.New())
 
 			api := app.Group("/api")
-			v1 := api.Group("/v1")
 
 			authMiddleware := auth.CreateAuthMiddleware()
-			authAdminMiddleware := auth.CreateAuthAdminMiddleware()
 
 			sqlRepo := database.NewSqlRepository(dbSql)
-			redisRepo := database.NewRedisRepository(rds)
 
-			ur := user.NewPostgresUserRepository(sqlRepo)
+			// User
+			ur := repo_user.NewRepository(sqlRepo)
 			us := service.NewUserService(ur)
 			uh := handler.NewUserHandler(us)
-			uRoute := route.NewUserRoute(v1, uh)
-			uRoute.InitRoute(authMiddleware, authAdminMiddleware)
-
-			hbr := hbRepo.NewInMemoryHeartbeatRepo()
-			go heartbeat.NewHeartBeatScheduler(hbr).Schedule(
-				config.Heartbeat.CHECK_INTERVAL,
-			)
-			hrs := service.NewHeartbeatService(hbr)
-			hrh := handler.NewHeartBeatHandler(hrs)
-			hrRoute := route.NewHeartbeatRoute(v1, hrh)
-			hrRoute.InitRoute(authMiddleware)
-
-			lr := locRepo.NewPostgresLocationRepository(sqlRepo)
-			ls := service.NewLocationService(hrs, us, lr)
-			lh := handler.NewLocationHandler(ls)
-			lRoute := route.NewLocationRoute(v1, lh)
-			lRoute.InitRoute(authMiddleware)
-
-			sr := schRepo.NewPostgresScheduleRepository(sqlRepo)
-			scr := schRepo.NewRedisScheduleRepository(redisRepo)
-			ss := service.NewScheduleService(sr, scr)
-			sh := handler.NewScheduleHandler(ss)
-			sRoute := route.NewScheduleRoute(v1, sh)
-			sRoute.InitRoute(authMiddleware)
-
-			rs := service.NewReportService(ss)
-			rh := handler.NewReportHandler(rs)
-			rRoute := route.NewReportRoute(v1, rh)
-			rRoute.InitRoute(authMiddleware)
-
-			rcr := rcRepo.NewPostgresRemoteConfigRepository(sqlRepo)
-			rcs := service.NewRemoteConfigService(rcr)
-			rch := handler.NewRemoteConfigHandler(rcs)
-			rcRoute := route.NewRemoteConfigRoute(v1, rch)
-			rcRoute.InitRoute(authMiddleware)
+			uRoute := route.NewUserRouter(api, uh)
+			uRoute.InitRoute(authMiddleware)
 		}
 	}
 
@@ -113,7 +73,7 @@ func GetApp(dbSql *sql.DB) *fiber.App {
 func NewSQL(options ...func(*sql.DB)) *sql.DB {
 	dbSql, err := sql.Open(config.ENV.DB_TYPE, config.ENV.DB_CON_STRING)
 	if err != nil {
-		logger.Get().Error(err.Error())
+		custom_logger.Get().Error(err.Error())
 		panic("failed to connect sql database")
 	}
 

@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
-	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+	custom_logger "github.com/cholazzzb/amaz_corp_be/pkg/logger"
 	"github.com/cholazzzb/amaz_corp_be/pkg/middleware"
 )
 
@@ -54,27 +54,27 @@ func CreateAuthMiddleware() middleware.Middleware {
 		roleID, roleIDOk := claims["RoleID"].(float64)
 
 		if !ok {
-			logger.Get().Error("jwt claim failed")
+			custom_logger.Get().Error("jwt claim failed")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !token.Valid {
-			logger.Get().Error("token invalid")
+			custom_logger.Get().Error("token invalid")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !usernameOk {
-			logger.Get().Error("username in token not found")
+			custom_logger.Get().Error("username in token not found")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !userIDOk {
-			logger.Get().Error("userID in token not found")
+			custom_logger.Get().Error("userID in token not found")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !roleIDOk {
-			logger.Get().Error("roleID in token not found")
+			custom_logger.Get().Error("roleID in token not found")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
@@ -133,33 +133,33 @@ func CreateAuthAdminMiddleware() middleware.Middleware {
 		roleID, roleIDOk := claims["RoleID"].(int32)
 
 		if !ok {
-			logger.Get().Error("jwt claim failed")
+			custom_logger.Get().Error("jwt claim failed")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !token.Valid {
-			logger.Get().Error("token invalid")
+			custom_logger.Get().Error("token invalid")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !usernameOk {
-			logger.Get().Error("username in token not found")
+			custom_logger.Get().Error("username in token not found")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !userIDOk {
-			logger.Get().Error("userID in token not found")
+			custom_logger.Get().Error("userID in token not found")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		if !roleIDOk {
-			logger.Get().Error("roleID in token not found")
+			custom_logger.Get().Error("roleID in token not found")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 
 		// See roles table with id 1
 		if roleID != 1 {
-			logger.Get().Error("roleID is not admin")
+			custom_logger.Get().Error("roleID is not admin")
 			return ctx.Status(fiber.StatusUnauthorized).SendString("invalid token")
 		}
 

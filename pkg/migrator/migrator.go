@@ -7,7 +7,8 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 
 	"github.com/cholazzzb/amaz_corp_be/internal/config"
-	"github.com/cholazzzb/amaz_corp_be/pkg/logger"
+
+	custom_logger "github.com/cholazzzb/amaz_corp_be/pkg/logger"
 )
 
 func newMigrator() *migrate.FileMigrationSource {
@@ -18,7 +19,7 @@ func newMigrator() *migrate.FileMigrationSource {
 	case "mysql":
 		dir = "./migration/mysql"
 	default:
-		logger.Get().Error("config.ENV.DB_TYPE is not recognized")
+		custom_logger.Get().Error("config.ENV.DB_TYPE is not recognized")
 		panic("config.ENV.DB_TYPE is not recognized")
 	}
 
@@ -30,7 +31,7 @@ func newMigrator() *migrate.FileMigrationSource {
 func MigrateUp(dbSql *sql.DB) {
 	n, err := migrate.Exec(dbSql, config.ENV.DB_TYPE, newMigrator(), migrate.Up)
 	if err != nil {
-		logger.Get().Error("failed to migrate database. error: ", err.Error())
+		custom_logger.Get().Error("failed to migrate database. error: ", err.Error())
 		panic("failed to migrate database")
 	}
 	fmt.Printf("Applied %d migrations!\n", n)

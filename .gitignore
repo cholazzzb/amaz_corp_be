@@ -1,5 +1,8 @@
 .DS_Store
 
+# Docker
+image-fs.txt
+
 # sqlc generated
 internal/app/repository/**/mysql/
 internal/app/repository/**/postgresql/
