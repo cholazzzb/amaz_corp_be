@@ -20,7 +20,8 @@ func NewUserRouter(fr fiber.Router, h *handler.UserHandler) *UserRoute {
 }
 
 func (r *UserRoute) InitRoute(am middleware.Middleware) {
-	r.fr.Post("/v1/register", r.h.Register)
+	authApi := r.fr.Group("/auth")
+	authApi.Post("/v1/register", r.h.Register)
 
 	r.fr.Group("/v1/users", am)
 }
